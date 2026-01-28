@@ -1,14 +1,14 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import RequireRole from '@/components/RequireRole';
 import { RoleHero } from '@/components/dashboard/RoleHero';
-import { ActionMatrix } from '@/components/dashboard/ActionMatrix';
 import type { HeroStat } from '@/components/dashboard/RoleHero';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { fetchMemberPass } from '@/lib/api';
+import { fetchMemberPass, type MemberPassDetails, type MemberPassViewer } from '@/lib/api';
 import { getRoleNavSections, getRoleSidebarSections } from '@/components/dashboard/roleNavigation';
 
 const formatExpiryDate = (iso: string | null | undefined) => {
@@ -27,99 +27,198 @@ const formatExpiryDate = (iso: string | null | undefined) => {
   }).format(date);
 };
 
+const contentWrapperStyle: CSSProperties = {
+  display: 'grid',
+  gap: '1.25rem',
+  width: '100%',
+  maxWidth: '720px',
+  margin: '0 auto',
+  padding: '1.5rem',
+};
+
+const cardStyle: CSSProperties = {
+  background: 'var(--surface-primary)',
+  border: '1px solid var(--surface-border)',
+  borderRadius: '18px',
+  padding: '1.5rem',
+  boxShadow: '0 16px 30px rgba(12, 34, 56, 0.08)',
+  display: 'grid',
+  gap: '1rem',
+};
+
+const sectionTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '1.1rem',
+  fontWeight: 600,
+  color: 'var(--shell-foreground)',
+};
+
+const mutedTextStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--muted)',
+  lineHeight: 1.6,
+};
+
+const detailRowStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(140px, 1fr) minmax(0, 2fr)',
+  gap: '0.75rem',
+};
+
+const detailLabelStyle: CSSProperties = {
+  fontSize: '0.85rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--muted)',
+};
+
+const detailValueStyle: CSSProperties = {
+  color: 'var(--shell-foreground)',
+  fontWeight: 600,
+};
+
+const primaryButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.5rem',
+  borderRadius: '999px',
+  padding: '0.6rem 1.4rem',
+  fontWeight: 600,
+  border: 'none',
+  cursor: 'pointer',
+  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+  color: 'var(--on-primary)',
+  boxShadow: '0 16px 32px rgba(24, 76, 140, 0.25)',
+};
+
+const secondaryButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '999px',
+  padding: '0.55rem 1.2rem',
+  fontWeight: 600,
+  border: '1px solid var(--surface-border)',
+  background: 'transparent',
+  color: 'var(--shell-foreground)',
+  cursor: 'pointer',
+};
+
+const loadingContainerStyle: CSSProperties = {
+  minHeight: '50vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const loadingSpinnerStyle: CSSProperties = {
+  width: '3rem',
+  height: '3rem',
+  borderRadius: '50%',
+  border: '4px solid color-mix(in srgb, var(--primary) 25%, transparent)',
+  borderTopColor: 'var(--primary)',
+  animation: 'dashboard-spin 0.8s linear infinite',
+  margin: '0 auto 1.25rem',
+};
+
+const loadingTextStyle: CSSProperties = {
+  margin: 0,
+  fontWeight: 600,
+  color: 'var(--shell-foreground)',
+};
+
+const loadingSubtextStyle: CSSProperties = {
+  margin: '0.35rem 0 0',
+  color: 'var(--muted)',
+  fontSize: '0.95rem',
+};
+
 const MemberDashboardPage = () => {
   const router = useRouter();
-  const { token, user } = useAuthSession();
   const pathname = usePathname() ?? '/member/dashboard';
+  const { token, user } = useAuthSession();
+
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Set mounted state when component mounts on client
+  const [passDetails, setPassDetails] = useState<MemberPassDetails | null>(null);
+  const [memberProfile, setMemberProfile] = useState<MemberPassViewer | null>(null);
+
   useEffect(() => {
     setMounted(true);
-    
-    // Only run auth checks on client side
-    if (mounted) {
-      console.log('Auth state changed:', { user, hasToken: !!token });
-      if (!token) {
-        console.log('No auth token found, redirecting to login');
-        router.push('/login');
-      } else if (user?.role !== 'MEMBER') {
-        console.log(`User role is ${user?.role}, redirecting to appropriate dashboard`);
-        const rolePath = user?.role ? `/${user.role.toLowerCase()}/dashboard` : '/login';
-        router.push(rolePath);
-      }
-    }
-  }, [token, user, router, mounted]);
+  }, []);
 
-  const [memberPass, setMemberPass] = useState<{
-    token: string;
-    qrPayload: string;
-    smsSentAt: string | null;
-    expiresAt: string | null;
-  } | null>(null);
-
-  const [participationHistory] = useState<Array<{
-    status: 'Present' | 'Absent' | 'Excused';
-    date: string;
-    theme: string;
-    hours: string;
-  }>>([]);
-
-  const [upcomingSessions] = useState<Array<{
-    date: string;
-    theme: string;
-    callTime: string;
-    location: string;
-  }>>([]);
-
-  const [baseStats, setBaseStats] = useState<HeroStat[]>([
-    { label: 'Attendance streak', value: '0 weeks', trend: 'Start attending to build your streak' },
-    { label: 'Verified passes', value: '0', trend: 'No scans yet' },
-    { label: 'Community service hours', value: '0h', trend: 'Attend sessions to log hours' },
-    { label: 'SMS alerts received', value: '0', trend: 'You will receive updates here' },
-  ]);
-
-  // Fetch member pass data
   useEffect(() => {
-    const fetchData = async () => {
-      if (!token || !user?.id) {
-        setError('Authentication required. Please log in again.');
+    if (!mounted) {
+      return;
+    }
+
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+
+    if (user?.role !== 'MEMBER') {
+      const destination = user?.role ? `/${user.role.toLowerCase()}/dashboard` : '/login';
+      router.replace(destination);
+      return;
+    }
+
+    const loadPass = async () => {
+      if (!user?.id) {
+        setError('User session missing identifier. Please log in again.');
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const passData = await fetchMemberPass(token, user.id).catch(() => ({ pass: null }));
-        
-        if (passData?.pass) {
-          setMemberPass(passData.pass);
-          setBaseStats(prevStats => {
-            const updated = [...prevStats];
-            updated[1] = {
-              ...updated[1],
-              value: '1',
-              trend: 'Active pass available'
-            };
-            return updated;
-          });
-        }
+        setError(null);
+        const response = await fetchMemberPass(token, user.id);
+
+        setPassDetails(response.pass ?? null);
+        setMemberProfile(response.member ?? null);
       } catch (err) {
-        console.error('Error fetching member data:', err);
-        setError('Failed to load member data. Please try again later.');
+        console.error('Failed to fetch member pass', err);
+        const message = err instanceof Error ? err.message : 'Unable to load your data right now. Please try again later.';
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [token, user?.id]);
+    loadPass();
+  }, [mounted, router, token, user]);
 
-  // Get navigation and sidebar sections
   const navSections = useMemo(() => getRoleNavSections('MEMBER', pathname), [pathname]);
   const sidebarSections = useMemo(() => getRoleSidebarSections('MEMBER'), []);
+
+  const stats: HeroStat[] = passDetails
+    ? [
+        {
+          label: 'Digital pass status',
+          value: 'Active',
+          trend: passDetails.expiresAt ? `Expires ${formatExpiryDate(passDetails.expiresAt)}` : 'Share this QR code at check-in',
+        },
+        {
+          label: 'Most recent SMS',
+          value: passDetails.smsSentAt ? formatExpiryDate(passDetails.smsSentAt) ?? 'Sent' : 'Not sent yet',
+          trend: 'Keep your phone handy for alerts',
+        },
+      ]
+    : [
+        {
+          label: 'Digital pass status',
+          value: 'Not issued',
+          trend: 'Ask your church administrator to generate a pass',
+        },
+        {
+          label: 'Most recent SMS',
+          value: 'No alerts',
+          trend: 'You will receive SMS once your pass is active',
+        },
+      ];
 
   // Don't render anything until we're on the client side
   if (!mounted) {
@@ -134,15 +233,11 @@ const MemberDashboardPage = () => {
         sidebarSections={sidebarSections}
         currentUser={user}
       >
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p>Loading your dashboard...</p>
-            {user && (
-              <p className="text-sm" style={{ color: 'var(--muted)' }}> 
-                Logged in as {user.firstName} {user.lastName}
-              </p>
-            )}
+        <div style={loadingContainerStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={loadingSpinnerStyle} />
+            <p style={loadingTextStyle}>Loading your dashboard…</p>
+            <p style={loadingSubtextStyle}>Fetching your latest Umuganda status.</p>
           </div>
         </div>
       </DashboardShell>
@@ -157,53 +252,31 @@ const MemberDashboardPage = () => {
         sidebarSections={sidebarSections}
         currentUser={user}
       >
-        <div className="p-8 max-w-2xl mx-auto">
-          <div className="border-l-4 p-4" style={{ backgroundColor: 'var(--surface-soft)', borderColor: 'var(--danger)' }}>
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style={{ color: 'var(--danger)' }}>
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium" style={{ color: 'var(--shell-foreground)' }}>Error loading dashboard</h3>
-                <div className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>
-                  <p>{error}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    style={{ 
-                      backgroundColor: 'var(--surface-soft)', 
-                      color: 'var(--danger)',
-                      borderColor: 'var(--danger)'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.color = 'var(--primary)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.color = 'var(--danger)';
-                    }}
-                  >
-                    Try again
-                  </button>
-                </div>
-              </div>
+        <div style={contentWrapperStyle}>
+          <article style={cardStyle}>
+            <h2 style={sectionTitleStyle}>Unable to load your data</h2>
+            <p style={mutedTextStyle}>{error}</p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button type="button" style={primaryButtonStyle} onClick={() => window.location.reload()}>
+                Try again
+              </button>
+              <button type="button" style={secondaryButtonStyle} onClick={() => router.push('/member/pass')}>
+                View digital pass
+              </button>
             </div>
-          </div>
+          </article>
         </div>
       </DashboardShell>
     );
   }
 
-  const formattedExpiry = formatExpiryDate(memberPass?.expiresAt);
-  const heroHeadline = memberPass
+  const formattedExpiry = formatExpiryDate(passDetails?.expiresAt);
+  const heroHeadline = passDetails
     ? 'Your Umuganda pass is active'
     : user?.firstName
       ? `Welcome back, ${user.firstName}`
       : 'Welcome to your Umuganda dashboard';
-  const heroSubheadline = memberPass
+  const heroSubheadline = passDetails
     ? formattedExpiry
       ? `Share your QR code at check-in. This pass expires ${formattedExpiry}.`
       : 'Share your QR code at check-in to verify your attendance quickly.'
@@ -217,7 +290,7 @@ const MemberDashboardPage = () => {
           role="MEMBER"
           headline={heroHeadline}
           subheadline={heroSubheadline}
-          stats={baseStats}
+          stats={stats}
         />
       }
       navSections={navSections}
@@ -225,91 +298,69 @@ const MemberDashboardPage = () => {
       currentUser={user}
     >
       <RequireRole allowed={['MEMBER']}>
-        <div className="grid gap-6 md:grid-cols-2">
-          <section className="rounded-lg border p-6 shadow-sm" style={{ backgroundColor: 'var(--surface-primary)', borderColor: 'var(--surface-border)' }}>
-            <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--shell-foreground)' }}>Recent Participation</h2>
-            <div className="space-y-4">
-              {participationHistory.length > 0 ? (
-                participationHistory.map((session, index) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-3 last:border-b-0 last:pb-0" style={{ borderColor: 'var(--surface-border)' }}>
-                    <div>
-                      <div className="font-medium" style={{ color: 'var(--shell-foreground)' }}>{session.theme}</div>
-                      <div className="text-sm" style={{ color: 'var(--muted)' }}>{session.date} • {session.hours}</div>
-                    </div>
-                    <span 
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        session.status === 'Present' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {session.status}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p style={{ color: 'var(--muted)' }}>No participation history found</p>
-              )}
+        <div style={contentWrapperStyle}>
+          <article style={cardStyle}>
+            <h2 style={sectionTitleStyle}>Pass summary</h2>
+            <p style={mutedTextStyle}>
+              {passDetails
+                ? 'Your digital pass is ready. Share the QR code at Umuganda check-in and keep your profile up to date.'
+                : 'Your pass has not been issued yet. Contact your church administrator if you believe this is an error.'}
+            </p>
+            <div style={{ display: 'grid', gap: '0.85rem' }}>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>Status</span>
+                <span style={detailValueStyle}>{passDetails ? 'Active' : 'Not issued'}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>Member</span>
+                <span style={detailValueStyle}>
+                  {memberProfile
+                    ? `${memberProfile.firstName ?? ''} ${memberProfile.lastName ?? ''}`.trim() || 'Member profile'
+                    : user?.firstName
+                      ? `${user.firstName} ${user.lastName ?? ''}`.trim()
+                      : 'Member profile not available'}
+                </span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>National ID</span>
+                <span style={detailValueStyle}>{memberProfile?.nationalId ?? 'Not provided'}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>Pass token</span>
+                <span style={detailValueStyle}>{passDetails?.token ?? 'Unavailable'}</span>
+              </div>
+              <div style={detailRowStyle}>
+                <span style={detailLabelStyle}>Pass expires</span>
+                <span style={detailValueStyle}>{formatExpiryDate(passDetails?.expiresAt) ?? 'Not scheduled'}</span>
+              </div>
             </div>
-          </section>
-
-          <section className="space-y-6">
-            <article className="rounded-lg border p-6 shadow-sm" style={{ backgroundColor: 'var(--surface-primary)', borderColor: 'var(--surface-border)' }}>
-              <h2 className="mb-4 text-lg font-semibold" style={{ color: 'var(--shell-foreground)' }}>Upcoming Session</h2>
-              {upcomingSessions.length > 0 ? (
-                <>
-                  <div className="mb-4">
-                    <div className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Theme</div>
-                    <div style={{ color: 'var(--shell-foreground)' }}>{upcomingSessions[0].theme}</div>
-                  </div>
-                  <div className="mb-4 grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Date</div>
-                      <div style={{ color: 'var(--shell-foreground)' }}>{upcomingSessions[0].date}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Call Time</div>
-                      <div style={{ color: 'var(--shell-foreground)' }}>{upcomingSessions[0].callTime}</div>
-                    </div>
-                  </div>
-                  <div className="mb-6">
-                    <div className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Location</div>
-                    <div style={{ color: 'var(--shell-foreground)' }}>
-                      {user?.churchId ? (
-                        <span>Your registered church</span>
-                      ) : (
-                        <span style={{ color: 'var(--accent)' }}>Please update your profile with a church</span>
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p style={{ color: 'var(--muted)' }}>No upcoming sessions scheduled. Check back later for updates.</p>
-              )}
-              <button
-                className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 w-full"
-                style={{ 
-                  backgroundColor: 'var(--primary)', 
-                  color: '#ffffff',
-                  borderColor: 'var(--primary)'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--accent)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--primary)';
-                }}
-                onClick={() => {
-                  alert('Calendar integration coming soon');
-                }}
-                disabled={upcomingSessions.length === 0}
-              >
-                Add to Calendar
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button type="button" style={primaryButtonStyle} onClick={() => router.push('/member/pass')}>
+                View digital pass
               </button>
-            </article>
+              <button type="button" style={secondaryButtonStyle} onClick={() => router.push('/member/profile')}>
+                Update profile
+              </button>
+            </div>
+          </article>
 
-            <ActionMatrix emphasisRole="MEMBER" />
-          </section>
+          <article style={cardStyle}>
+            <h2 style={sectionTitleStyle}>What to do next</h2>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: '0.75rem' }}>
+              <li style={{ display: 'grid', gap: '0.25rem' }}>
+                <span style={detailLabelStyle}>Bring your ID</span>
+                <p style={mutedTextStyle}>Carry your national ID and this digital pass for police verification on Umuganda day.</p>
+              </li>
+              <li style={{ display: 'grid', gap: '0.25rem' }}>
+                <span style={detailLabelStyle}>Keep contact details current</span>
+                <p style={mutedTextStyle}>Update your phone number or email under profile so SMS alerts reach you.</p>
+              </li>
+              <li style={{ display: 'grid', gap: '0.25rem' }}>
+                <span style={detailLabelStyle}>Need help?</span>
+                <p style={mutedTextStyle}>If your pass is missing or incorrect, contact your church administrator for assistance.</p>
+              </li>
+            </ul>
+          </article>
         </div>
       </RequireRole>
     </DashboardShell>

@@ -50,6 +50,41 @@ export type DistrictPastorSummary = {
   createdAt: string;
 };
 
+export type AttendanceStatus = 'PENDING' | 'APPROVED';
+
+export type AttendanceRecordSummary = {
+  id: string;
+  status: AttendanceStatus;
+  createdAt: string;
+  updatedAt: string;
+  member: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    nationalId: string;
+    phoneNumber: string | null;
+  } | null;
+  session: {
+    id: string;
+    date: string;
+    church: {
+      id: string;
+      name: string;
+      districtId: string;
+    } | null;
+  } | null;
+  pass: {
+    id: string;
+    token: string;
+    smsSentAt: string | null;
+  } | null;
+  approvedBy?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+};
+
 export type UnionSummary = {
   id: string;
   name: string;
@@ -307,12 +342,20 @@ export const assignChurchesToPastor = async (
 
 export const createDistrictPastor = (
   token: string,
-  input: { firstName: string; lastName: string; phoneNumber: string; email: string; districtId: string },
-) => request<{ pastor: DistrictPastorSummary; initialPassword: string }>("/api/district-pastors", {
-  token,
-  method: "POST",
-  body: input,
-});
+  input: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    districtId: string;
+    password: string;
+  },
+) =>
+  request<{ pastor: DistrictPastorSummary }>("/api/district-pastors", {
+    token,
+    method: "POST",
+    body: input,
+  });
 
 export const updateDistrictPastor = (
   token: string,
@@ -381,11 +424,11 @@ export type CreateMemberInput = {
   lastName: string;
   phoneNumber: string;
   email?: string;
+  password: string;
 };
 
 export type CreateMemberResult = {
   member: MemberSummary;
-  initialPassword: string;
   memberPass: {
     id: string;
     token: string;
@@ -432,6 +475,11 @@ export type PassVerificationResponse =
         id: string;
         name: string;
       } | null;
+      member: {
+        firstName: string;
+        lastName: string;
+        nationalId: string;
+      } | null;
     }
   | {
       valid: false;
@@ -457,11 +505,43 @@ export const fetchChurchAdmins = async (token: string, params?: { districtId?: s
   return payload.admins;
 };
 
+export const fetchAttendance = async (
+  token: string,
+  params?: { districtId?: string; churchId?: string; sessionId?: string; status?: AttendanceStatus },
+) => {
+  const query = new URLSearchParams();
+  if (params?.districtId) {
+    query.set("districtId", params.districtId);
+  }
+  if (params?.churchId) {
+    query.set("churchId", params.churchId);
+  }
+  if (params?.sessionId) {
+    query.set("sessionId", params.sessionId);
+  }
+  if (params?.status) {
+    query.set("status", params.status);
+  }
+  const queryString = query.toString();
+  const payload = await request<{ attendance: AttendanceRecordSummary[] }>(
+    `/api/attendance${queryString ? `?${queryString}` : ""}`,
+    { token },
+  );
+  return payload.attendance;
+};
+
 export const createChurchAdmin = (
   token: string,
-  input: { churchId: string; firstName: string; lastName: string; phoneNumber: string; email: string },
+  input: {
+    churchId: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    password: string;
+  },
 ) =>
-  request<{ admin: ChurchAdminSummary; initialPassword: string }>("/api/church-admins", {
+  request<{ admin: ChurchAdminSummary }>("/api/church-admins", {
     token,
     method: "POST",
     body: input,

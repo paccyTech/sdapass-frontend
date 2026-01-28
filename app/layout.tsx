@@ -19,8 +19,16 @@ const body = Manrope({
 
 export const metadata: Metadata = {
   title: "SDA PASS MANAGEMENT",
-  description:
-    "Streamlined Umuganda attendance management for SDA leadership, admins, and members.",
+  description: "Streamlined Umuganda attendance management for SDA leadership, admins, and members.",
+  icons: {
+    icon: [
+      { url: '/sda-logo.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/sda-logo.png', type: 'image/png' },
+    ],
+  },
 };
 
 const RootLayout = ({ children }: { children: ReactNode }) => {
@@ -30,7 +38,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
         <ThemeProvider>
           <main className="content">{children}</main>
           <footer className="site-footer">
-            © {new Date().getFullYear()} SDA Union – Umuganda Attendance System.
+            © {new Date().getFullYear()} SDA PASS MANAGEMENT
           </footer>
         </ThemeProvider>
       </body>

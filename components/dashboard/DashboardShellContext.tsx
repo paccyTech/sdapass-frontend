@@ -28,15 +28,45 @@ type DashboardShellContextValue = {
 
 const DashboardShellContext = createContext<DashboardShellContextValue | undefined>(undefined);
 
+const shallowEqualOverrides = (
+  prev: DashboardShellOverrides,
+  next: DashboardShellOverrides,
+): boolean => {
+  const prevKeys = Object.keys(prev);
+  const nextKeys = Object.keys(next);
+
+  if (prevKeys.length !== nextKeys.length) {
+    return false;
+  }
+
+  for (const key of prevKeys) {
+    if (prev[key as keyof DashboardShellOverrides] !== next[key as keyof DashboardShellOverrides]) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const DashboardShellProvider = ({ children }: { children: ReactNode }) => {
   const [overrides, setOverridesState] = useState<DashboardShellOverrides>({});
 
   const setOverrides = useCallback((next: DashboardShellOverrides) => {
-    setOverridesState({ ...next });
+    setOverridesState((current) => {
+      if (shallowEqualOverrides(current, next)) {
+        return current;
+      }
+      return { ...next };
+    });
   }, []);
 
   const clearOverrides = useCallback(() => {
-    setOverridesState({});
+    setOverridesState((current) => {
+      if (!Object.keys(current).length) {
+        return current;
+      }
+      return {};
+    });
   }, []);
 
   const value = useMemo(

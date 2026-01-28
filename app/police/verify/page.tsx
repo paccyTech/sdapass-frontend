@@ -23,24 +23,17 @@ import { clearAuthSession } from '@/lib/auth';
 
 type ScanStatus = 'idle' | 'scanning' | 'verifying';
 
-type FeedbackState =
-  | {
-      variant: 'success';
-      title: string;
-      message: string;
-      details: {
-        passId: string;
-        churchName: string;
-        sessionDate: string;
-        issuedAt: string;
-      };
-    }
-  | {
-      variant: 'error';
-      title: string;
-      message: string;
-    }
-  | null;
+type FeedbackState = {
+  variant: 'success' | 'error';
+  title: string;
+  message: string;
+  details?: {
+    passId: string;
+    churchName: string;
+    sessionDate: string;
+    issuedAt: string;
+  };
+} | null;
 
 const resetScanner = (reader: BrowserMultiFormatReader) => {
   (reader as unknown as { reset?: () => void }).reset?.();
@@ -407,6 +400,7 @@ const PoliceVerifyPage = () => {
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackState>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [manualToken, setManualToken] = useState('');
   const [manualSubmitting, setManualSubmitting] = useState(false);
 
@@ -440,10 +434,15 @@ const PoliceVerifyPage = () => {
 
   const applyFeedback = useCallback((result: PassVerificationResponse) => {
     if (result.valid) {
+      const memberName = result.member 
+        ? `${result.member.firstName} ${result.member.lastName}`.trim() 
+        : 'Member';
+      const nationalId = result.member?.nationalId ? `ID: ${result.member.nationalId}` : '';
+      
       setFeedback({
         variant: 'success',
-        title: 'Pass verified',
-        message: 'The presented QR code is valid and up to date.',
+        title: 'Pass Verified Successfully',
+        message: `${memberName}\n${nationalId}`,
         details: {
           passId: result.passId,
           churchName: result.church?.name ?? 'Unassigned church',
@@ -452,13 +451,16 @@ const PoliceVerifyPage = () => {
         },
       });
     } else {
-      const reason = result.reason === 'expired' ? 'This pass has expired. Ask the member to request a new one.' : 'No active pass matches this QR code.';
+      const reason = result.reason === 'expired' 
+        ? 'This pass has expired.\nPlease ask the member to request a new one.' 
+        : 'No active pass matches this QR code.';
       setFeedback({
         variant: 'error',
-        title: 'Verification failed',
+        title: 'Verification Failed',
         message: reason,
       });
     }
+    setIsModalOpen(true);
   }, []);
 
   const verifyToken = useCallback(
@@ -756,21 +758,220 @@ const PoliceVerifyPage = () => {
                 </div>
               )}
 
-              {feedback && (
-                <div style={feedbackCardStyle(feedback.variant)}>
-                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {feedback.variant === 'success' ? <IconShieldCheck size={20} /> : <IconAlertTriangle size={20} />}
-                    {feedback.title}
-                  </strong>
-                  <p style={{ margin: 0, lineHeight: 1.6 }}>{feedback.message}</p>
-                  {feedback.variant === 'success' && (
-                    <div style={{ display: 'grid', gap: '0.35rem', fontSize: '0.88rem', color: 'rgba(11, 31, 51, 0.72)' }}>
-                      <span>Church: <strong style={{ color: '#0b1f33' }}>{feedback.details.churchName}</strong></span>
-                      <span>Session date: <strong style={{ color: '#0b1f33' }}>{feedback.details.sessionDate}</strong></span>
-                      <span>Issued: <strong style={{ color: '#0b1f33' }}>{feedback.details.issuedAt}</strong></span>
-                      <span>Pass ID: <code style={{ fontFamily: 'var(--font-mono, monospace)', padding: '0.2rem 0.4rem', background: 'rgba(24, 76, 140, 0.08)', borderRadius: '6px' }}>{feedback.details.passId}</code></span>
+              {/* Modal for feedback */}
+              <style jsx global>{`
+                @keyframes fadeIn {
+                  from { opacity: 0; }
+                  to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                  from { 
+                    opacity: 0;
+                    transform: translateY(20px);
+                  }
+                  to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+                @keyframes scaleIn {
+                  from { 
+                    opacity: 0;
+                    transform: scale(0.8);
+                  }
+                  to { 
+                    opacity: 1;
+                    transform: scale(1);
+                  }
+                }
+                @keyframes pulseSuccess {
+                  0% { 
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+                    transform: scale(1);
+                  }
+                  70% { 
+                    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+                    transform: scale(1.05);
+                  }
+                  100% { 
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                    transform: scale(1);
+                  }
+                }
+                @keyframes pulseError {
+                  0% { 
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+                    transform: scale(1);
+                  }
+                  70% { 
+                    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+                    transform: scale(1.05);
+                  }
+                  100% { 
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+                    transform: scale(1);
+                  }
+                }
+                @keyframes iconBounce {
+                  0%, 100% { transform: translateY(0); }
+                  50% { transform: translateY(-5px); }
+                }
+              `}</style>
+              {isModalOpen && feedback && (
+                <div style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                  padding: '1rem',
+                  opacity: 0,
+                  animation: 'fadeIn 0.3s ease-out forwards',
+                  backdropFilter: 'blur(4px)',
+                }}>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '20px',
+                    padding: '2.5rem 2rem',
+                    maxWidth: '500px',
+                    width: '100%',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                    textAlign: 'center',
+                    opacity: 0,
+                    transform: 'translateY(20px)',
+                    animation: 'slideUp 0.4s 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    border: `1px solid ${feedback.variant === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                  }}>
+                    <div style={{
+                      width: '90px',
+                      height: '90px',
+                      borderRadius: '50%',
+                      backgroundColor: feedback.variant === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1.75rem',
+                      position: 'relative',
+                      animation: feedback.variant === 'success' ? 'pulseSuccess 2s infinite' : 'pulseError 2s infinite',
+                    }}>
+                      <div style={{
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '50%',
+                        backgroundColor: feedback.variant === 'success' ? '#e6f7ed' : '#fde8e8',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'scaleIn 0.4s 0.2s cubic-bezier(0.36, 0, 0.66, -0.56) both',
+                      }}>
+                        {feedback.variant === 'success' ? (
+                          <IconShieldCheck 
+                            size={42} 
+                            color="#10b981" 
+                            style={{
+                              animation: 'iconBounce 0.6s 0.4s ease-in-out',
+                            }} 
+                          />
+                        ) : (
+                          <IconAlertTriangle 
+                            size={42} 
+                            color="#ef4444" 
+                            style={{
+                              animation: 'iconBounce 0.6s 0.4s ease-in-out',
+                            }} 
+                          />
+                        )}
+                      </div>
                     </div>
-                  )}
+                    <h2 style={{
+                      margin: '0 0 1rem',
+                      fontSize: '1.5rem',
+                      fontWeight: 600,
+                      color: feedback.variant === 'success' ? '#065f46' : '#991b1b',
+                    }}>
+                      {feedback.title}
+                    </h2>
+                    <p style={{
+                      margin: '0 0 1.5rem',
+                      fontSize: '1.1rem',
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-line',
+                      color: '#1f2937',
+                    }}>
+                      {feedback.message}
+                    </p>
+                    {feedback.variant === 'success' && feedback.details && (
+                      <div style={{
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '12px',
+                        padding: '1rem',
+                        marginBottom: '1.5rem',
+                        textAlign: 'left',
+                      }}>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '100px 1fr',
+                          gap: '0.75rem',
+                          fontSize: '0.95rem',
+                        }}>
+                          <span style={{ color: '#6b7280' }}>Church:</span>
+                          <span style={{ fontWeight: 500 }}>{feedback.details.churchName}</span>
+                          
+                          <span style={{ color: '#6b7280' }}>Session:</span>
+                          <span>{feedback.details.sessionDate}</span>
+                          
+                          <span style={{ color: '#6b7280' }}>Issued:</span>
+                          <span>{feedback.details.issuedAt}</span>
+                          
+                          <span style={{ color: '#6b7280' }}>Pass ID:</span>
+                          <code style={{
+                            fontFamily: 'var(--font-mono, monospace)',
+                            backgroundColor: '#e5e7eb',
+                            padding: '0.2rem 0.4rem',
+                            borderRadius: '4px',
+                            fontSize: '0.85em',
+                            wordBreak: 'break-all',
+                          }}>
+                            {feedback.details.passId}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        // Reset feedback if it's an error to allow rescanning
+                        if (feedback?.variant === 'error') {
+                          setFeedback(null);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: feedback.variant === 'success' ? '#10b981' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                        minWidth: '120px',
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = feedback.variant === 'success' ? '#059669' : '#dc2626';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = feedback.variant === 'success' ? '#10b981' : '#ef4444';
+                      }}
+                    >
+                      {feedback.variant === 'success' ? 'Continue' : 'Try Again'}
+                    </button>
+                  </div>
                 </div>
               )}
 

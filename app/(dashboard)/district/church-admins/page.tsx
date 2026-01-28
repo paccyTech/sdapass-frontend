@@ -433,8 +433,11 @@ const DistrictChurchAdminsPage = () => {
     phoneNumber: '',
     email: '',
     churchId: '',
+    password: '',
+    confirmPassword: '',
     isSubmitting: false,
-    tempPassword: null as string | null,
+    error: null as string | null,
+    success: null as string | null,
   }));
 
   const [editForm, setEditForm] = useState({
@@ -581,8 +584,11 @@ const DistrictChurchAdminsPage = () => {
       phoneNumber: '',
       email: '',
       churchId: '',
+      password: '',
+      confirmPassword: '',
       isSubmitting: false,
-      tempPassword: null,
+      error: null,
+      success: null,
     });
     setCreateOpen(true);
   };
@@ -590,20 +596,52 @@ const DistrictChurchAdminsPage = () => {
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) return;
-    setCreateForm((prev) => ({ ...prev, isSubmitting: true, tempPassword: null }));
+    setCreateForm((prev) => ({ ...prev, isSubmitting: true, error: null, success: null }));
+
     try {
-      const { initialPassword } = await createChurchAdmin(token, {
-        firstName: createForm.firstName,
-        lastName: createForm.lastName,
-        phoneNumber: createForm.phoneNumber,
-        email: createForm.email,
+      const trimmedFirstName = createForm.firstName.trim();
+      const trimmedLastName = createForm.lastName.trim();
+      const trimmedPhone = createForm.phoneNumber.trim();
+      const trimmedEmail = createForm.email.trim();
+      const trimmedPassword = createForm.password.trim();
+      const trimmedConfirm = createForm.confirmPassword.trim();
+
+      if (!trimmedFirstName || !trimmedLastName || !trimmedPhone || !createForm.churchId) {
+        throw new Error('First name, last name, phone number, and church are required.');
+      }
+
+      if (!trimmedEmail) {
+        throw new Error('Email is required.');
+      }
+
+      if (trimmedPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters long.');
+      }
+
+      if (trimmedPassword !== trimmedConfirm) {
+        throw new Error('Passwords do not match.');
+      }
+
+      const { admin } = await createChurchAdmin(token, {
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        phoneNumber: trimmedPhone,
+        email: trimmedEmail,
         churchId: createForm.churchId,
+        password: trimmedPassword,
       });
-      setCreateForm((prev) => ({ ...prev, tempPassword: initialPassword }));
-      showToast('success', 'Church admin created. Share the temporary password securely.');
+      setCreateForm((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        password: '',
+        confirmPassword: '',
+        success: `Church admin ${admin.firstName} ${admin.lastName} created successfully. Password was set during creation.`,
+      }));
+      showToast('success', 'Church admin created with the specified password.');
       await loadData();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Could not create church admin';
+      setCreateForm((prev) => ({ ...prev, error: message, isSubmitting: false }));
       showToast('error', message);
     } finally {
       setCreateForm((prev) => ({ ...prev, isSubmitting: false }));
@@ -902,31 +940,68 @@ const DistrictChurchAdminsPage = () => {
                 </Select>
               </Field>
 
-              {createForm.tempPassword ? (
-                <div
-                  style={{
-                    padding: '0.9rem 1rem',
-                    borderRadius: 12,
-                    background: 'var(--surface-soft)',
-                    border: '1px solid var(--surface-border)',
-                    display: 'grid',
-                    gap: '0.35rem',
-                  }}
-                >
-                  <strong style={{ color: 'var(--accent)' }}>Temporary password generated</strong>
-                  <code style={{ fontSize: '1rem', fontWeight: 600 }}>{createForm.tempPassword}</code>
-                  <p style={{ margin: 0, color: 'var(--muted)' }}>Share this securely with the new administrator—they will be prompted to reset on first login.</p>
-                </div>
-              ) : null}
+              <Field label="Password">
+                <Input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={createForm.password}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
+                  placeholder="Set an initial password"
+                />
+                <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 400 }}>
+                  Must be at least 8 characters. Share securely with the administrator.
+                </span>
+              </Field>
+              <Field label="Confirm password">
+                <Input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={createForm.confirmPassword}
+                  onChange={(event) => setCreateForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                  placeholder="Re-enter password"
+                />
+              </Field>
+            </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                <Button type="button" tone="ghost" onClick={() => setCreateOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createForm.isSubmitting}>
-                  {createForm.isSubmitting ? 'Inviting…' : 'Send invite'}
-                </Button>
+            {createForm.error && (
+              <div
+                style={{
+                  padding: '0.9rem 1rem',
+                  borderRadius: 12,
+                  background: 'rgba(135,32,58,0.1)',
+                  border: '1px solid rgba(135,32,58,0.25)',
+                  color: '#87203a',
+                }}
+              >
+                <strong>Unable to create church admin</strong>
+                <p style={{ margin: '0.35rem 0 0' }}>{createForm.error}</p>
               </div>
+            )}
+
+            {createForm.success && (
+              <div
+                style={{
+                  padding: '0.9rem 1rem',
+                  borderRadius: 12,
+                  background: 'rgba(31,157,119,0.12)',
+                  border: '1px solid rgba(31,157,119,0.32)',
+                  color: '#1f9d77',
+                }}
+              >
+                <strong>Church admin created</strong>
+                <p style={{ margin: '0.35rem 0 0' }}>{createForm.success}</p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <Button type="button" tone="ghost" onClick={() => setCreateOpen(false)} disabled={createForm.isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createForm.isSubmitting}>
+                {createForm.isSubmitting ? 'Creating…' : 'Create admin'}
+              </Button>
             </div>
           </form>
         </Modal>

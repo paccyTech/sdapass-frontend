@@ -9,7 +9,7 @@ const HomePage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div style={pageContainerStyle}>
-      <style>{hoverStyles}</style>
+      <style dangerouslySetInnerHTML={{ __html: hoverStyles }} />
       <div style={overlayStyle}>
         <div
           style={{

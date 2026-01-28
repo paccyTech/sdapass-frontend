@@ -2,6 +2,7 @@ import type { NavSection, SidebarSection } from '@/components/dashboard/Dashboar
 
 const DISTRICT_NAV_ITEMS = [
   { label: 'Overview', href: '/district/dashboard' },
+  { label: 'Manage Churches', href: '/district/churches' },
   { label: 'Church Administrators', href: '/district/church-admins' },
 ] as const;
 

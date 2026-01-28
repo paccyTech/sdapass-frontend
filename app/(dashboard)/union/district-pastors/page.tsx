@@ -455,11 +455,12 @@ type PastorFormState = {
   phoneNumber: string;
   email: string;
   districtId: string;
+  password: string;
+  confirmPassword: string;
   isActive: boolean;
   isSubmitting: boolean;
   error: string | null;
   success: string | null;
-  generatedPassword: string | null;
 };
 
 type DeletePromptState<T> = {
@@ -525,11 +526,12 @@ const initialPastorFormState: PastorFormState = {
   phoneNumber: '',
   email: '',
   districtId: '',
+  password: '',
+  confirmPassword: '',
   isActive: true,
   isSubmitting: false,
   error: null,
   success: null,
-  generatedPassword: null,
 };
 
 const initialPastorDeleteState: DeletePromptState<DistrictPastorSummary> = {
@@ -689,11 +691,12 @@ const DistrictPastorsPage = () => {
         email: pastor?.email ?? '',
         districtId:
           pastor?.districtId ?? (selectedDistrictFilter || districts[0]?.id || ''),
+        password: '',
+        confirmPassword: '',
         isActive: pastor?.isActive ?? true,
         isSubmitting: false,
         error: null,
         success: null,
-        generatedPassword: null,
       });
       setIsPastorModalOpen(true);
     },
@@ -757,6 +760,8 @@ const DistrictPastorsPage = () => {
         setPastorFormState((prev) => ({
           ...prev,
           districtId: prev.districtId || orderedDistricts[0]?.id || '',
+          password: '',
+          confirmPassword: '',
         }));
       } catch (err) {
         if (!active) {
@@ -1012,10 +1017,24 @@ const DistrictPastorsPage = () => {
   }, []);
 
   const handlePastorFieldChange = useCallback(
-    (field: 'firstName' | 'lastName' | 'phoneNumber' | 'email' | 'districtId') =>
+    (
+      field:
+        | 'firstName'
+        | 'lastName'
+        | 'phoneNumber'
+        | 'email'
+        | 'districtId'
+        | 'password'
+        | 'confirmPassword',
+    ) =>
       (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const value = event.target.value;
-        setPastorFormState((prev) => ({ ...prev, [field]: value, error: null, success: null, generatedPassword: null }));
+        setPastorFormState((prev) => ({
+          ...prev,
+          [field]: value,
+          error: null,
+          success: null,
+        }));
       },
     [],
   );
@@ -1189,10 +1208,39 @@ const DistrictPastorsPage = () => {
         return;
       }
 
-      if (pastorFormState.mode === 'create' && (!email || !districtId)) {
+      if (pastorFormState.mode === 'create') {
+        if (!email || !districtId) {
+          setPastorFormState((prev) => ({
+            ...prev,
+            error: 'Email and district are required to create a district pastor.',
+          }));
+          return;
+        }
+
+        const password = pastorFormState.password.trim();
+        const confirmPassword = pastorFormState.confirmPassword.trim();
+
+        if (!password || password.length < 8) {
+          setPastorFormState((prev) => ({
+            ...prev,
+            error: 'Password must be at least 8 characters long.',
+          }));
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          setPastorFormState((prev) => ({
+            ...prev,
+            error: 'Passwords do not match.',
+          }));
+          return;
+        }
+      }
+
+      if (pastorFormState.mode === 'edit' && !email) {
         setPastorFormState((prev) => ({
           ...prev,
-          error: 'Email and district are required to create a district pastor.',
+          error: 'Email is required to update a district pastor.',
         }));
         return;
       }
@@ -1207,16 +1255,18 @@ const DistrictPastorsPage = () => {
             phoneNumber,
             email,
             districtId,
+            password: pastorFormState.password,
           });
 
           setPastors((prev) => sortPastors([...prev, response.pastor]));
           setPastorFormState((prev) => ({
             ...prev,
             isSubmitting: false,
-            success: `Created ${response.pastor.firstName} ${response.pastor.lastName}. Share the password below immediately; it will not be shown again.`,
-            generatedPassword: response.initialPassword,
+            success: `Created ${response.pastor.firstName} ${response.pastor.lastName}. Password was set during creation.`,
             phoneNumber,
             email,
+            password: '',
+            confirmPassword: '',
           }));
           showFeedback('success', `District pastor ${response.pastor.firstName} ${response.pastor.lastName} created.`);
         } else if (pastorFormState.pastor) {
@@ -1797,6 +1847,37 @@ const DistrictPastorsPage = () => {
                 ))}
               </select>
             </label>
+            {pastorFormState.mode === 'create' && (
+              <>
+                <label style={fieldLabel}>
+                  Password
+                  <input
+                    type="password"
+                    value={pastorFormState.password}
+                    onChange={handlePastorFieldChange('password')}
+                    style={textInputStyle}
+                    placeholder="Set an initial password"
+                    minLength={8}
+                    required
+                  />
+                  <span style={{ fontSize: '0.85rem', color: 'rgba(24,76,140,0.65)', fontWeight: 400 }}>
+                    Must be at least 8 characters. Share securely with the pastor.
+                  </span>
+                </label>
+                <label style={fieldLabel}>
+                  Confirm password
+                  <input
+                    type="password"
+                    value={pastorFormState.confirmPassword}
+                    onChange={handlePastorFieldChange('confirmPassword')}
+                    style={textInputStyle}
+                    placeholder="Re-enter password"
+                    minLength={8}
+                    required
+                  />
+                </label>
+              </>
+            )}
             {pastorFormState.mode === 'edit' && (
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>
                 <input
@@ -1830,18 +1911,6 @@ const DistrictPastorsPage = () => {
               }}>
                 <strong style={{ color: '#1f9d77' }}>Success</strong>
                 <p style={{ ...mutedText, color: '#1f9d77', margin: 0 }}>{pastorFormState.success}</p>
-                {pastorFormState.generatedPassword && (
-                  <code
-                    style={{
-                      padding: '0.6rem 0.75rem',
-                      borderRadius: '12px',
-                      background: 'rgba(24,76,140,0.08)',
-                      fontFamily: 'var(--font-mono, monospace)',
-                    }}
-                  >
-                    {pastorFormState.generatedPassword}
-                  </code>
-                )}
               </div>
             )}
           </div>

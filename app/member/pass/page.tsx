@@ -325,12 +325,12 @@ const controlsTitleStyle: CSSProperties = {
   fontSize: '1.4rem',
   fontWeight: 600,
   letterSpacing: '-0.01em',
-  color: '#f8fafc',
+  color: 'var(--shell-foreground)',
 };
 
 const controlsSubtitleStyle: CSSProperties = {
   fontSize: '0.95rem',
-  color: 'rgba(226,232,240,0.75)',
+  color: 'var(--muted)',
   maxWidth: '32rem',
   lineHeight: 1.6,
 };
@@ -363,14 +363,14 @@ const controlButtonSecondaryStyle: CSSProperties = {
   alignItems: 'center',
   gap: '0.75rem',
   borderRadius: '999px',
-  border: '1px solid rgba(148,163,184,0.35)',
+  border: '1px solid var(--surface-border)',
   padding: '0.65rem 1.6rem',
   fontSize: '0.92rem',
   fontWeight: 600,
   cursor: 'pointer',
-  background: 'rgba(15,23,42,0.12)',
-  color: '#f8fafc',
-  boxShadow: '0 16px 28px rgba(15,23,42,0.24)',
+  background: 'var(--surface-primary)',
+  color: 'var(--shell-foreground)',
+  boxShadow: '0 12px 24px rgba(15,23,42,0.12)',
 };
 
 const controlButtonIconPrimaryStyle: CSSProperties = {
@@ -391,8 +391,8 @@ const controlButtonIconSecondaryStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: '50%',
-  background: 'rgba(15,23,42,0.45)',
-  color: '#f8fafc',
+  background: 'rgba(148,163,184,0.15)',
+  color: 'var(--primary)',
 };
 
 const passWrapperStyle: CSSProperties = {

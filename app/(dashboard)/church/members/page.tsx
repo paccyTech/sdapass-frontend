@@ -12,7 +12,6 @@ interface Member {
   email: string;
   nationalId: string;
   phone: string;
-  tempPassword: string;
   status: 'active' | 'inactive' | 'pending';
 }
 
@@ -62,7 +61,6 @@ export default function ChurchMembersPage() {
           email: m.email ?? '-',
           nationalId: m.nationalId,
           phone: m.phoneNumber,
-          tempPassword: '-',
           status: m.memberPass?.token ? 'active' : 'pending',
         }));
         setMembers(formatted);
@@ -97,9 +95,11 @@ export default function ChurchMembersPage() {
     phoneNumber: '',
     email: '',
     nationalId: '',
+    password: '',
+    confirmPassword: '',
     isSubmitting: false,
-    tempPassword: null as string | null,
     error: '',
+    success: '',
   });
 
   const handleAddMember = () => {
@@ -109,9 +109,11 @@ export default function ChurchMembersPage() {
       phoneNumber: '',
       email: '',
       nationalId: '',
+      password: '',
+      confirmPassword: '',
       isSubmitting: false,
-      tempPassword: null,
       error: '',
+      success: '',
     });
     setAddOpen(true);
   };
@@ -119,16 +121,36 @@ export default function ChurchMembersPage() {
   async function handleCreateMember(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!token || !user?.churchId) return;
-    setAddForm((prev) => ({ ...prev, isSubmitting: true, error: '', tempPassword: null }));
+    setAddForm((prev) => ({ ...prev, isSubmitting: true, error: '', success: '' }));
     try {
-      const { initialPassword, member } = await (await import('@/lib/api')).createMember(token, {
-        nationalId: addForm.nationalId,
-        firstName: addForm.firstName,
-        lastName: addForm.lastName,
-        phoneNumber: addForm.phoneNumber,
-        email: addForm.email,
+      const trimmedFirstName = addForm.firstName.trim();
+      const trimmedLastName = addForm.lastName.trim();
+      const trimmedPhone = addForm.phoneNumber.trim();
+      const trimmedEmail = addForm.email.trim();
+      const trimmedNationalId = addForm.nationalId.trim();
+      const trimmedPassword = addForm.password.trim();
+      const trimmedConfirm = addForm.confirmPassword.trim();
+
+      if (!trimmedFirstName || !trimmedLastName || !trimmedPhone || !trimmedNationalId) {
+        throw new Error('First name, last name, phone number, and national ID are required.');
+      }
+
+      if (trimmedPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters.');
+      }
+
+      if (trimmedPassword !== trimmedConfirm) {
+        throw new Error('Passwords do not match.');
+      }
+
+      const { member } = await (await import('@/lib/api')).createMember(token, {
+        nationalId: trimmedNationalId,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        phoneNumber: trimmedPhone,
+        email: trimmedEmail || undefined,
+        password: trimmedPassword,
       });
-      setAddForm((prev) => ({ ...prev, tempPassword: initialPassword }));
       setMembers((prev) => [
         ...prev,
         {
@@ -137,10 +159,15 @@ export default function ChurchMembersPage() {
           email: member.email ?? '-',
           nationalId: member.nationalId,
           phone: member.phoneNumber,
-          tempPassword: initialPassword,
           status: member.memberPass?.token ? 'active' : 'pending',
         },
       ]);
+      setAddForm((prev) => ({
+        ...prev,
+        password: '',
+        confirmPassword: '',
+        success: `Member ${member.firstName} ${member.lastName} created. Password set successfully.`,
+      }));
     } catch (err: any) {
       setAddForm((prev) => ({ ...prev, error: err.message || 'Could not create member' }));
     } finally {
@@ -190,7 +217,7 @@ export default function ChurchMembersPage() {
               <button type="button" style={{ border: 'none', background: 'transparent', color: 'var(--muted)', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} onClick={() => setAddOpen(false)}>Close</button>
             </header>
             <form style={{ display: 'grid', gap: '0.9rem' }} onSubmit={handleCreateMember}>
-              <div style={{ display: 'grid', gap: '0.6rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div style={{ display: 'grid', gap: '0.6rem', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
                 <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
                   First name
                   <input required value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }} />
@@ -211,21 +238,60 @@ export default function ChurchMembersPage() {
                   National ID
                   <input required value={addForm.nationalId} onChange={e => setAddForm(f => ({ ...f, nationalId: e.target.value }))} style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }} />
                 </label>
+                <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
+                  Password
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={addForm.password}
+                    onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))}
+                    style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }}
+                  />
+                </label>
+                <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
+                  Confirm password
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={addForm.confirmPassword}
+                    onChange={e => setAddForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                    style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }}
+                  />
+                </label>
               </div>
-              {addForm.tempPassword ? (
-                <div style={{ padding: '0.9rem 1rem', borderRadius: 12, background: 'var(--surface-soft)', border: '1px solid var(--surface-border)', display: 'grid', gap: '0.35rem' }}>
-                  <strong style={{ color: 'var(--accent)' }}>Temporary password generated</strong>
-                  <code style={{ fontSize: '1rem', fontWeight: 600 }}>{addForm.tempPassword}</code>
-                  <p style={{ margin: 0, color: 'var(--muted)' }}>An SMS with login details was sent to the member's phone.</p>
+              {addForm.error && (
+                <div style={{ padding: '0.9rem 1rem', borderRadius: 12, background: 'rgba(135,32,58,0.1)', border: '1px solid rgba(135,32,58,0.25)', color: '#87203a' }}>
+                  <strong>Unable to create member</strong>
+                  <p style={{ margin: '0.35rem 0 0' }}>{addForm.error}</p>
                 </div>
-              ) : null}
-              {addForm.error && <div style={{ color: 'var(--danger)', fontWeight: 600 }}>{addForm.error}</div>}
+              )}
+              {addForm.success && (
+                <div style={{ padding: '0.9rem 1rem', borderRadius: 12, background: 'rgba(31,157,119,0.12)', border: '1px solid rgba(31,157,119,0.32)', color: '#1f9d77' }}>
+                  <strong>Member created</strong>
+                  <p style={{ margin: '0.35rem 0 0' }}>{addForm.success}</p>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                <button type="button" style={{ borderRadius: 14, border: '1px solid var(--surface-border)', background: 'transparent', color: 'var(--shell-foreground)', padding: '0.55rem 1.15rem', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }} onClick={() => setAddOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => setAddOpen(false)}
+                  style={{
+                    borderRadius: 14,
+                    border: '1px solid var(--surface-border)',
+                    background: 'transparent',
+                    color: 'var(--shell-foreground)',
+                    padding: '0.55rem 1.15rem',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                  }}
+                >
                   Cancel
                 </button>
                 <button type="submit" disabled={addForm.isSubmitting} style={{ borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'var(--on-primary)', padding: '0.55rem 1.15rem', fontWeight: 600, fontSize: '0.95rem', boxShadow: '0 14px 28px rgba(8, 22, 48, 0.18)', cursor: addForm.isSubmitting ? 'not-allowed' : 'pointer', opacity: addForm.isSubmitting ? 0.65 : 1 }}>
-                  {addForm.isSubmitting ? 'Adding…' : 'Add Member'}
+                  {addForm.isSubmitting ? 'Creating…' : 'Create member'}
                 </button>
               </div>
             </form>
@@ -234,106 +300,106 @@ export default function ChurchMembersPage() {
       )}
       <div style={{ padding: '1.5rem', display: 'grid', gap: '1.75rem' }}>
         <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        <h1 style={{ 
-          fontSize: '1.875rem', 
-          fontWeight: 600, 
-          margin: 0,
-          color: 'var(--shell-foreground)'
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
-          Church Members
-        </h1>
-        
-        <button
-          onClick={handleAddMember}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-            color: 'var(--on-primary)',
-            border: 'none',
-            borderRadius: 14,
-            padding: '0.55rem 1.15rem',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            boxShadow: '0 14px 28px rgba(8, 22, 48, 0.18)',
-            cursor: 'pointer',
-            transition: 'background 0.2s, box-shadow 0.2s',
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.boxShadow = '0 18px 36px rgba(8, 22, 48, 0.26)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.boxShadow = '0 14px 28px rgba(8, 22, 48, 0.18)';
-          }}
-        >
-          <FiPlus size={18} />
-          Add Member
-        </button>
-      </div>
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        flexWrap: 'wrap',
-        paddingBottom: '1rem',
-        marginBottom: '1.5rem',
-        borderBottom: '1px solid var(--surface-border)'
-      }}>
-        <div style={{
-          position: 'relative',
-          flex: 1,
-          maxWidth: '400px'
-        }}>
-          <FiSearch style={{
-            position: 'absolute',
-            left: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--muted)'
-          }} />
-          <input
-            type="text"
-            placeholder="Search members..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          <h1 style={{ 
+            fontSize: '1.875rem', 
+            fontWeight: 600, 
+            margin: 0,
+            color: 'var(--shell-foreground)'
+          }}>
+            Church Members
+          </h1>
+          
+          <button
+            onClick={handleAddMember}
             style={{
-              width: '100%',
-              padding: '0.5rem 1rem 0.5rem 2.5rem',
-              border: '1px solid var(--surface-border)',
-              borderRadius: '0.375rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+              color: 'var(--on-primary)',
+              border: 'none',
+              borderRadius: 14,
+              padding: '0.55rem 1.15rem',
+              fontWeight: 600,
               fontSize: '0.875rem',
-              outline: 'none',
-              transition: 'border-color 0.2s',
-              backgroundColor: 'var(--surface-primary)',
-              color: 'var(--shell-foreground)',
+              boxShadow: '0 14px 28px rgba(8, 22, 48, 0.18)',
+              cursor: 'pointer',
+              transition: 'background 0.2s, box-shadow 0.2s',
             }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--primary)';
-              e.target.style.boxShadow = '0 0 0 1px var(--primary)';
+            onMouseOver={(e) => {
+              e.currentTarget.style.boxShadow = '0 18px 36px rgba(8, 22, 48, 0.26)';
             }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'var(--surface-border)';
-              e.target.style.boxShadow = 'none';
+            onMouseOut={(e) => {
+              e.currentTarget.style.boxShadow = '0 14px 28px rgba(8, 22, 48, 0.18)';
             }}
-          />
+          >
+            <FiPlus size={18} />
+            Add Member
+          </button>
         </div>
-      </div>
 
-      <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          minWidth: '1120px'
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          paddingBottom: '1rem',
+          marginBottom: '1.5rem',
+          borderBottom: '1px solid var(--surface-border)'
         }}>
+          <div style={{
+            position: 'relative',
+            flex: 1,
+            maxWidth: '400px'
+          }}>
+            <FiSearch style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--muted)'
+            }} />
+            <input
+              type="text"
+              placeholder="Search members..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem 1rem 0.5rem 2.5rem',
+                border: '1px solid var(--surface-border)',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                backgroundColor: 'var(--surface-primary)',
+                color: 'var(--shell-foreground)',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--primary)';
+                e.target.style.boxShadow = '0 0 0 1px var(--primary)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--surface-border)';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            minWidth: '1120px'
+          }}>
             <thead>
               <tr style={{
                 backgroundColor: 'var(--surface-soft)',
@@ -348,7 +414,6 @@ export default function ChurchMembersPage() {
                 <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500 }}>Email</th>
                 <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500 }}>National ID</th>
                 <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500 }}>Phone</th>
-                <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500 }}>Temp Password</th>
                 <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500 }}>Status</th>
                 <th style={{ padding: '0.75rem 1.5rem', fontWeight: 500, textAlign: 'right' }}>Actions</th>
               </tr>
@@ -399,22 +464,19 @@ export default function ChurchMembersPage() {
                       {member.phone}
                     </td>
                     <td style={{ 
-                      padding: '1rem 1.5rem',
-                      fontSize: '0.875rem',
-                      color: 'var(--muted)'
+                      padding: '1rem 1.5rem'
                     }}>
-                      {member.tempPassword}
-                    </td>
-                    <td style={{ padding: '1rem 1.5rem' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.75rem',
-                        fontWeight: 500,
-                        textTransform: 'capitalize',
-                        ...(statusStyles[member.status] ?? statusStyles.pending)
-                      }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem',
+                          fontWeight: 500,
+                          textTransform: 'capitalize',
+                          ...(statusStyles[member.status] ?? statusStyles.pending)
+                        }}
+                      >
                         {member.status}
                       </span>
                     </td>

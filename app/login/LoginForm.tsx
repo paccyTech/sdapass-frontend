@@ -17,7 +17,7 @@ export default function LoginForm() {
   const router = useRouter();
 
   const identifierLabel = useMemo(
-    () => (mode === 'member' ? 'National ID' : 'Email'),
+    () => (mode === 'member' ? 'Phone number' : 'Email'),
     [mode],
   );
 
@@ -27,12 +27,12 @@ export default function LoginForm() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const nationalId = formData.get('nationalId')?.toString().trim();
+    const phoneNumber = formData.get('phoneNumber')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
     const password = formData.get('password')?.toString();
 
-    if (mode === 'member' && (!nationalId || !password)) {
-      setError('National ID and password are required.');
+    if (mode === 'member' && (!phoneNumber || !password)) {
+      setError('Phone number and password are required.');
       setIsLoading(false);
       return;
     }
@@ -51,7 +51,7 @@ export default function LoginForm() {
         },
         body: JSON.stringify(
           mode === 'member'
-            ? { nationalId, password }
+            ? { phoneNumber, password }
             : { email, password },
         ),
       });
@@ -113,13 +113,13 @@ export default function LoginForm() {
         {identifierLabel}
         {mode === 'member' ? (
           <input
-            type="text"
-            name="nationalId"
-            placeholder="E.g. 1000000000000001"
+            type="tel"
+            name="phoneNumber"
+            placeholder="E.g. +250780000001"
             required
             disabled={isLoading}
             style={inputStyle}
-            autoComplete="username"
+            autoComplete="tel"
           />
         ) : (
           <input

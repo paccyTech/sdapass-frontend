@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
@@ -449,6 +449,26 @@ export const DashboardShell = ({
     return 'Search records and activity…';
   }, [activeRoleDefinition]);
 
+  const handleNavClick = useCallback(
+    (event: ReactMouseEvent<HTMLAnchorElement>, href?: string) => {
+      if (!href) {
+        return;
+      }
+
+      const normalizedTarget = href.replace(/\/$/, '');
+      const normalizedCurrent = pathname.replace(/\/$/, '');
+
+      if (normalizedTarget === normalizedCurrent) {
+        event.preventDefault();
+      }
+
+      if (isMobile) {
+        setNavOpen(false);
+      }
+    },
+    [isMobile, pathname],
+  );
+
   const sideNav = (
     <aside
       style={{
@@ -498,7 +518,15 @@ export const DashboardShell = ({
                 if (item.href) {
                   return (
                     <li key={item.label}>
-                      <Link href={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Link
+                        href={item.href}
+                        onClick={(event) => handleNavClick(event, item.href)}
+                        style={{
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          display: 'block',
+                        }}
+                      >
                         {content}
                       </Link>
                     </li>
@@ -515,7 +543,7 @@ export const DashboardShell = ({
                         padding: 0,
                         width: '100%',
                         textAlign: 'left',
-                        cursor: 'pointer',
+                        cursor: 'default',
                       }}
                     >
                       {content}

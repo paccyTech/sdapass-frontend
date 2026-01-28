@@ -83,11 +83,16 @@ button {
 }
 
 .site-footer {
-  padding: 2rem clamp(1.5rem, 5vw, 3.5rem);
+  padding: 2.4rem clamp(1.5rem, 5vw, 3.5rem);
   text-align: center;
-  font-size: 0.9rem;
-  color: var(--muted);
-  backdrop-filter: blur(6px);
+  font-size: 0.95rem;
+  color: rgba(214, 228, 255, 0.72);
+  background: linear-gradient(135deg, #0a162c, #112a55);
+  border-top: 1px solid rgba(118, 176, 255, 0.24);
+  box-shadow: 0 -24px 48px rgba(5, 12, 27, 0.4);
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 body.no-footer .site-footer {

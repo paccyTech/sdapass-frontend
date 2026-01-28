@@ -97,7 +97,7 @@ export default function LoginForm() {
           disabled={isLoading}
           style={mode === 'member' ? activeToggleStyle : toggleStyle}
         >
-          Member access
+          Phone Number
         </button>
         <button
           type="button"
@@ -105,7 +105,7 @@ export default function LoginForm() {
           disabled={isLoading}
           style={mode === 'admin' ? activeToggleStyle : toggleStyle}
         >
-          Admin access
+          Email
         </button>
       </div>
 
@@ -125,7 +125,7 @@ export default function LoginForm() {
           <input
             type="email"
             name="email"
-            placeholder="E.g. union.admin@umuganda.rw"
+            placeholder="E.g. sdaumuganda@gmail.com"
             required
             disabled={isLoading}
             style={inputStyle}

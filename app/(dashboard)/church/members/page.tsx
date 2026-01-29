@@ -4,7 +4,7 @@ import { useState, useEffect, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { fetchChurchMembers } from '@/lib/api';
+import { deleteMember as deleteMemberApi, fetchChurchMembers } from '@/lib/api';
 
 interface Member {
   id: string;
@@ -31,6 +31,13 @@ const statusStyles: Record<Member['status'], CSSProperties> = {
     color: 'var(--primary)',
     border: '1px solid var(--surface-border)',
   },
+};
+
+const fieldErrorStyle: CSSProperties = {
+  margin: '0.2rem 0 0',
+  color: '#b42318',
+  fontSize: '0.75rem',
+  fontWeight: 500,
 };
 
 export default function ChurchMembersPage() {
@@ -89,6 +96,7 @@ export default function ChurchMembersPage() {
 
   // Modal state for add member
   const [addOpen, setAddOpen] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
   const [addForm, setAddForm] = useState({
     firstName: '',
     lastName: '',
@@ -101,6 +109,7 @@ export default function ChurchMembersPage() {
     error: '',
     success: '',
   });
+  const [addFormErrors, setAddFormErrors] = useState<{ nationalId?: string }>({});
 
   const handleAddMember = () => {
     setAddForm({
@@ -115,7 +124,19 @@ export default function ChurchMembersPage() {
       error: '',
       success: '',
     });
+    setAddFormErrors({});
     setAddOpen(true);
+  };
+
+  const handleNationalIdChange = (value: string) => {
+    setAddForm((prev) => ({ ...prev, nationalId: value }));
+
+    if (!value.trim()) {
+      setAddFormErrors((prev) => ({ ...prev, nationalId: 'National ID is required.' }));
+      return;
+    }
+
+    setAddFormErrors((prev) => ({ ...prev, nationalId: undefined }));
   };
 
   async function handleCreateMember(event: React.FormEvent<HTMLFormElement>) {
@@ -127,11 +148,12 @@ export default function ChurchMembersPage() {
       const trimmedLastName = addForm.lastName.trim();
       const trimmedPhone = addForm.phoneNumber.trim();
       const trimmedEmail = addForm.email.trim();
-      const trimmedNationalId = addForm.nationalId.trim();
+      const normalizedNationalId = addForm.nationalId.trim();
       const trimmedPassword = addForm.password.trim();
       const trimmedConfirm = addForm.confirmPassword.trim();
 
-      if (!trimmedFirstName || !trimmedLastName || !trimmedPhone || !trimmedNationalId) {
+      if (!trimmedFirstName || !trimmedLastName || !trimmedPhone || !normalizedNationalId) {
+        setAddFormErrors((prev) => ({ ...prev, nationalId: 'National ID is required.' }));
         throw new Error('First name, last name, phone number, and national ID are required.');
       }
 
@@ -144,7 +166,7 @@ export default function ChurchMembersPage() {
       }
 
       const { member } = await (await import('@/lib/api')).createMember(token, {
-        nationalId: trimmedNationalId,
+        nationalId: normalizedNationalId,
         firstName: trimmedFirstName,
         lastName: trimmedLastName,
         phoneNumber: trimmedPhone,
@@ -168,6 +190,7 @@ export default function ChurchMembersPage() {
         confirmPassword: '',
         success: `Member ${member.firstName} ${member.lastName} created. Password set successfully.`,
       }));
+      setAddFormErrors({});
     } catch (err: any) {
       setAddForm((prev) => ({ ...prev, error: err.message || 'Could not create member' }));
     } finally {
@@ -181,14 +204,25 @@ export default function ChurchMembersPage() {
   };
 
   const handleDeleteMember = async (id: string) => {
-    if (confirm('Are you sure you want to delete this member?')) {
-      try {
-        // Replace with actual API call
-        // await fetch(`/api/church/members/${id}`, { method: 'DELETE' });
-        setMembers(members.filter(member => member.id !== id));
-      } catch (error) {
-        console.error('Error deleting member:', error);
-      }
+    if (!token || !user?.churchId) return;
+
+    if (!confirm('Are you sure you want to delete this member?')) {
+      return;
+    }
+
+    try {
+      setDeletingIds((prev) => ({ ...prev, [id]: true }));
+      await deleteMemberApi(token, id);
+      setMembers((prev) => prev.filter((member) => member.id !== id));
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert('Could not delete member. Please try again.');
+    } finally {
+      setDeletingIds((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   };
 
@@ -236,7 +270,15 @@ export default function ChurchMembersPage() {
                 </label>
                 <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
                   National ID
-                  <input required value={addForm.nationalId} onChange={e => setAddForm(f => ({ ...f, nationalId: e.target.value }))} style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }} />
+                  <input
+                    required
+                    value={addForm.nationalId}
+                    onChange={e => handleNationalIdChange(e.target.value)}
+                    inputMode="text"
+                    aria-invalid={Boolean(addFormErrors.nationalId)}
+                    style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }}
+                  />
+                  {addFormErrors.nationalId && <span style={fieldErrorStyle}>{addFormErrors.nationalId}</span>}
                 </label>
                 <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
                   Password
@@ -517,6 +559,7 @@ export default function ChurchMembersPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member.id)}
+                          disabled={Boolean(deletingIds[member.id])}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -527,10 +570,12 @@ export default function ChurchMembersPage() {
                             border: '1px solid var(--danger)',
                             backgroundColor: 'color-mix(in srgb, var(--danger) 12%, transparent)',
                             color: 'var(--danger)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            cursor: Boolean(deletingIds[member.id]) ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            opacity: Boolean(deletingIds[member.id]) ? 0.6 : 1,
                           }}
                           onMouseOver={(e) => {
+                            if (deletingIds[member.id]) return;
                             e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--danger) 18%, transparent)';
                             e.currentTarget.style.color = 'var(--danger)';
                           }}
@@ -539,7 +584,11 @@ export default function ChurchMembersPage() {
                             e.currentTarget.style.color = 'var(--danger)';
                           }}
                         >
-                          <FiTrash2 size={16} />
+                          {deletingIds[member.id] ? (
+                            <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>…</span>
+                          ) : (
+                            <FiTrash2 size={16} />
+                          )}
                         </button>
                       </div>
                     </td>

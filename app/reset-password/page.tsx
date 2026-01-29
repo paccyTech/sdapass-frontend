@@ -9,25 +9,42 @@ import { requestPasswordReset } from '@/lib/api';
 
 export default function PasswordResetRequestPage() {
   const [nationalId, setNationalId] = useState('');
+  const [nationalIdError, setNationalIdError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ variant: 'success' | 'error'; message: string } | null>(null);
 
+  const handleNationalIdChange = (value: string) => {
+    setNationalId(value);
+
+    if (!value.trim()) {
+      setNationalIdError(null);
+      return;
+    }
+
+    setNationalIdError(null);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!nationalId.trim() && !email.trim()) {
+    const normalizedNationalId = nationalId.trim();
+    const trimmedEmail = email.trim();
+
+    if (!normalizedNationalId && !trimmedEmail) {
       setStatus({ variant: 'error', message: 'Provide either a national ID or email address to continue.' });
       return;
     }
+
+    setNationalIdError(null);
 
     try {
       setIsSubmitting(true);
       setStatus(null);
 
       await requestPasswordReset({
-        nationalId: nationalId.trim() || undefined,
-        email: email.trim() || undefined,
+        nationalId: normalizedNationalId || undefined,
+        email: trimmedEmail || undefined,
       });
 
       setStatus({
@@ -85,12 +102,17 @@ export default function PasswordResetRequestPage() {
             <input
               name="nationalId"
               value={nationalId}
-              onChange={(event) => setNationalId(event.target.value)}
+              onChange={(event) => handleNationalIdChange(event.target.value)}
               placeholder="e.g. 1000000000000001"
               style={inputStyle}
               disabled={isSubmitting}
               autoComplete="off"
+              inputMode="numeric"
+              pattern="1\d{15}"
+              maxLength={16}
+              aria-invalid={Boolean(nationalIdError)}
             />
+            {nationalIdError && <span style={fieldErrorStyle}>{nationalIdError}</span>}
           </label>
 
           <div style={dividerStyle}>
@@ -264,10 +286,17 @@ const inputStyle: CSSProperties = {
 };
 
 const helperTextStyle: CSSProperties = {
-  fontSize: '0.9rem',
-  color: '#4a5568',
-  lineHeight: 1.5,
-  textAlign: 'center',
+  margin: '0.75rem 0 1.5rem',
+  color: '#475569',
+  fontSize: '0.95rem',
+};
+
+const fieldErrorStyle: CSSProperties = {
+  display: 'block',
+  marginTop: '0.25rem',
+  color: '#b42318',
+  fontSize: '0.8rem',
+  fontWeight: 500,
 };
 
 const submitStyle: CSSProperties = {

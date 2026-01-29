@@ -316,9 +316,13 @@ export default function ChurchAdminDashboard() {
   const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([]);
 
   useEffect(() => {
-    if (!token || !user?.churchId) {
+    const rawChurchId = user?.churchId;
+
+    if (!token || typeof rawChurchId !== 'string' || !rawChurchId) {
       return;
     }
+
+    const churchId = rawChurchId;
 
     let mounted = true;
     setStatus('loading');
@@ -327,10 +331,10 @@ export default function ChurchAdminDashboard() {
     (async () => {
       try {
         const [churchDetail, attendanceRecords, memberList, upcomingPayload] = await Promise.all([
-          fetchChurchDetail(token, user.churchId),
-          fetchAttendance(token, { churchId: user.churchId }),
-          fetchChurchMembers(token, { churchId: user.churchId }),
-          fetchUpcomingSessions(token, user.churchId).catch((err) => {
+          fetchChurchDetail(token, churchId),
+          fetchAttendance(token, { churchId }),
+          fetchChurchMembers(token, { churchId }),
+          fetchUpcomingSessions(token, churchId).catch((err) => {
             console.warn('Failed to load upcoming sessions', err);
             return { sessions: [] as UpcomingSession[] };
           }),

@@ -48,9 +48,22 @@ const printStyles = `
     box-shadow: none !important;
     border: none !important;
     background: #ffffff !important;
-    width: 100%;
-    max-width: 880px;
     padding: 0 !important;
+    display: grid;
+    gap: 8mm;
+    justify-items: center;
+  }
+
+  #printable-pass-card > article {
+    width: 85.6mm !important;
+    height: 54mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always;
+  }
+
+  #printable-pass-card > article:last-of-type {
+    page-break-after: auto;
   }
 
   #print-controls-row,
@@ -399,29 +412,52 @@ const passWrapperStyle: CSSProperties = {
   width: '100%',
   display: 'flex',
   justifyContent: 'center',
+  padding: '1.5rem 0',
+};
+
+const printableCardContainerStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: '960px',
+  display: 'grid',
+  gap: '1.5rem',
+  justifyItems: 'center',
 };
 
 const printableCardStyle: CSSProperties = {
   position: 'relative',
-  width: '100%',
-  maxWidth: '880px',
-  background: '#f1f5f9',
-  borderRadius: 0,
+  width: 'min(540px, 100%)',
+  aspectRatio: '85.6 / 54',
+  background: 'linear-gradient(135deg, #f8fafc, #ffffff)',
+  borderRadius: '18px',
   overflow: 'hidden',
-  border: 'none',
-  boxShadow: 'none',
-  aspectRatio: '210 / 297',
+  border: '1px solid rgba(15,23,42,0.08)',
+  boxShadow: '0 28px 60px rgba(15,23,42,0.22)',
   display: 'flex',
   flexDirection: 'column',
+};
+
+const printableCardBackStyle: CSSProperties = {
+  ...printableCardStyle,
+  background: 'linear-gradient(135deg, #0f172a, #1e3a8a)',
+  color: '#e2e8f0',
+  border: '1px solid rgba(255,255,255,0.16)',
 };
 
 const cardBackgroundOverlayStyle: CSSProperties = {
   position: 'absolute',
   inset: 0,
   background:
-    'linear-gradient(160deg, rgba(15,23,42,0.08), rgba(15,23,42,0.03)), url(/sda-logo.png) center/420px no-repeat',
-  opacity: 0.18,
+    'radial-gradient(circle at top left, rgba(15,23,42,0.08), transparent 60%), radial-gradient(circle at bottom right, rgba(37,99,235,0.08), transparent 55%)',
   pointerEvents: 'none',
+};
+
+const cardBackgroundOverlayBackStyle: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  background:
+    'radial-gradient(circle at 20% 30%, rgba(37,99,235,0.28), transparent 55%), radial-gradient(circle at 80% 70%, rgba(14,165,233,0.24), transparent 60%)',
+  pointerEvents: 'none',
+  opacity: 0.85,
 };
 
 const passHeaderStyle: CSSProperties = {
@@ -429,28 +465,28 @@ const passHeaderStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '1.9rem 2.5rem',
-  background: '#102a4d',
+  padding: '0.85rem 1.4rem',
+  background: 'rgba(15,23,42,0.92)',
   color: '#ffffff',
-  gap: '1.5rem',
+  gap: '0.75rem',
 };
 
 const headerBrandStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '1.25rem',
+  gap: '0.75rem',
 };
 
 const headerLogoStyle: CSSProperties = {
-  width: '72px',
-  height: '72px',
-  borderRadius: '18px',
+  width: '54px',
+  height: '54px',
+  borderRadius: '12px',
   background: '#ffffff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '0.7rem',
-  boxShadow: '0 20px 36px rgba(15,23,42,0.38)',
+  padding: '0.55rem',
+  boxShadow: '0 18px 32px rgba(15,23,42,0.28)',
 };
 
 const headerLogoImageStyle: CSSProperties = {
@@ -461,155 +497,146 @@ const headerLogoImageStyle: CSSProperties = {
 
 const headerBrandTextStyle: CSSProperties = {
   display: 'grid',
-  gap: '0.25rem',
+  gap: '0.2rem',
 };
 
 const headerOverlineStyle: CSSProperties = {
-  fontFamily: '"Playfair Display", "Times New Roman", serif',
-  fontSize: '1.45rem',
-  letterSpacing: '0.18em',
+  fontFamily: '"Cinzel", "Trajan Pro", serif',
+  fontSize: '1rem',
+  letterSpacing: '0.2em',
   textTransform: 'uppercase',
   color: '#ffffff',
   fontWeight: 700,
-  textShadow: '0 8px 24px rgba(15,23,42,0.35)',
+  textShadow: '0 6px 18px rgba(15,23,42,0.35)',
 };
 
 const passMetaStripStyle: CSSProperties = {
   position: 'relative',
-  background: '#17446f',
-  color: 'rgba(226,232,240,0.88)',
+  background: 'rgba(37,99,235,0.16)',
+  color: '#0f172a',
   textTransform: 'uppercase',
-  letterSpacing: '0.24em',
+  letterSpacing: '0.18em',
   fontWeight: 600,
-  fontSize: '0.82rem',
-  textAlign: 'center',
-  padding: '0.9rem 2.5rem',
-  borderTop: '1px solid rgba(148,163,184,0.24)',
-  borderBottom: '1px solid rgba(255,255,255,0.08)',
+  fontSize: '0.62rem',
+  fontFamily: '"Montserrat", "Segoe UI", sans-serif',
+  textAlign: 'left',
+  padding: '0.45rem 1.4rem',
+  borderTop: '1px solid rgba(255,255,255,0.12)',
+  borderBottom: '1px solid rgba(15,23,42,0.08)',
 };
 
 const cardBodyStyle: CSSProperties = {
   position: 'relative',
-  padding: '2.75rem 2.5rem',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2.4rem',
-  background: '#ffffff',
+  padding: '0.95rem 1.2rem 0.65rem',
+  display: 'grid',
+  gridTemplateRows: 'auto auto',
+  gap: '0.65rem',
   flex: 1,
+  fontFamily: '"Satoshi", "Inter", sans-serif',
 };
 
 const identitySectionStyle: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2rem',
-  alignItems: 'stretch',
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) auto',
+  gap: '0.75rem',
+  alignItems: 'start',
 };
 
 const identityColumnStyle: CSSProperties = {
-  flex: '1 1 280px',
   display: 'grid',
-  gap: '1.75rem',
+  gap: '0.8rem',
 };
 
 const profileHeaderStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '1.25rem',
+  gap: '0.7rem',
 };
 
 const initialBadgeStyle: CSSProperties = {
-  width: '86px',
-  height: '86px',
-  borderRadius: '22px',
-  background: '#0f172a',
-  color: '#ffffff',
+  width: '60px',
+  height: '60px',
+  borderRadius: '16px',
+  background: 'linear-gradient(135deg, #1e3a8a, #0f172a)',
+  color: '#f8fafc',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '2.1rem',
+  fontSize: '1.5rem',
   fontWeight: 700,
-  letterSpacing: '0.08em',
-  boxShadow: '0 18px 32px rgba(15,23,42,0.22)',
+  letterSpacing: '0.04em',
+  boxShadow: '0 12px 22px rgba(15,23,42,0.22)',
+  fontFamily: '"Cinzel", "Trajan Pro", serif',
 };
 
 const profileNameBlockStyle: CSSProperties = {
   display: 'grid',
-  gap: '0.35rem',
+  gap: '0.25rem',
 };
 
 const profileNameStyle: CSSProperties = {
-  fontSize: '1.8rem',
+  fontSize: '1.08rem',
   fontWeight: 700,
   color: '#0f172a',
-  letterSpacing: '0.02em',
+  letterSpacing: '0.015em',
+  fontFamily: '"Satoshi", "Inter", sans-serif',
 };
 
 const profileInfoLineStyle: CSSProperties = {
-  fontSize: '0.95rem',
+  fontSize: '0.55rem',
   color: '#475569',
-  letterSpacing: '0.05em',
+  letterSpacing: '0.2em',
   textTransform: 'uppercase',
+  fontFamily: '"Montserrat", "Segoe UI", sans-serif',
 };
 
-const detailsGridStyle: CSSProperties = {
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-};
-
-const detailGroupStyle: CSSProperties = {
-  background: '#ffffff',
-  borderRadius: '14px',
-  padding: '0.9rem 1.1rem',
+const identityDetailsStyle: CSSProperties = {
   display: 'grid',
   gap: '0.4rem',
-  border: 'none',
 };
 
-const detailLabelStyle: CSSProperties = {
-  fontSize: '0.68rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.28em',
+const detailInlineLabelStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.48rem',
+  letterSpacing: '0.08em',
+  textTransform: 'none',
   color: '#64748b',
-  fontWeight: 700,
+  fontWeight: 400,
+  fontFamily: '"Barlow Condensed", "Arial Narrow", sans-serif',
 };
 
-const detailValueStyle: CSSProperties = {
-  fontSize: '1.05rem',
-  color: '#0f172a',
-  fontWeight: 600,
-  letterSpacing: '0.02em',
-  wordBreak: 'break-word',
-};
-
-const detailValueMutedStyle: CSSProperties = {
-  fontSize: '0.95rem',
+const detailInlineValueStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.76rem',
   color: '#1e293b',
-  letterSpacing: '0.04em',
+  fontWeight: 500,
+  letterSpacing: '0.01em',
+  fontFamily: '"Satoshi", "Inter", sans-serif',
 };
 
 const qrColumnStyle: CSSProperties = {
-  flex: '0 0 260px',
   display: 'grid',
-  gap: '1rem',
+  gap: '0.5rem',
   justifyItems: 'center',
-  padding: '1.5rem',
-  borderRadius: '20px',
-  background: '#ffffff',
-  border: 'none',
+  padding: '0.55rem',
+  borderRadius: '12px',
+  background: 'rgba(255,255,255,0.85)',
+  border: '1px solid rgba(15,23,42,0.08)',
+  backdropFilter: 'blur(12px)',
+  alignSelf: 'start',
 };
 
 const qrFrameStyle: CSSProperties = {
-  width: '220px',
-  height: '220px',
+  width: '110px',
+  height: '110px',
   background: '#ffffff',
-  borderRadius: '18px',
-  border: '1px solid rgba(148,163,184,0.35)',
+  borderRadius: '10px',
+  border: '1px solid rgba(148,163,184,0.32)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '0.75rem',
-  boxShadow: '0 16px 28px rgba(15,23,42,0.12)',
+  padding: '0.4rem',
+  boxShadow: '0 10px 18px rgba(15,23,42,0.12)',
 };
 
 const qrImageStyle: CSSProperties = {
@@ -619,83 +646,226 @@ const qrImageStyle: CSSProperties = {
 };
 
 const qrCaptionStyle: CSSProperties = {
-  fontSize: '0.75rem',
+  fontSize: '0.46rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.32em',
+  letterSpacing: '0.18em',
   color: '#475569',
   textAlign: 'center',
-  lineHeight: 1.5,
+  lineHeight: 1.3,
+  fontFamily: '"Montserrat", "Segoe UI", sans-serif',
 };
 
-const passFooterStyle: CSSProperties = {
+const backHeaderStyle: CSSProperties = {
   position: 'relative',
-  padding: '2.25rem 2.5rem',
-  borderTop: '1px solid rgba(0,0,0,0.1)',
   display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2rem',
-  justifyContent: 'space-between',
-  alignItems: 'flex-end',
-  background: '#ffffff',
+  flexDirection: 'column',
+  gap: '0.3rem',
+  padding: '0.75rem 1.2rem 0.35rem',
 };
 
-const signatureBlockStyle: CSSProperties = {
-  display: 'grid',
-  gap: '0.65rem',
-};
-
-const signatureLineStyle: CSSProperties = {
-  width: '220px',
-  height: '2px',
-  background: 'rgba(0,0,0,0.2)',
-};
-
-const signatureLabelStyle: CSSProperties = {
-  fontSize: '0.85rem',
+const backHeaderBadgeStyle: CSSProperties = {
+  alignSelf: 'flex-start',
+  padding: '0.22rem 0.65rem',
+  borderRadius: '999px',
+  background: 'rgba(15,23,42,0.14)',
+  color: '#e2e8f0',
+  fontSize: '0.52rem',
+  letterSpacing: '0.22em',
   textTransform: 'uppercase',
-  letterSpacing: '0.32em',
-  color: '#0f172a',
   fontWeight: 700,
 };
 
-const footerMetaStyle: CSSProperties = {
+const backHeaderTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.95rem',
+  fontWeight: 700,
+  letterSpacing: '0.03em',
+};
+
+const backHeaderSubtitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.6rem',
+  color: 'rgba(226,232,240,0.75)',
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+};
+
+const backBodyStyle: CSSProperties = {
+  position: 'relative',
+  padding: '0.75rem 1.2rem 0.5rem',
   display: 'grid',
   gap: '0.6rem',
-  fontSize: '0.9rem',
-  color: '#1e293b',
-  maxWidth: '28rem',
+};
+
+const backInfoGridStyle: CSSProperties = {
+  display: 'grid',
+  gap: '0.6rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+};
+
+const backInfoCardStyle: CSSProperties = {
+  background: 'rgba(15,23,42,0.32)',
+  borderRadius: '11px',
+  padding: '0.6rem 0.75rem',
+  border: '1px solid rgba(226,232,240,0.14)',
+  display: 'grid',
+  gap: '0.3rem',
+};
+
+const backInfoTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.62rem',
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: '#bae6fd',
+  fontWeight: 700,
+};
+
+const backInfoTextStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.66rem',
+  lineHeight: 1.4,
+  color: 'rgba(226,232,240,0.86)',
+};
+
+const backContactBlockStyle: CSSProperties = {
+  display: 'grid',
+  gap: '0.35rem',
+  padding: '0.6rem 0.75rem',
+  borderRadius: '11px',
+  background: 'rgba(30,64,175,0.38)',
+  border: '1px solid rgba(96,165,250,0.35)',
+};
+
+const backContactTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.6rem',
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: '#bfdbfe',
+  fontWeight: 700,
+};
+
+const backContactTextStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.68rem',
+  lineHeight: 1.45,
+  color: '#e2e8f0',
+};
+
+const backEmergencyLineStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.82rem',
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: '#fbbf24',
+};
+
+const backFooterStyle: CSSProperties = {
+  position: 'relative',
+  marginTop: 'auto',
+  padding: '0.7rem 1.2rem 0.8rem',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-end',
+  gap: '0.8rem',
+};
+
+const backSealStyle: CSSProperties = {
+  display: 'grid',
+  gap: '0.25rem',
+  justifyItems: 'center',
+  background: 'rgba(15,23,42,0.42)',
+  border: '1px solid rgba(226,232,240,0.2)',
+  borderRadius: '13px',
+  padding: '0.5rem 0.7rem',
+  minWidth: '120px',
+};
+
+const backSealTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.6rem',
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  color: '#bae6fd',
+  fontWeight: 700,
+};
+
+const backSealTextStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '0.6rem',
+  lineHeight: 1.3,
+  color: 'rgba(226,232,240,0.85)',
+};
+
+const passFooterStyle: CSSProperties = {
+position: 'relative',
+display: 'grid',
+gridTemplateColumns: 'minmax(0, 1fr) auto',
+gap: '0.5rem',
+alignItems: 'end',
+padding: '0.55rem 1.1rem 0.65rem',
+borderTop: '1px solid rgba(15,23,42,0.08)',
+background: 'rgba(255,255,255,0.75)',
+};
+
+const signatureBlockStyle: CSSProperties = {
+display: 'grid',
+gap: '0.2rem',
+};
+
+const signatureLineStyle: CSSProperties = {
+width: '95px',
+height: '2px',
+background: 'rgba(15,23,42,0.3)',
+};
+
+const signatureLabelStyle: CSSProperties = {
+fontSize: '0.48rem',
+textTransform: 'uppercase',
+letterSpacing: '0.18em',
+color: '#0f172a',
+fontWeight: 700,
+};
+
+const footerMetaStyle: CSSProperties = {
+display: 'grid',
+gap: '0.2rem',
+justifyItems: 'flex-end',
+fontSize: '0.6rem',
+color: '#1e293b',
 };
 
 const footerMetaLabelStyle: CSSProperties = {
-  margin: 0,
-  fontWeight: 600,
-  color: '#0f172a',
-  opacity: 0.9,
-  fontSize: '0.75rem',
-  letterSpacing: '0.18em',
+margin: 0,
+fontWeight: 600,
+color: '#0f172a',
+opacity: 0.9,
+fontSize: '0.5rem',
+letterSpacing: '0.15em',
+textTransform: 'uppercase',
 };
 
 const footerMetaTextStyle: CSSProperties = {
-  margin: 0,
-  fontSize: '0.85rem',
-  color: '#334155',
-  lineHeight: 1.6,
+margin: 0,
+fontSize: '0.58rem',
+color: '#334155',
+lineHeight: 1.22,
 };
 
 const disclaimerContainerStyle: CSSProperties = {
-  marginTop: '1.5rem',
-  padding: '1.5rem 2.5rem 2rem',
-  background: '#ffffff',
-  borderTop: '1px solid rgba(0,0,0,0.05)',
+display: 'grid',
+gap: '0.12rem',
+padding: '0.3rem 1.1rem 0.45rem',
 };
 
 const disclaimerTextStyle: CSSProperties = {
-  margin: '0 auto',
-  fontSize: '0.8rem',
-  lineHeight: 1.6,
-  color: '#64748b',
+  margin: 0,
+  fontSize: '0.46rem',
+  lineHeight: 1.25,
+  color: '#475569',
   textAlign: 'center',
-  maxWidth: '800px',
 };
 
 const formatDateTime = (value: string | null | undefined) => {
@@ -806,12 +976,16 @@ const MemberPassPage = () => {
       return;
     }
 
+    const cardFaces = Array.from(target.querySelectorAll<HTMLElement>('article[data-pass-face]'));
+    if (cardFaces.length === 0) {
+      return;
+    }
+
     const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
       import('html2canvas'),
       import('jspdf'),
     ]);
 
-    // Load the SDA logo
     const logoUrl = '/sda-logo.png';
     const loadImage = (url: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
@@ -823,102 +997,120 @@ const MemberPassPage = () => {
       });
     };
 
+    const CARD_WIDTH_MM = 85.6;
+    const CARD_HEIGHT_MM = 54;
+    const CARD_MARGIN_MM = 2;
+
+    const fullName = member ? `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim() || 'member' : 'member';
+    const nationalId = member?.nationalId || memberPass?.token || 'pass';
+    const slug = `${fullName}-${nationalId}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 90);
+
+    let canvases: HTMLCanvasElement[] = [];
+
+    const renderPdf = (pdfInstance: any, canvasList: HTMLCanvasElement[], watermarkLogo: HTMLImageElement | null) => {
+      canvasList.forEach((canvas, index) => {
+        if (index > 0) {
+          pdfInstance.addPage([CARD_WIDTH_MM, CARD_HEIGHT_MM], 'landscape');
+        }
+
+        const pageWidth = pdfInstance.internal.pageSize.getWidth();
+        const pageHeight = pdfInstance.internal.pageSize.getHeight();
+        const cardWidth = canvas.width;
+        const cardHeight = canvas.height;
+        const availableWidth = pageWidth - CARD_MARGIN_MM * 2;
+        const availableHeight = pageHeight - CARD_MARGIN_MM * 2;
+        const ratio = Math.min(availableWidth / cardWidth, availableHeight / cardHeight);
+        const pdfWidth = cardWidth * ratio;
+        const pdfHeight = cardHeight * ratio;
+        const imageX = (pageWidth - pdfWidth) / 2;
+        const imageY = (pageHeight - pdfHeight) / 2;
+
+        pdfInstance.addImage(canvas, 'PNG', imageX, imageY, pdfWidth, pdfHeight, undefined, 'FAST');
+
+        if (watermarkLogo && (pdfInstance as any).GState) {
+          const watermarkWidth = pageWidth * 0.6;
+          const watermarkHeight = watermarkWidth * (watermarkLogo.height / watermarkLogo.width);
+          const watermarkX = (pageWidth - watermarkWidth) / 2;
+          const watermarkY = (pageHeight - watermarkHeight) / 2;
+
+          pdfInstance.saveGraphicsState();
+          pdfInstance.setGState(new (pdfInstance as any).GState({ opacity: 0.08 }));
+          pdfInstance.addImage(
+            watermarkLogo,
+            'PNG',
+            watermarkX,
+            watermarkY,
+            watermarkWidth,
+            watermarkHeight,
+            undefined,
+            'SLOW',
+            -28
+          );
+          pdfInstance.restoreGraphicsState();
+        }
+      });
+    };
+
     try {
-      const [canvas, logo] = await Promise.all([
-        html2canvas(target, {
-          scale: Math.max(3, window.devicePixelRatio * 2),
-          backgroundColor: '#ffffff',
-          useCORS: true,
-        }),
-        loadImage(logoUrl)
-      ]);
-
-      const pdf = new jsPDF('p', 'mm', 'a4', true);
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const cardWidth = canvas.width;
-      const cardHeight = canvas.height;
-      const margin = 2;
-      const availableWidth = pageWidth - margin * 2;
-      const availableHeight = pageHeight - margin * 2;
-      const ratio = Math.min(availableWidth / cardWidth, availableHeight / cardHeight);
-      const pdfWidth = cardWidth * ratio;
-      const pdfHeight = cardHeight * ratio;
-      const imageX = (pageWidth - pdfWidth) / 2;
-      const imageY = (pageHeight - pdfHeight) / 2;
-
-      // Add the main content
-      pdf.addImage(canvas, 'PNG', imageX, imageY, pdfWidth, pdfHeight, undefined, 'FAST');
-
-      // Add the watermark
-      const logoSize = Math.min(pageWidth, pageHeight) * 0.5;
-      const logoX = (pageWidth - logoSize) / 2;
-      const logoY = (pageHeight - logoSize) / 2;
-      
-      // Save the current graphics state
-      pdf.saveGraphicsState();
-      
-      // Set transparency for the watermark
-      pdf.setGState(new (pdf as any).GState({ opacity: 0.15 }));
-      
-      // Add the logo as a watermark
-      pdf.addImage(
-        logo,
-        'PNG',
-        logoX,
-        logoY,
-        logoSize,
-        logoSize * (logo.height / logo.width),
-        undefined,
-        'SLOW'
+      canvases = await Promise.all(
+        cardFaces.map((face) =>
+          html2canvas(face, {
+            scale: Math.max(3, window.devicePixelRatio * 2),
+            backgroundColor: '#ffffff',
+            useCORS: true,
+          })
+        )
       );
-      
-      // Restore the graphics state
-      pdf.restoreGraphicsState();
 
-      const fullName = member ? `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim() || 'member' : 'member';
-      const nationalId = member?.nationalId || memberPass?.token || 'pass';
-      const slug = `${fullName}-${nationalId}`
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 90);
+      let watermarkLogo: HTMLImageElement | null = null;
+      try {
+        watermarkLogo = await loadImage(logoUrl);
+      } catch (logoError) {
+        console.warn('Failed to load watermark logo, continuing without it.', logoError);
+      }
 
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [CARD_WIDTH_MM, CARD_HEIGHT_MM],
+        putOnlyUsedFonts: true,
+      });
+
+      renderPdf(pdf, canvases, watermarkLogo);
       pdf.save(`${slug}.pdf`);
+      return;
     } catch (error) {
       console.error('Error generating PDF:', error);
-      // Fallback to the original method if there's an error with the logo
-      const canvas = await html2canvas(target, {
-        scale: Math.max(3, window.devicePixelRatio * 2),
-        backgroundColor: '#ffffff',
-        useCORS: true,
+    }
+
+    try {
+      if (!canvases.length) {
+        canvases = await Promise.all(
+          cardFaces.map((face) =>
+            html2canvas(face, {
+              scale: Math.max(2, window.devicePixelRatio * 1.5),
+              backgroundColor: '#ffffff',
+              useCORS: true,
+            })
+          )
+        );
+      }
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [CARD_WIDTH_MM, CARD_HEIGHT_MM],
+        putOnlyUsedFonts: true,
       });
-      const imageData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4', true);
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const cardWidth = canvas.width;
-      const cardHeight = canvas.height;
-      const margin = 2;
-      const availableWidth = pageWidth - margin * 2;
-      const availableHeight = pageHeight - margin * 2;
-      const ratio = Math.min(availableWidth / cardWidth, availableHeight / cardHeight);
-      const pdfWidth = cardWidth * ratio;
-      const pdfHeight = cardHeight * ratio;
-      const imageX = (pageWidth - pdfWidth) / 2;
-      const imageY = (pageHeight - pdfHeight) / 2;
 
-      pdf.addImage(imageData, 'PNG', imageX, imageY, pdfWidth, pdfHeight, undefined, 'FAST');
-      
-      const fullName = member ? `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim() || 'member' : 'member';
-      const nationalId = member?.nationalId || memberPass?.token || 'pass';
-      const slug = `${fullName}-${nationalId}`
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 90);
-
+      renderPdf(pdf, canvases, null);
       pdf.save(`${slug}.pdf`);
+    } catch (fallbackError) {
+      console.error('Error generating fallback PDF:', fallbackError);
     }
   }, [member, memberPass]);
 
@@ -1056,112 +1248,156 @@ const MemberPassPage = () => {
           </section>
 
           <div style={passWrapperStyle}>
-            <article id="printable-pass-card" style={printableCardStyle}>
-              <div style={cardBackgroundOverlayStyle} />
-              <header style={passHeaderStyle}>
-                <div style={headerBrandStyle}>
-                  <div style={headerLogoStyle}>
-                    <img src="/sda-logo.png" alt="Rwanda Union Mission logo" style={headerLogoImageStyle} />
+            <div id="printable-pass-card" style={printableCardContainerStyle}>
+              <article data-pass-face="front" style={printableCardStyle}>
+                <div style={cardBackgroundOverlayStyle} />
+                <header style={passHeaderStyle}>
+                  <div style={headerBrandStyle}>
+                    <div style={headerLogoStyle}>
+                      <img src="/sda-logo.png" alt="Rwanda Union Mission logo" style={headerLogoImageStyle} />
+                    </div>
+                    <div style={headerBrandTextStyle}>
+                      <span style={headerOverlineStyle}>Rwanda Union Mission</span>
+                    </div>
                   </div>
-                  <div style={headerBrandTextStyle}>
-                    <span style={headerOverlineStyle}>Rwanda Union Mission</span>
-                  </div>
+                </header>
+
+                <div style={passMetaStripStyle}>Official Umuganda Pass</div>
+
+                <div style={cardBodyStyle}>
+                  <section style={identitySectionStyle}>
+                    <div style={identityColumnStyle}>
+                      <div style={profileHeaderStyle}>
+                        <div style={initialBadgeStyle}>
+                          {(member.firstName?.[0] ?? '') + (member.lastName?.[0] ?? '') || 'RM'}
+                        </div>
+                        <div style={profileNameBlockStyle}>
+                          <span style={profileNameStyle}>
+                            {member.firstName} {member.lastName}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={identityDetailsStyle}>
+                        <div>
+                          <p style={detailInlineLabelStyle}>Church</p>
+                          <p style={detailInlineValueStyle}>{member.church?.name ?? 'Church assignment pending'}</p>
+                        </div>
+                        <div>
+                          <p style={detailInlineLabelStyle}>National ID</p>
+                          <p style={detailInlineValueStyle}>{member.nationalId ?? 'Not available'}</p>
+                        </div>
+                        <div>
+                          <p style={detailInlineLabelStyle}>Phone number</p>
+                          <p style={detailInlineValueStyle}>{member.phoneNumber ?? 'Not provided'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={qrColumnStyle}>
+                      <div style={qrFrameStyle}>
+                        {memberPass.qrPayload?.startsWith('data:image') ? (
+                          <img
+                            ref={qrImageRef}
+                            src={memberPass.qrPayload}
+                            alt="Umuganda QR code"
+                            style={qrImageStyle}
+                          />
+                        ) : (
+                          <QRCodeSVG
+                            value={memberPass.qrPayload}
+                            size={96}
+                            level="H"
+                            includeMargin
+                            bgColor="#ffffff"
+                            style={qrImageStyle}
+                          />
+                        )}
+                      </div>
+                      <p style={qrCaptionStyle}>Official Scan</p>
+                    </div>
+                  </section>
                 </div>
-              </header>
-
-              <div style={passMetaStripStyle}>Official Umuganda Pass</div>
-
-              <div style={cardBodyStyle}>
-                <section style={identitySectionStyle}>
-                  <div style={identityColumnStyle}>
-                    <div style={profileHeaderStyle}>
-                      <div style={initialBadgeStyle}>
-                        {(member.firstName?.[0] ?? '') + (member.lastName?.[0] ?? '') || 'RM'}
-                      </div>
-                      <div style={profileNameBlockStyle}>
-                        <span style={profileNameStyle}>
-                          {member.firstName} {member.lastName}
-                        </span>
-                        <span style={profileInfoLineStyle}>{member.church?.name ?? 'Church assignment pending'}</span>
-                        <span style={profileInfoLineStyle}>Issued by Rwanda Union Mission</span>
-                      </div>
-                    </div>
-
-                    <div style={detailsGridStyle}>
-                      <div style={detailGroupStyle}>
-                        <span style={detailLabelStyle}>Pass token</span>
-                        <span style={detailValueMutedStyle}>{memberPass.token}</span>
-                      </div>
-                      <div style={detailGroupStyle}>
-                        <span style={detailLabelStyle}>National ID</span>
-                        <span style={detailValueStyle}>{member.nationalId ?? 'Not available'}</span>
-                      </div>
-                      <div style={detailGroupStyle}>
-                        <span style={detailLabelStyle}>Pass issued</span>
-                        <span style={detailValueStyle}>{formatDateTime(memberPass.smsSentAt)}</span>
-                      </div>
-                      <div style={detailGroupStyle}>
-                        <span style={detailLabelStyle}>Pass expires</span>
-                        <span style={detailValueStyle}>{formatDateTime(memberPass.expiresAt)}</span>
-                      </div>
-                      <div style={detailGroupStyle}>
-                        <span style={detailLabelStyle}>Member phone</span>
-                        <span style={detailValueMutedStyle}>{member.phoneNumber ?? 'Not provided'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={qrColumnStyle}>
-                    <div style={qrFrameStyle}>
-                      {memberPass.qrPayload?.startsWith('data:image') ? (
-                        <img
-                          ref={qrImageRef}
-                          src={memberPass.qrPayload}
-                          alt="Umuganda QR code"
-                          style={qrImageStyle}
-                        />
-                      ) : (
-                        <QRCodeSVG
-                          value={memberPass.qrPayload}
-                          size={210}
-                          level="H"
-                          includeMargin
-                          bgColor="#ffffff"
-                          style={qrImageStyle}
-                        />
-                      )}
-                    </div>
-                    <p style={qrCaptionStyle}>Scan with official Umuganda verifier application</p>
-                  </div>
-                </section>
 
                 <section style={disclaimerContainerStyle}>
-                  <p style={disclaimerTextStyle}>
-                    <strong>OFFICIAL RWANDA UNION MISSION DOCUMENT</strong>
-                    <br /><br />
-                    This Umuganda Pass is the property of the Seventh-day Adventist Church - Rwanda Union Mission. It is issued to the named member only and is non-transferable. The pass must be presented with a valid government-issued photo ID for verification. Any alteration, duplication, or unauthorized use of this document is strictly prohibited and may result in legal action. The Rwanda Union Mission reserves the right to revoke this pass at any time without prior notice. For verification or reporting lost/stolen passes, please contact your local church administrator or the Rwanda Union Mission office.
-                    <br /><br />
-                    <small>© {new Date().getFullYear()} SDA Rwanda Union Mission. All Rights Reserved.</small>
-                  </p>
+                  <p style={disclaimerTextStyle}>Official Rwanda Union Mission pass. Present with national ID on Umuganda day.</p>
+                  <p style={disclaimerTextStyle}>Non-transferable • Report misuse, loss, or damage immediately.</p>
                 </section>
 
-              </div>
+                <footer style={passFooterStyle}>
+                  <div style={signatureBlockStyle}>
+                    <div style={signatureLineStyle} />
+                    <span style={signatureLabelStyle}>Rwanda Union Mission Officer</span>
+                  </div>
+                  <div style={footerMetaStyle}>
+                    <p style={footerMetaLabelStyle}>Church contact</p>
+                    <p style={footerMetaTextStyle}>{member.church?.name ?? 'Not assigned yet'}</p>
+                    <p style={footerMetaLabelStyle}>Verification</p>
+                    <p style={footerMetaTextStyle}>
+                      Police officers should scan the QR code to validate authenticity. The pass remains property of the Rwanda Union Mission.
+                    </p>
+                  </div>
+                </footer>
+              </article>
 
-              <footer style={passFooterStyle}>
-                <div style={signatureBlockStyle}>
-                  <div style={signatureLineStyle} />
-                  <span style={signatureLabelStyle}>Rwanda Union Mission Officer</span>
+              <article data-pass-face="back" style={printableCardBackStyle}>
+                <div style={cardBackgroundOverlayBackStyle} />
+                <header style={backHeaderStyle}>
+                  <span style={backHeaderBadgeStyle}>Rwanda Union Mission</span>
+                  <h2 style={backHeaderTitleStyle}>Community Service Identification</h2>
+                  <p style={backHeaderSubtitleStyle}>Member obligations & verification</p>
+                </header>
+
+                <div style={backBodyStyle}>
+                  <div style={backInfoGridStyle}>
+                    <div style={backInfoCardStyle}>
+                      <h3 style={backInfoTitleStyle}>Usage guidelines</h3>
+                      <p style={backInfoTextStyle}>
+                        Carry this pass with your national ID during Umuganda activities. Provide both documents to authorized
+                        officers when asked for verification.
+                      </p>
+                      <p style={backInfoTextStyle}>
+                        Keep the pass clean and legible. Damaged credentials must be returned to your church administrator for
+                        replacement.
+                      </p>
+                    </div>
+                    <div style={backInfoCardStyle}>
+                      <h3 style={backInfoTitleStyle}>Compliance notice</h3>
+                      <p style={backInfoTextStyle}>
+                        Property of the Seventh-day Adventist Church – Rwanda Union Mission. Any alteration, duplication, lending, or
+                        misuse voids this pass and may result in disciplinary or legal action.
+                      </p>
+                      <p style={backInfoTextStyle}>
+                        Maintain up-to-date contact details with your church within 48 hours of any change.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={backContactBlockStyle}>
+                    <h3 style={backContactTitleStyle}>Union contact</h3>
+                    <p style={backContactTextStyle}>KN 123 St, Kigali • Tel +250 788 000 000</p>
+                    <p style={backContactTextStyle}>support@umuganda.rw • Report lost or stolen passes immediately.</p>
+                    <p style={backEmergencyLineStyle}>Emergency line: 112</p>
+                  </div>
+
+                  <div style={backInfoCardStyle}>
+                    <h3 style={backInfoTitleStyle}>Rights & acknowledgements</h3>
+                    <p style={backInfoTextStyle}>
+                      Using this pass confirms your agreement with the Umuganda participation guidelines of the Rwanda Union Mission.
+                      Serve with integrity, uphold community safety, and respect local leadership at all times.
+                    </p>
+                    <p style={backInfoTextStyle}>© {new Date().getFullYear()} SDA Rwanda Union Mission. All rights reserved.</p>
+                  </div>
                 </div>
-                <div style={footerMetaStyle}>
-                  <p style={footerMetaLabelStyle}>Church contact</p>
-                  <p style={footerMetaTextStyle}>{member.church?.name ?? 'Not assigned yet'}</p>
-                  <p style={footerMetaLabelStyle}>Verification</p>
-                  <p style={footerMetaTextStyle}>
-                    Police officers should scan the QR code to validate authenticity. The pass remains property of the Rwanda Union Mission.
-                  </p>
-                </div>
-              </footer>
-            </article>
+
+                <footer style={backFooterStyle}>
+                  <div style={backSealStyle}>
+                    <p style={backSealTitleStyle}>Official seal</p>
+                    <p style={backSealTextStyle}>Return this pass to the Rwanda Union Mission if found.</p>
+                  </div>
+                </footer>
+              </article>
+            </div>
           </div>
         </div>
       </RequireRole>

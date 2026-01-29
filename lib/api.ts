@@ -597,6 +597,12 @@ export const createMember = (token: string, input: CreateMemberInput) =>
     body: input,
   });
 
+export const deleteMember = (token: string, memberId: string) =>
+  request<{ success: boolean }>(`/api/members/${memberId}`, {
+    token,
+    method: "DELETE",
+  });
+
 export const fetchMemberPass = (token: string, memberId: string) =>
   request<MemberPassResponse>(`/api/members/${memberId}/pass`, {
     token,

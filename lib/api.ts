@@ -33,6 +33,36 @@ export type ChurchSummary = {
   } | null;
 };
 
+export type AttendanceReportSummary = {
+  total: number;
+  approved: number;
+  pending: number;
+};
+
+export type AttendanceReportBreakdown =
+  | {
+      groupBy: 'church';
+      data: {
+        churchId: string;
+        churchName: string;
+        districtId: string | null;
+        attendanceCount: number;
+      }[];
+    }
+  | {
+      groupBy: 'district';
+      data: {
+        districtId: string;
+        districtName: string;
+        attendanceCount: number;
+      }[];
+    };
+
+export type AttendanceReportResponse = {
+  summary: AttendanceReportSummary;
+  breakdown?: AttendanceReportBreakdown;
+};
+
 export type DistrictPastorSummary = {
   id: string;
   firstName: string;
@@ -528,6 +558,48 @@ export const fetchAttendance = async (
     { token },
   );
   return payload.attendance;
+};
+
+export const fetchAttendanceReport = async (
+  token: string,
+  params?: {
+    districtId?: string;
+    churchId?: string;
+    sessionId?: string;
+    status?: AttendanceStatus;
+    fromDate?: string;
+    toDate?: string;
+    groupBy?: 'church' | 'district';
+  },
+) => {
+  const query = new URLSearchParams();
+  if (params?.districtId) {
+    query.set('districtId', params.districtId);
+  }
+  if (params?.churchId) {
+    query.set('churchId', params.churchId);
+  }
+  if (params?.sessionId) {
+    query.set('sessionId', params.sessionId);
+  }
+  if (params?.status) {
+    query.set('status', params.status);
+  }
+  if (params?.fromDate) {
+    query.set('fromDate', params.fromDate);
+  }
+  if (params?.toDate) {
+    query.set('toDate', params.toDate);
+  }
+  if (params?.groupBy) {
+    query.set('groupBy', params.groupBy);
+  }
+
+  const queryString = query.toString();
+  return request<AttendanceReportResponse>(
+    `/api/reports/attendance${queryString ? `?${queryString}` : ''}`,
+    { token },
+  );
 };
 
 export const createChurchAdmin = (

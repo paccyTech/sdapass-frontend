@@ -60,7 +60,7 @@ const ROLE_NAVIGATION: Record<RoleKey, RoleNavigationDefinition> = {
       { label: 'Dashboard', href: '/church/dashboard', icon: <IconLayoutDashboard size={18} stroke={1.6} /> },
       { label: 'Members', href: '/church/members', icon: <IconUsersGroup size={18} stroke={1.6} /> },
       { label: 'Church Reports', href: '/church/reports', icon: <IconReportAnalytics size={18} stroke={1.6} /> },
-      { label: 'SMS Dashboard', href: '/church/sms', icon: <IconClipboardList size={18} stroke={1.6} /> },
+      { label: 'SMS & Email', href: '/church/sms', icon: <IconClipboardList size={18} stroke={1.6} /> },
       { label: 'Attendance Log', href: '/church/attendance', icon: <IconChartHistogram size={18} stroke={1.6} /> },
       { label: 'Volunteer Management', href: '/church/volunteers', icon: <IconUsers size={18} stroke={1.6} /> },
     ],
@@ -70,15 +70,6 @@ const ROLE_NAVIGATION: Record<RoleKey, RoleNavigationDefinition> = {
     navItems: [
       { label: 'My Dashboard', href: '/member/dashboard', icon: <IconIdBadge size={18} stroke={1.6} /> },
       { label: 'My Umuganda Pass', href: '/member/pass', icon: <IconFileCertificate size={18} stroke={1.6} /> },
-    ],
-    sidebarSections: [
-      {
-        title: 'Quick access',
-        items: [
-          { label: 'Attendance history', href: '/member/dashboard#attendance' },
-          { label: 'Digital pass', href: '/member/pass' },
-        ],
-      },
     ],
   },
   POLICE_VERIFIER: {

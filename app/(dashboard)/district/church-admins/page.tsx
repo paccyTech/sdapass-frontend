@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
 
+import { IconEye, IconEyeOff } from '@tabler/icons-react';
+
 import RequireRole from '@/components/RequireRole';
 import { useDashboardShellConfig } from '@/components/dashboard/DashboardShellContext';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -103,6 +105,27 @@ const Input = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> 
     }}
   />
 );
+
+const passwordInputWrapperStyle: CSSProperties = {
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
+};
+
+const passwordToggleButtonStyle: CSSProperties = {
+  position: 'absolute',
+  right: '0.75rem',
+  display: 'grid',
+  placeItems: 'center',
+  width: '1.9rem',
+  height: '1.9rem',
+  border: 'none',
+  borderRadius: '999px',
+  background: 'rgba(24,76,140,0.08)',
+  color: 'var(--primary)',
+  cursor: 'pointer',
+};
 
 const Select = ({ style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: CSSProperties }) => (
   <select
@@ -426,6 +449,8 @@ const DistrictChurchAdminsPage = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isCreatePasswordVisible, setIsCreatePasswordVisible] = useState(false);
+  const [isCreateConfirmVisible, setIsCreateConfirmVisible] = useState(false);
 
   const [createForm, setCreateForm] = useState(() => ({
     firstName: '',
@@ -578,6 +603,8 @@ const DistrictChurchAdminsPage = () => {
   };
 
   const handleOpenInvite = () => {
+    setIsCreatePasswordVisible(false);
+    setIsCreateConfirmVisible(false);
     setCreateForm({
       firstName: '',
       lastName: '',
@@ -592,6 +619,12 @@ const DistrictChurchAdminsPage = () => {
     });
     setCreateOpen(true);
   };
+
+  const handleCloseInvite = useCallback(() => {
+    setCreateOpen(false);
+    setIsCreatePasswordVisible(false);
+    setIsCreateConfirmVisible(false);
+  }, []);
 
   const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -890,7 +923,7 @@ const DistrictChurchAdminsPage = () => {
       )}
 
       {createOpen && (
-        <Modal title="Invite church admin" onClose={() => setCreateOpen(false)}>
+        <Modal title="Invite church admin" onClose={handleCloseInvite}>
           <form
             style={{ display: 'grid', gap: '0.9rem' }}
             onSubmit={handleCreate}
@@ -941,27 +974,49 @@ const DistrictChurchAdminsPage = () => {
               </Field>
 
               <Field label="Password">
-                <Input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={createForm.password}
-                  onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
-                  placeholder="Set an initial password"
-                />
+                <div style={passwordInputWrapperStyle}>
+                  <Input
+                    type={isCreatePasswordVisible ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={createForm.password}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
+                    placeholder="Set an initial password"
+                    style={{ paddingRight: '2.6rem', flex: 1, width: '100%' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePasswordVisible((prev) => !prev)}
+                    style={passwordToggleButtonStyle}
+                    aria-label={isCreatePasswordVisible ? 'Hide password' : 'Show password'}
+                  >
+                    {isCreatePasswordVisible ? <IconEyeOff size={16} stroke={1.7} /> : <IconEye size={16} stroke={1.7} />}
+                  </button>
+                </div>
                 <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 400 }}>
                   Must be at least 8 characters. Share securely with the administrator.
                 </span>
               </Field>
               <Field label="Confirm password">
-                <Input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={createForm.confirmPassword}
-                  onChange={(event) => setCreateForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
-                  placeholder="Re-enter password"
-                />
+                <div style={passwordInputWrapperStyle}>
+                  <Input
+                    type={isCreateConfirmVisible ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={createForm.confirmPassword}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                    placeholder="Re-enter password"
+                    style={{ paddingRight: '2.6rem', flex: 1, width: '100%' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateConfirmVisible((prev) => !prev)}
+                    style={passwordToggleButtonStyle}
+                    aria-label={isCreateConfirmVisible ? 'Hide confirm password' : 'Show confirm password'}
+                  >
+                    {isCreateConfirmVisible ? <IconEyeOff size={16} stroke={1.7} /> : <IconEye size={16} stroke={1.7} />}
+                  </button>
+                </div>
               </Field>
             </div>
 
@@ -996,7 +1051,7 @@ const DistrictChurchAdminsPage = () => {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <Button type="button" tone="ghost" onClick={() => setCreateOpen(false)} disabled={createForm.isSubmitting}>
+              <Button type="button" tone="ghost" onClick={handleCloseInvite} disabled={createForm.isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createForm.isSubmitting}>

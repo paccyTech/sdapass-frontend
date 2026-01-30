@@ -78,7 +78,7 @@ const HomePage = () => {
           <div className="hero-content" style={heroContent}>
             <div style={heroPrefix}>
               <span style={heroPrefixDot} />
-              <span>Unified oversight for Umuganda attendance</span>
+              <span> oversight for Umuganda Pass</span>
             </div>
             <h1 style={heroTitle}>
               Where every gathering earns a verifiable digital footprint

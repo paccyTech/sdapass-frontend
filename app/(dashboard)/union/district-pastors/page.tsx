@@ -13,7 +13,7 @@ import {
   type FormEvent,
 } from 'react';
 
-import { IconAlertTriangle, IconChartHistogram, IconMapPin, IconUsersGroup } from '@tabler/icons-react';
+import { IconAlertTriangle, IconChartHistogram, IconEye, IconEyeOff, IconMapPin, IconUsersGroup } from '@tabler/icons-react';
 
 import RequireRole from '@/components/RequireRole';
 import { RoleHero, type HeroStat } from '@/components/dashboard/RoleHero';
@@ -412,6 +412,27 @@ const selectStyle: CSSProperties = {
   appearance: 'none',
 };
 
+const passwordInputWrapperStyle: CSSProperties = {
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
+};
+
+const passwordToggleButtonStyle: CSSProperties = {
+  position: 'absolute',
+  right: '0.65rem',
+  display: 'grid',
+  placeItems: 'center',
+  width: '1.8rem',
+  height: '1.8rem',
+  border: 'none',
+  borderRadius: '50%',
+  background: 'rgba(24,76,140,0.08)',
+  color: 'var(--primary)',
+  cursor: 'pointer',
+};
+
 type AssignState = {
   pastor: DistrictPastorSummary | null;
   selectedChurchIds: string[];
@@ -567,6 +588,8 @@ const DistrictPastorsPage = () => {
   const [isChurchEditOpen, setIsChurchEditOpen] = useState(false);
   const [isChurchDeleteOpen, setIsChurchDeleteOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -682,6 +705,8 @@ const DistrictPastorsPage = () => {
 
   const openPastorForm = useCallback(
     (mode: PastorFormState['mode'], pastor?: DistrictPastorSummary) => {
+      setIsPasswordVisible(false);
+      setIsConfirmPasswordVisible(false);
       setPastorFormState({
         mode,
         pastor: pastor ?? null,
@@ -706,6 +731,8 @@ const DistrictPastorsPage = () => {
   const resetPastorForm = useCallback(() => {
     setPastorFormState(initialPastorFormState);
     setIsPastorModalOpen(false);
+    setIsPasswordVisible(false);
+    setIsConfirmPasswordVisible(false);
   }, []);
 
   const confirmDeletePastor = useCallback((pastor: DistrictPastorSummary) => {
@@ -1851,30 +1878,50 @@ const DistrictPastorsPage = () => {
               <>
                 <label style={fieldLabel}>
                   Password
-                  <input
-                    type="password"
-                    value={pastorFormState.password}
-                    onChange={handlePastorFieldChange('password')}
-                    style={textInputStyle}
-                    placeholder="Set an initial password"
-                    minLength={8}
-                    required
-                  />
+                  <div style={passwordInputWrapperStyle}>
+                    <input
+                      type={isPasswordVisible ? 'text' : 'password'}
+                      value={pastorFormState.password}
+                      onChange={handlePastorFieldChange('password')}
+                      style={{ ...textInputStyle, paddingRight: '2.5rem', flex: 1, width: '100%' }}
+                      placeholder="Set an initial password"
+                      minLength={8}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsPasswordVisible((prev) => !prev)}
+                      style={passwordToggleButtonStyle}
+                      aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                    >
+                      {isPasswordVisible ? <IconEyeOff size={16} stroke={1.7} /> : <IconEye size={16} stroke={1.7} />}
+                    </button>
+                  </div>
                   <span style={{ fontSize: '0.85rem', color: 'rgba(24,76,140,0.65)', fontWeight: 400 }}>
                     Must be at least 8 characters. Share securely with the pastor.
                   </span>
                 </label>
                 <label style={fieldLabel}>
                   Confirm password
-                  <input
-                    type="password"
-                    value={pastorFormState.confirmPassword}
-                    onChange={handlePastorFieldChange('confirmPassword')}
-                    style={textInputStyle}
-                    placeholder="Re-enter password"
-                    minLength={8}
-                    required
-                  />
+                  <div style={passwordInputWrapperStyle}>
+                    <input
+                      type={isConfirmPasswordVisible ? 'text' : 'password'}
+                      value={pastorFormState.confirmPassword}
+                      onChange={handlePastorFieldChange('confirmPassword')}
+                      style={{ ...textInputStyle, paddingRight: '2.5rem', flex: 1, width: '100%' }}
+                      placeholder="Re-enter password"
+                      minLength={8}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsConfirmPasswordVisible((prev) => !prev)}
+                      style={passwordToggleButtonStyle}
+                      aria-label={isConfirmPasswordVisible ? 'Hide confirm password' : 'Show confirm password'}
+                    >
+                      {isConfirmPasswordVisible ? <IconEyeOff size={16} stroke={1.7} /> : <IconEye size={16} stroke={1.7} />}
+                    </button>
+                  </div>
                 </label>
               </>
             )}
@@ -2605,6 +2652,13 @@ const DistrictPastorsPage = () => {
                             </button>
                             <button type="button" onClick={() => openAssignModal(pastor)} style={buttonStyle()}>
                               Manage church assignments
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => confirmDeletePastor(pastor)}
+                              style={buttonStyle('danger')}
+                            >
+                              Delete pastor
                             </button>
                           </footer>
                         </article>

@@ -45,9 +45,11 @@ interface CommunicationAnalyticsPayload {
 }
 
 const fetchCommunicationAnalytics = async (): Promise<CommunicationAnalyticsPayload> => {
+  const token = localStorage.getItem('token');
   const response = await fetch('/api/communication/analytics', {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
     credentials: 'include',
   });
@@ -77,8 +79,9 @@ const headerStyle: CSSProperties = {
 
 const heroTitleStyle: CSSProperties = {
   margin: 0,
-  fontSize: '2.15rem',
-  fontWeight: 650,
+  fontSize: '1.8rem',
+  fontWeight: 600,
+  color: '#1a365d',
   letterSpacing: '-0.02em',
 };
 
@@ -92,14 +95,27 @@ const toolbarButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '0.45rem',
-  padding: '0.55rem 1.15rem',
-  borderRadius: 14,
-  border: '1px solid var(--surface-border)',
-  background: 'var(--surface-primary)',
-  color: 'var(--shell-foreground)',
-  fontWeight: 600,
+  padding: '0.5rem 1rem',
+  borderRadius: '8px',
+  border: '1px solid #1a365d',
+  background: 'white',
+  color: '#1a365d',
+  fontWeight: 500,
   fontSize: '0.9rem',
   cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: '#f7fafc',
+    borderColor: '#2c5282',
+  },
+  '&:active': {
+    background: '#ebf8ff',
+    transform: 'translateY(1px)',
+  },
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
 };
 
 const gridStyle: CSSProperties = {
@@ -109,13 +125,19 @@ const gridStyle: CSSProperties = {
 };
 
 const statCard = (accent: string): CSSProperties => ({
-  borderRadius: 20,
-  background: 'var(--surface-primary)',
-  padding: '1.4rem',
+  borderRadius: '12px',
+  background: 'white',
+  padding: '1.5rem',
   display: 'grid',
-  gap: '0.65rem',
-  border: `1px solid color-mix(in srgb, ${accent} 36%, transparent)`,
-  boxShadow: `0 18px 36px color-mix(in srgb, ${accent} 18%, transparent)`,
+  gap: '0.75rem',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderColor: '#1a365d',
+  },
 });
 
 const statIcon = (accent: string): CSSProperties => ({
@@ -123,18 +145,19 @@ const statIcon = (accent: string): CSSProperties => ({
   height: 44,
   display: 'grid',
   placeItems: 'center',
-  borderRadius: 14,
-  background: `color-mix(in srgb, ${accent} 25%, transparent)`,
-  color: accent,
+  borderRadius: '12px',
+  background: 'rgba(26, 54, 93, 0.1)',
+  color: '#1a365d',
 });
 
 const timelineShellStyle: CSSProperties = {
-  borderRadius: 22,
-  background: 'var(--surface-primary)',
-  border: '1px solid var(--surface-border)',
-  padding: '1.8rem',
+  borderRadius: '12px',
+  background: 'white',
+  border: '1px solid #e2e8f0',
+  padding: '1.5rem',
   display: 'grid',
-  gap: '1.4rem',
+  gap: '1.25rem',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
 };
 
 const miniChartStyle: CSSProperties = {
@@ -162,12 +185,13 @@ const legendSwatch = (color: string): CSSProperties => ({
 });
 
 const eventsCardStyle: CSSProperties = {
-  borderRadius: 22,
-  background: 'var(--surface-primary)',
-  border: '1px solid var(--surface-border)',
+  borderRadius: '12px',
+  background: 'white',
+  border: '1px solid #e2e8f0',
   padding: '1.5rem',
   display: 'grid',
-  gap: '1.1rem',
+  gap: '1.25rem',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
 };
 
 const eventsTableStyle: CSSProperties = {
@@ -179,37 +203,48 @@ const eventsTableStyle: CSSProperties = {
 const eventsHeaderCell: CSSProperties = {
   textAlign: 'left',
   fontSize: '0.75rem',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.05em',
   textTransform: 'uppercase',
-  color: 'var(--muted)',
+  color: '#4a5568',
   padding: '0.5rem 0.75rem',
-  borderBottom: '1px solid var(--surface-border)',
+  borderBottom: '1px solid #e2e8f0',
+  fontWeight: 600,
+  backgroundColor: '#f8fafc',
 };
 
 const eventsCell: CSSProperties = {
   padding: '0.75rem',
   fontSize: '0.9rem',
-  borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
+  borderBottom: '1px solid #edf2f7',
+  verticalAlign: 'middle',
+  '&:first-of-type': {
+    paddingLeft: '1rem',
+  },
+  '&:last-of-type': {
+    paddingRight: '1rem',
+  },
 };
 
 const badgeStyle = (tone: 'success' | 'warning' | 'danger' | 'pending'): CSSProperties => {
-  const palette: Record<typeof tone, { bg: string; color: string }> = {
-    success: { bg: 'rgba(31,157,119,0.12)', color: '#1F9D77' },
-    warning: { bg: 'rgba(251,175,63,0.14)', color: '#B45309' },
-    danger: { bg: 'rgba(220,53,69,0.14)', color: '#B91C1C' },
-    pending: { bg: 'rgba(59,130,246,0.12)', color: '#1D4ED8' },
+  const palette: Record<typeof tone, { bg: string; color: string; border: string }> = {
+    success: { bg: 'rgba(72, 187, 120, 0.1)', color: '#2f855a', border: 'rgba(72, 187, 120, 0.3)' },
+    warning: { bg: 'rgba(237, 137, 54, 0.1)', color: '#c05621', border: 'rgba(237, 137, 54, 0.3)' },
+    danger: { bg: 'rgba(245, 101, 101, 0.1)', color: '#c53030', border: 'rgba(245, 101, 101, 0.3)' },
+    pending: { bg: 'rgba(66, 153, 225, 0.1)', color: '#2b6cb0', border: 'rgba(66, 153, 225, 0.3)' },
   } as const;
 
   return {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '0.35rem',
-    fontSize: '0.78rem',
+    fontSize: '0.75rem',
     fontWeight: 600,
-    borderRadius: 999,
-    padding: '0.3rem 0.75rem',
+    borderRadius: '999px',
+    padding: '0.25rem 0.65rem',
     background: palette[tone].bg,
     color: palette[tone].color,
+    border: `1px solid ${palette[tone].border}`,
+    lineHeight: 1.2,
   } satisfies CSSProperties;
 };
 

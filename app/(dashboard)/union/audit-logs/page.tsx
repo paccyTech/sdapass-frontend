@@ -203,7 +203,7 @@ const AuditLogsPage = () => {
                 border: 'none',
                 borderRadius: '12px',
                 padding: '0.6rem 1rem',
-                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                background: 'var(--primary)',
                 color: 'var(--on-primary)',
                 fontWeight: 600,
                 cursor: 'pointer',

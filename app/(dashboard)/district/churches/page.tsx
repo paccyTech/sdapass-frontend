@@ -115,14 +115,14 @@ const primaryButtonStyle: CSSProperties = {
   border: 'none',
   borderRadius: 14,
   padding: '0.65rem 1.35rem',
-  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-  color: 'var(--on-primary)',
+  background: '#1e3a8a',
+  color: 'white',
   fontWeight: 600,
   cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
   gap: '0.5rem',
-  boxShadow: '0 16px 32px rgba(24, 76, 140, 0.25)',
+  boxShadow: '0 15px 24px rgba(30,58,138,0.28)',
 };
 
 const ghostButtonStyle: CSSProperties = {
@@ -484,21 +484,11 @@ const ManageChurchesPage = () => {
   return (
     <RequireRole allowed="DISTRICT_ADMIN">
       <div style={pageWrapperStyle}>
-        <section style={statGridStyle}>
-          {stats.map((stat) => (
-            <article key={stat.label} style={statCardStyle}>
-              <p style={statLabelStyle}>{stat.label}</p>
-              <p style={statValueStyle}>{stat.value}</p>
-              <p style={statContextStyle}>{stat.context}</p>
-            </article>
-          ))}
-        </section>
-
         {renderStatus()}
 
         {status === 'loaded' && (
           <>
-            <section style={cardStyle}>
+            <div>
               <header style={sectionHeaderStyle}>
                 <div>
                   <h2 style={sectionTitleStyle}>Create a new church</h2>
@@ -555,9 +545,9 @@ const ManageChurchesPage = () => {
                   ) : null}
                 </div>
               </form>
-            </section>
+            </div>
 
-            <section style={cardStyle}>
+            <div>
               <header style={sectionHeaderStyle}>
                 <div>
                   <h2 style={sectionTitleStyle}>Church directory</h2>
@@ -593,7 +583,6 @@ const ManageChurchesPage = () => {
                             <td style={tableCellStyle}>
                               <div style={{ display: 'grid', gap: '0.35rem' }}>
                                 <strong style={{ color: 'var(--shell-foreground)', fontSize: '1rem' }}>{church.name}</strong>
-                                <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>ID: {church.id}</span>
                               </div>
                             </td>
                             <td style={tableCellStyle}>
@@ -634,7 +623,7 @@ const ManageChurchesPage = () => {
                   </table>
                 </div>
               )}
-            </section>
+            </div>
           </>
         )}
       </div>

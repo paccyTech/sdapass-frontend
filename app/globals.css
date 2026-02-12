@@ -1,6 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --shell-bg: #ffffff;
   --shell-foreground: #0b1f33;
+  --icon-accent: #1f9d77;
+  --icon-primary: #3b82f6;
+  --icon-warning: #f59e0b;
+  --icon-secondary: #8b5cf6;
   --sidebar-bg: rgba(255, 255, 255, 0.94);
   --surface-primary: rgba(255, 255, 255, 0.96);
   --surface-soft: rgba(243, 247, 255, 0.7);
@@ -20,13 +28,17 @@
   --status-inactive-border: rgba(239, 68, 68, 0.22);
   --text-soft-accent: rgba(24, 76, 140, 0.68);
   --font-display: "Plus Jakarta Sans", sans-serif;
-  --font-body: "Manrope", sans-serif;
+  --font-body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* Dark theme variables */
 .dark {
   --shell-bg: #0a0e1a;
   --shell-foreground: #e2e8f0;
+  --icon-accent: #22c55e;
+  --icon-primary: #60a5fa;
+  --icon-warning: #fbbf24;
+  --icon-secondary: #a78bfa;
   --sidebar-bg: rgba(15, 23, 42, 0.94);
   --surface-primary: rgba(30, 41, 59, 0.96);
   --surface-soft: rgba(15, 23, 42, 0.7);
@@ -143,13 +155,19 @@ body.no-footer .site-footer {
   width: 100%;
 }
 
+ .home-nav-link:focus,
+ .home-nav-link:focus-visible {
+   outline: none !important;
+   box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.35) !important;
+ }
+
 .desktop-only {
-  display: none;
+  display: none !important;
 }
 
 @media (min-width: 769px) {
   .desktop-only {
-    display: inline-flex;
+    display: inline-flex !important;
   }
 }
 
@@ -218,7 +236,7 @@ body.no-footer .site-footer {
   }
   
   .desktop-nav {
-    display: none;
+    display: none !important;
   }
   
   .mobile-menu .desktop-nav {

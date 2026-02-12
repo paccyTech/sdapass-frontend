@@ -4,6 +4,7 @@ const DISTRICT_NAV_ITEMS = [
   { label: 'Overview', href: '/district/dashboard' },
   { label: 'Manage Churches', href: '/district/churches' },
   { label: 'Church Administrators', href: '/district/church-admins' },
+  { label: 'Settings', href: '/district/settings' },
 ] as const;
 
 export const getDistrictNavSections = (activeHref: string): NavSection[] => [
@@ -40,6 +41,17 @@ export const DISTRICT_SIDEBAR_SECTIONS: SidebarSection[] = [
         label: 'Dashboard checklist',
         description: 'Track compliance health and prioritize outreach.',
         href: '/district/dashboard',
+      },
+    ],
+  },
+  {
+    title: 'Account',
+    description: 'Manage your personal settings and security.',
+    items: [
+      {
+        label: 'Update profile & security',
+        description: 'Change your password and update account information.',
+        href: '/district/settings',
       },
     ],
   },

@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Shield } from 'lucide-react';
 
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { RoleKey, ROLE_ROUTES } from '@/lib/rbac';
@@ -16,13 +17,14 @@ const gateStyles: CSSProperties = {
 
 const panelStyles: CSSProperties = {
   display: 'grid',
-  gap: '1rem',
+  gap: '1.5rem',
   textAlign: 'center',
-  background: 'rgba(255,255,255,0.85)',
-  padding: '2.5rem',
-  borderRadius: '24px',
-  boxShadow: '0 20px 45px rgba(12,34,56,0.15)',
-  maxWidth: '420px',
+  background: '#ffffff',
+  padding: '3rem',
+  borderRadius: '32px',
+  boxShadow: '0 32px 64px rgba(12,34,56,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
+  maxWidth: '480px',
+  border: '1px solid rgba(15, 51, 92, 0.1)',
 };
 
 type RequireRoleProps = {
@@ -118,17 +120,20 @@ export default function RequireRole({ allowed, children }: RequireRoleProps) {
     return (
       <div style={gateStyles}>
         <div style={panelStyles}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Shield size={48} color="#1f9d77" />
+          </div>
           <Pulse />
           <div>
-            <h2 style={{ margin: '1rem 0 0.35rem', fontFamily: 'var(--font-display)' }}>
-              Verifying your access
+            <h2 style={{ margin: '1rem 0 0.35rem', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: '#1a365d' }}>
+              Verifying Access
             </h2>
-            <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.6 }}>
-              We are confirming that your role is allowed to view this dashboard.
+            <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.6, fontSize: '1rem' }}>
+              Please wait while we confirm your permissions and secure access to this area.
             </p>
             {user && (
-              <p style={{ margin: '0.5rem 0 0', fontSize: '0.9em', color: 'var(--muted)' }}>
-                Logged in as: {user.role}
+              <p style={{ margin: '0.75rem 0 0', fontSize: '0.9em', color: '#64748b', fontWeight: 500 }}>
+                Role: {user.role.replace('_', ' ').toLowerCase()}
               </p>
             )}
           </div>

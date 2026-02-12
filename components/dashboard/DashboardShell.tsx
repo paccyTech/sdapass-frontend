@@ -18,6 +18,7 @@ import { useTheme } from '@/components/theme/ThemeProvider';
 
 export type NavItem = {
   label: string;
+  description?: string;
   href?: string;
   icon?: ReactNode;
   badge?: string;
@@ -69,7 +70,7 @@ const useIsMobile = (breakpoint = 1080) => {
 const desktopLayout: CSSProperties = {
   minHeight: '100vh',
   display: 'grid',
-  gridTemplateColumns: '300px minmax(0, 1fr)',
+  gridTemplateColumns: '320px minmax(0, 1fr)',
   background: 'var(--shell-bg)',
   color: 'var(--shell-foreground)',
 };
@@ -83,10 +84,10 @@ const mobileLayout: CSSProperties = {
 };
 
 const desktopSidebar: CSSProperties = {
-  background: 'var(--sidebar-bg)',
+  background: 'linear-gradient(180deg, var(--sidebar-bg) 0%, color-mix(in srgb, var(--sidebar-bg) 95%, var(--surface-soft)) 100%)',
   padding: '2.6rem clamp(1.75rem, 3vw, 2.85rem)',
   display: 'grid',
-  gap: '2.2rem',
+  gap: '1rem',
   borderRight: '1px solid var(--surface-border)',
   position: 'sticky',
   top: 0,
@@ -114,22 +115,32 @@ const brandCluster: CSSProperties = {
 
 const brandLogoStyle: CSSProperties = {
   display: 'block',
-  width: '74px',
+  width: '60px',
   height: 'auto',
 };
 
 const brandStack: CSSProperties = {
   display: 'grid',
-  gap: '0.1rem',
+  gap: '0.05rem',
 };
 
-const brandTitle: CSSProperties = {
+const brandTitleMain: CSSProperties = {
   fontFamily: 'var(--font-display)',
-  fontSize: '1.05rem',
+  fontSize: '1.02rem',
   letterSpacing: '-0.005em',
-  color: 'var(--shell-foreground)',
-  fontWeight: 700,
+  color: '#065f46',
+  fontWeight: 400,
   textTransform: 'uppercase',
+  lineHeight: 1.1,
+};
+
+const brandTitleSub: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '0.86rem',
+  letterSpacing: '0.01em',
+  color: '#a3a399ffff',
+  fontWeight: 600,
+  lineHeight: 1.1,
 };
 
 const mainContent: CSSProperties = {
@@ -164,11 +175,9 @@ const navItemStyle = (active?: boolean): CSSProperties => ({
   gap: '0.75rem',
   padding: '0.9rem 1.05rem',
   borderRadius: '16px',
-  border: active ? '1px solid var(--surface-ring)' : '1px solid transparent',
-  background: active
-    ? 'linear-gradient(135deg, color-mix(in srgb, var(--primary) 16%, transparent), color-mix(in srgb, var(--accent) 12%, transparent))'
-    : 'transparent',
-  color: active ? 'var(--primary)' : 'var(--muted)',
+  border: '1px solid transparent',
+  background: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+  color: active ? '#3b82f6' : 'var(--muted)',
   transition: 'transform 0.2s ease, background 0.2s ease',
   fontSize: '0.95rem',
 });
@@ -176,7 +185,7 @@ const navItemStyle = (active?: boolean): CSSProperties => ({
 const navItemLabel = (active?: boolean): CSSProperties => ({
   fontWeight: active ? 700 : 600,
   letterSpacing: '-0.01em',
-  fontFamily: '"Satoshi", var(--font-sans)',
+  fontFamily: 'var(--font-body)',
 });
 
 const navBadge = (active?: boolean): CSSProperties => ({
@@ -187,7 +196,7 @@ const navBadge = (active?: boolean): CSSProperties => ({
   letterSpacing: '0.15em',
   textTransform: 'uppercase',
   background: active
-    ? 'color-mix(in srgb, var(--primary) 18%, transparent)'
+    ? 'color-mix(in srgb, var(--primary) 20%, transparent)'
     : 'color-mix(in srgb, var(--primary) 10%, transparent)',
   color: active ? 'var(--primary)' : 'var(--muted)',
 });
@@ -479,12 +488,12 @@ export const DashboardShell = ({
         zIndex: isMobile ? 30 : 1,
         width: isMobile ? 'min(84vw, 320px)' : 'auto',
         height: '100vh',
-        overflowY: 'auto',
-        transform: isMobile && !navOpen ? 'translateX(-110%)' : 'translateX(0)',
-        transition: 'transform 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <div>
+      {/* Logo section - stays at top */}
+      <div style={{ flexShrink: 0 }}>
         {sidebarLogo ? (
           sidebarLogo
         ) : (
@@ -495,146 +504,178 @@ export const DashboardShell = ({
               style={brandLogoStyle} 
             />
             <div style={brandStack}>
-              <span style={brandTitle}>SDA Pass Management</span>
+              <span style={brandTitleMain}>SDA Pass</span>
+              <span style={brandTitleSub}>Management</span>
             </div>
           </div>
         )}
       </div>
 
-      <nav style={{ display: 'grid', gap: '1.4rem' }}>
-        {resolvedNavSections.map((section, index) => (
-          <div key={(section.title ?? 'section') + index}>
-            {section.title && <p style={navSectionTitle}>{section.title}</p>}
-            <ul style={navList}>
-              {section.items.map((item) => {
-                const content = (
-                  <div style={navItemStyle(item.active)}>
-                    {item.icon && <span style={{ fontSize: '1.15rem' }}>{item.icon}</span>}
-                    <span>{item.label}</span>
-                    {item.badge && <span style={navBadge(item.active)}>{item.badge}</span>}
-                  </div>
-                );
+      <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(24,76,140,0.12), transparent)', borderRadius: '1px', flexShrink: 0 }} />
 
-                if (item.href) {
+      {/* Scrollable navigation section */}
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto',
+        display: 'grid',
+        gap: '1.4rem',
+        paddingBottom: '1rem'
+      }}>
+        <nav style={{ display: 'grid', gap: '1.4rem' }}>
+          {resolvedNavSections.map((section, index) => (
+            <div key={(section.title ?? 'section') + index}>
+              {section.title && <p style={navSectionTitle}>{section.title}</p>}
+              <ul style={navList}>
+                {section.items.map((item) => {
+                  const content = (
+                    <div style={navItemStyle(item.active)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                        {item.icon && (
+                          <span 
+                            style={{
+                              fontSize: '1.15rem',
+                              color: '#ff0000 !important' as any,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '1.5rem',
+                              height: '1.5rem'
+                            }}
+                          >
+                            {item.icon}
+                          </span>
+                        )}
+                        <div style={{ display: 'grid', gap: '0.1rem', flex: 1 }}>
+                          <span style={navItemLabel(item.active)}>{item.label}</span>
+                          {item.description && <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{item.description}</span>}
+                        </div>
+                      </div>
+                      {item.badge && <span style={navBadge(item.active)}>{item.badge}</span>}
+                    </div>
+                  );
+
+                  if (item.href) {
+                    return (
+                      <li key={item.label}>
+                        <Link
+                          href={item.href}
+                          onClick={(event) => handleNavClick(event, item.href)}
+                          style={{
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            display: 'block',
+                          }}
+                        >
+                          {content}
+                        </Link>
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        onClick={(event) => handleNavClick(event, item.href)}
+                      <button
+                        type="button"
                         style={{
-                          textDecoration: 'none',
-                          color: 'inherit',
-                          display: 'block',
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'default',
                         }}
                       >
                         {content}
-                      </Link>
+                      </button>
                     </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {resolvedSidebarSections?.length ? (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(24,76,140,0.12), transparent)', borderRadius: '1px' }} />
+            <div style={workflowSections}>
+              {resolvedSidebarSections.map((section) => {
+                if (section.layout === 'list') {
+                  return (
+                    <section key={section.title} style={simpleListSection}>
+                      <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--primary)' }}>
+                        {section.title}
+                      </h3>
+                      <ul style={simpleListItems}>
+                        {section.items.map((item) => (
+                          <li key={item.label}>
+                            {item.href ? (
+                              <Link href={item.href} style={simpleListItem}>
+                                <span>•</span>
+                                <span>{item.label}</span>
+                              </Link>
+                            ) : (
+                              <div style={simpleListItem}>
+                                <span>•</span>
+                                <span>{item.label}</span>
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
                   );
                 }
 
                 return (
-                  <li key={item.label}>
-                    <button
-                      type="button"
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        padding: 0,
-                        width: '100%',
-                        textAlign: 'left',
-                        cursor: 'default',
-                      }}
-                    >
-                      {content}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
+                  <section key={section.title} style={workflowSection}>
+                    <header style={workflowHeader}>
+                      <span style={workflowLead}>{role.replace('_', ' ').toLowerCase()}</span>
+                      <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--primary)' }}>
+                        {section.title}
+                      </h3>
+                      {section.description && <p style={workflowSectionDescription}>{section.description}</p>}
+                    </header>
+                    <ul style={workflowItems}>
+                      {section.items.map((item) => {
+                        const content = (
+                          <div style={workflowItem}>
+                            <span style={workflowItemLabel}>{item.label}</span>
+                            {item.description && <p style={workflowItemDescription}>{item.description}</p>}
+                          </div>
+                        );
 
-      {resolvedSidebarSections?.length ? (
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ height: '1px', background: 'rgba(24,76,140,0.12)' }} />
-          <div style={workflowSections}>
-            {resolvedSidebarSections.map((section) => {
-              if (section.layout === 'list') {
-                return (
-                  <section key={section.title} style={simpleListSection}>
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1rem', color: 'var(--primary)' }}>
-                      {section.title}
-                    </h3>
-                    <ul style={simpleListItems}>
-                      {section.items.map((item) => (
-                        <li key={item.label}>
-                          {item.href ? (
-                            <Link href={item.href} style={simpleListItem}>
-                              <span>•</span>
-                              <span>{item.label}</span>
-                            </Link>
-                          ) : (
-                            <div style={simpleListItem}>
-                              <span>•</span>
-                              <span>{item.label}</span>
-                            </div>
-                          )}
-                        </li>
-                      ))}
+                        if (item.href) {
+                          return (
+                            <li key={item.label}>
+                              <Link href={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                {content}
+                              </Link>
+                            </li>
+                          );
+                        }
+
+                        return <li key={item.label}>{content}</li>;
+                      })}
                     </ul>
                   </section>
                 );
-              }
-
-              return (
-                <section key={section.title} style={workflowSection}>
-                  <header style={workflowHeader}>
-                    <span style={workflowLead}>{role.replace('_', ' ').toLowerCase()}</span>
-                    <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--primary)' }}>
-                      {section.title}
-                    </h3>
-                    {section.description && <p style={workflowSectionDescription}>{section.description}</p>}
-                  </header>
-                  <ul style={workflowItems}>
-                    {section.items.map((item) => {
-                      const content = (
-                        <div style={workflowItem}>
-                          <span style={workflowItemLabel}>{item.label}</span>
-                          {item.description && <p style={workflowItemDescription}>{item.description}</p>}
-                        </div>
-                      );
-
-                      if (item.href) {
-                        return (
-                          <li key={item.label}>
-                            <Link href={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-                              {content}
-                            </Link>
-                          </li>
-                        );
-                      }
-
-                      return <li key={item.label}>{content}</li>;
-                    })}
-                  </ul>
-                </section>
-              );
-            })}
+              })}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
+      {/* Logout container - sticks to bottom */}
       <div
         style={{
-          marginTop: 'auto',
+          flexShrink: 0,
           display: 'grid',
           gap: '0.65rem',
           paddingTop: '1rem',
         }}
       >
-        <div style={{ height: '1px', background: 'rgba(24,76,140,0.12)' }} />
+        <div style={{ height: '2px', background: 'linear-gradient(to right, transparent, rgba(24,76,140,0.12), transparent)', borderRadius: '1px' }} />
         <button
           type="button"
           onClick={handleLogout}
@@ -643,15 +684,29 @@ export const DashboardShell = ({
             alignItems: 'center',
             gap: '0.8rem',
             justifyContent: 'center',
-            border: '1px solid rgba(24,76,140,0.25)',
+            border: '1px solid var(--danger)',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, rgba(24,76,140,0.12), rgba(31,157,119,0.14))',
-            color: 'var(--primary)',
+            background: 'transparent',
+            color: 'var(--danger)',
             fontWeight: 650,
             padding: '0.85rem 1.2rem',
             cursor: 'pointer',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            boxShadow: '0 18px 32px rgba(24,76,140,0.12)',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
+            boxShadow: 'none',
+          }}
+          onMouseEnter={(event) => {
+            event.currentTarget.style.background = 'rgba(24,76,140,0.05)';
+            event.currentTarget.style.transform = 'translateY(-1px)';
+            event.currentTarget.style.boxShadow = '0 4px 8px rgba(24,76,140,0.1)';
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.background = 'transparent';
+            event.currentTarget.style.transform = 'translateY(0)';
+            event.currentTarget.style.boxShadow = 'none';
+          }}
+          onMouseDown={(event) => {
+            event.currentTarget.style.transform = 'translateY(0)';
+            event.currentTarget.style.boxShadow = 'none';
           }}
         >
           <span aria-hidden="true" style={{ fontSize: '1.05rem' }}>

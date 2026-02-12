@@ -38,7 +38,7 @@ export const ROLE_DEFINITIONS: Record<RoleKey, RoleDefinition> = {
     },
   },
   DISTRICT_ADMIN: {
-    name: "District Pastor",
+    name: "Senior Pastor",
     description: "Regional leader coordinating multiple churches within the district.",
     responsibilities: [
       "Create and assign church administrators",
@@ -56,7 +56,7 @@ export const ROLE_DEFINITIONS: Record<RoleKey, RoleDefinition> = {
     },
   },
   CHURCH_ADMIN: {
-    name: "Church Admin",
+    name: "Church Elder",
     description: "On-the-ground operator registering members and capturing attendance.",
     responsibilities: [
       "Register members and update records",
@@ -129,6 +129,6 @@ export const ROLE_ROUTES: Record<RoleKey, string> = {
   UNION_ADMIN: "/union/dashboard",
   DISTRICT_ADMIN: "/district/dashboard",
   CHURCH_ADMIN: "/church/dashboard",
-  MEMBER: "/member/dashboard",
+  MEMBER: "/",
   POLICE_VERIFIER: "/police/verify",
 };

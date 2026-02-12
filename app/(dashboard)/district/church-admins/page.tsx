@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
-
+import { IconPlus, IconEye, IconEyeOff } from '@tabler/icons-react';
 import RequireRole from '@/components/RequireRole';
 import { useDashboardShellConfig } from '@/components/dashboard/DashboardShellContext';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -127,7 +127,7 @@ const Button = ({
 }: { tone?: 'primary' | 'ghost' | 'danger' } & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
   const background =
     tone === 'primary'
-      ? 'linear-gradient(135deg, var(--primary), var(--accent))'
+      ? 'var(--primary)'
       : tone === 'danger'
       ? 'var(--danger)'
       : 'transparent';
@@ -144,7 +144,7 @@ const Button = ({
     <button
       {...buttonProps}
       style={{
-        borderRadius: 14,
+        borderRadius: '20px',
         border,
         background,
         color,
@@ -177,8 +177,8 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
   >
     <div
       style={{
-        background: 'var(--surface-primary)',
-        borderRadius: 20,
+        background: 'white',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         width: 'min(520px, 100%)',
         maxHeight: '90vh',
         overflowY: 'auto',
@@ -186,7 +186,7 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
         display: 'grid',
         gap: '1rem',
         border: '1px solid var(--surface-border)',
-        boxShadow: '0 20px 45px rgba(8, 22, 48, 0.2)',
+        borderRadius: '20px',
       }}
     >
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -384,12 +384,87 @@ const IconChurch = ({ size = 16, stroke = 'var(--shell-foreground)' }: IconProps
   </svg>
 );
 
-const ContactChip = ({ icon, label, href, variant = 'default' }: { icon: ReactNode; label: string; href?: string; variant?: 'default' | 'accent' }) => {
+const IconEdit = ({ size = 16, stroke = 'var(--shell-foreground)' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={stroke}
+    strokeWidth={1.6}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const IconTrash = ({ size = 16, stroke = 'var(--shell-foreground)' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={stroke}
+    strokeWidth={1.6}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </svg>
+);
+
+const IconCheck = ({ size = 16, stroke = 'var(--shell-foreground)' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={stroke}
+    strokeWidth={1.6}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
+const IconX = ({ size = 16, stroke = 'var(--shell-foreground)' }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={stroke}
+    strokeWidth={1.6}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const ContactChip = ({ icon, label, href, variant = 'default' }: { icon: ReactNode; label: string; href?: string; variant?: 'default' | 'accent' | 'email' | 'phone' | 'church' }) => {
   const style: CSSProperties = {
     ...contactChipStyle,
     background:
       variant === 'accent'
         ? 'color-mix(in srgb, var(--primary) 16%, transparent)'
+        : variant === 'email'
+        ? 'color-mix(in srgb, #10b981 16%, transparent)'
+        : variant === 'phone'
+        ? 'color-mix(in srgb, #3b82f6 16%, transparent)'
+        : variant === 'church'
+        ? 'color-mix(in srgb, #f59e0b 16%, transparent)'
         : contactChipStyle.background,
   };
 
@@ -452,6 +527,8 @@ const DistrictChurchAdminsPage = () => {
   });
 
   const [deleteState, setDeleteState] = useState({ admin: null as ChurchAdminSummary | null, isSubmitting: false });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!token || !districtId) {
@@ -723,33 +800,35 @@ const DistrictChurchAdminsPage = () => {
         </Section>
       ) : (
         <div style={{ display: 'grid', gap: '1.5rem' }}>
-          <Section
-            title="Quick cadence"
-            description="Keep administrators supported and accountable with ready-to-run workflows."
+          <header
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
           >
-            <div style={quickGridStyle}>
-              {quickPointers.map(({ icon: Icon, title, body }) => (
-                <article key={title} style={quickCardStyle}>
-                  <span style={quickIconWrapper}>
-                    <Icon />
-                  </span>
-                  <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--shell-foreground)' }}>{title}</strong>
-                  <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.6 }}>{body}</p>
-                </article>
-              ))}
+            <div style={{ display: 'grid', gap: '0.5rem', maxWidth: 'min(520px, 100%)' }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.65rem',
+                  color: 'var(--shell-foreground)',
+                }}
+              >
+                Church administrators
+              </h2>
+              <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.6 }}>Assign, coach, and audit the leaders stewarding each congregation in your district.</p>
             </div>
-          </Section>
-
-          <Section
-            title="Church administrators"
-            description="Assign, coach, and audit the leaders stewarding each congregation in your district."
-            actions={
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <Button type="button" onClick={handleOpenInvite}>
-                Invite church admin
+                <IconPlus size={16} /> Invite church admin
               </Button>
-            }
-          >
-            <div style={filterToolbarStyle}>
+            </div>
+          </header>
+          <div style={filterToolbarStyle}>
               <Select
                 value={filterChurch}
                 onChange={(event) => setFilterChurch(event.target.value)}
@@ -838,7 +917,7 @@ const DistrictChurchAdminsPage = () => {
                       padding: '1.4rem 1.5rem',
                       display: 'grid',
                       gap: '0.9rem',
-                      background: 'var(--surface-soft)',
+                      background: 'white',
                     }}
                   >
                     <header
@@ -856,36 +935,35 @@ const DistrictChurchAdminsPage = () => {
                         </strong>
                         <span style={{ color: 'var(--muted)' }}>{admin.church?.name ?? 'Unassigned church'}</span>
                       </div>
-                      <span style={statusPill(admin.isActive)}>{admin.isActive ? 'Active' : 'Suspended'}</span>
+                      <span style={statusPill(admin.isActive)}>{admin.isActive ? <IconCheck size={12} /> : <IconX size={12} />}</span>
                     </header>
 
                     <div style={contactListStyle}>
                       {admin.email ? (
-                        <ContactChip icon={<IconMail size={14} />} href={`mailto:${admin.email}`} label={admin.email} />
+                        <ContactChip icon={<IconMail size={14} />} href={`mailto:${admin.email}`} label={admin.email} variant="email" />
                       ) : null}
                       {admin.phoneNumber ? (
-                        <ContactChip icon={<IconPhone size={14} />} href={`tel:${admin.phoneNumber}`} label={admin.phoneNumber} />
+                        <ContactChip icon={<IconPhone size={14} />} href={`tel:${admin.phoneNumber}`} label={admin.phoneNumber} variant="phone" />
                       ) : null}
                       <ContactChip
                         icon={<IconChurch size={14} />}
                         label={admin.church?.name ?? 'Awaiting assignment'}
-                        variant="accent"
+                        variant="church"
                       />
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <Button type="button" tone="ghost" onClick={() => openEdit(admin)}>
-                        Edit admin
+                      <Button type="button" tone="ghost" onClick={() => openEdit(admin)} aria-label="Edit admin" style={{ border: '1px solid #3b82f6' }}>
+                        <IconEdit size={16} stroke="#3b82f6" />
                       </Button>
-                      <Button type="button" tone="danger" onClick={() => openDelete(admin)}>
-                        Remove admin
+                      <Button type="button" tone="danger" onClick={() => openDelete(admin)} aria-label="Remove admin" style={{ background: 'transparent', boxShadow: 'none', border: '1px solid var(--danger)' }}>
+                        <IconTrash size={16} stroke="var(--danger)" />
                       </Button>
                     </div>
                   </article>
                 ))}
               </div>
             )}
-          </Section>
         </div>
       )}
 
@@ -941,27 +1019,69 @@ const DistrictChurchAdminsPage = () => {
               </Field>
 
               <Field label="Password">
-                <Input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={createForm.password}
-                  onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
-                  placeholder="Set an initial password"
-                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={createForm.password}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, password: event.target.value }))}
+                    placeholder="Set an initial password"
+                    style={{ paddingRight: '3rem', width: '100%' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      color: 'var(--muted)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                  </button>
+                </div>
                 <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 400 }}>
                   Must be at least 8 characters. Share securely with the administrator.
                 </span>
               </Field>
               <Field label="Confirm password">
-                <Input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={createForm.confirmPassword}
-                  onChange={(event) => setCreateForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
-                  placeholder="Re-enter password"
-                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={createForm.confirmPassword}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                    placeholder="Re-enter password"
+                    style={{ paddingRight: '3rem', width: '100%' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      color: 'var(--muted)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {showConfirmPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                  </button>
+                </div>
               </Field>
             </div>
 

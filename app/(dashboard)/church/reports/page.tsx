@@ -26,11 +26,17 @@ const gridStyle: CSSProperties = {
 
 const cardStyle: CSSProperties = {
   background: 'var(--surface-primary)',
-  borderRadius: '28px',
-  padding: '2.1rem',
-  boxShadow: '0 20px 48px rgba(24, 76, 140, 0.08)',
+  borderRadius: '12px',
+  padding: '1.75rem',
+  border: '1px solid var(--surface-border)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   display: 'grid',
   gap: '1.35rem',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderColor: '#1a365d',
+  },
 };
 
 const cardHeaderStyle: CSSProperties = {
@@ -47,9 +53,10 @@ const labelStyle: CSSProperties = {
 
 const titleStyle: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: '1.45rem',
-  color: 'var(--primary)',
+  fontFamily: 'var(--font-sans)',
+  fontSize: '1.35rem',
+  fontWeight: 600,
+  color: '#1a365d',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -74,10 +81,14 @@ const tableStyle: CSSProperties = {
 };
 
 const tableHeaderCell: CSSProperties = {
-  background: 'rgba(24,76,140,0.08)',
+  background: 'rgba(26, 54, 93, 0.05)',
   padding: '0.75rem 1rem',
   textAlign: 'left',
   fontWeight: 600,
+  color: '#1a365d',
+  fontSize: '0.85rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
 };
 
 const tableCell: CSSProperties = {
@@ -93,21 +104,42 @@ const actionBarStyle: CSSProperties = {
 
 const buttonStyle: CSSProperties = {
   border: 'none',
-  borderRadius: '16px',
-  padding: '0.65rem 1.2rem',
-  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-  color: '#fff',
-  fontWeight: 600,
+  borderRadius: '10px',
+  padding: '0.6rem 1.2rem',
+  backgroundColor: '#1a365d',
+  color: 'white',
+  fontWeight: 500,
   cursor: 'pointer',
-  boxShadow: '0 18px 32px rgba(24, 76, 140, 0.18)',
-  transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.2s ease',
+  fontSize: '0.9rem',
+  '&:hover': {
+    backgroundColor: '#2c5282',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  },
 };
 
 const secondaryButtonStyle: CSSProperties = {
   ...buttonStyle,
-  background: 'var(--surface-secondary)',
-  color: 'var(--primary)',
-  boxShadow: 'inset 0 0 0 1px rgba(24,76,140,0.2)',
+  backgroundColor: 'var(--surface-primary)',
+  color: '#1a365d',
+  border: '1px solid #cbd5e0',
+  boxShadow: 'none',
+  '&:hover': {
+    backgroundColor: '#f7fafc',
+    borderColor: '#a0aec0',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+    boxShadow: 'none',
+  },
 };
 
 const emptyStateStyle: CSSProperties = {
@@ -125,18 +157,40 @@ const footnoteStyle: CSSProperties = {
 
 const errorBannerStyle: CSSProperties = {
   padding: '1rem 1.2rem',
-  borderRadius: '18px',
-  background: 'rgba(220, 38, 38, 0.12)',
-  color: 'rgba(153, 27, 27, 0.92)',
-  border: '1px solid rgba(220, 38, 38, 0.24)',
-  fontSize: '0.95rem',
+  borderRadius: '8px',
+  background: 'rgba(245, 101, 101, 0.1)',
+  color: '#c53030',
+  border: '1px solid rgba(245, 101, 101, 0.2)',
+  fontSize: '0.9rem',
+  fontWeight: 500,
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '0.5rem',
+  '&:before': {
+    content: '"!"',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '1.2rem',
+    height: '1.2rem',
+    borderRadius: '50%',
+    background: '#c53030',
+    color: 'white',
+    fontSize: '0.75rem',
+    fontWeight: 'bold',
+    flexShrink: 0,
+    marginTop: '0.1rem',
+  },
 };
 
 const emptyStateCardStyle: CSSProperties = {
   ...cardStyle,
   alignItems: 'center',
   textAlign: 'center',
-  color: 'var(--muted)',
+  color: '#718096',
+  padding: '3rem 2rem',
+  backgroundColor: 'rgba(247, 250, 252, 0.5)',
+  border: '1px dashed #cbd5e0',
 };
 
 const statusBadgeBase: CSSProperties = {
@@ -145,31 +199,32 @@ const statusBadgeBase: CSSProperties = {
   justifyContent: 'center',
   padding: '0.2rem 0.65rem',
   borderRadius: '999px',
-  fontSize: '0.82rem',
+  fontSize: '0.75rem',
   fontWeight: 600,
   letterSpacing: '0.04em',
   textTransform: 'uppercase',
+  lineHeight: 1.2,
 };
 
 const statusApprovedStyle: CSSProperties = {
   ...statusBadgeBase,
-  background: 'var(--status-success-bg)',
-  color: 'var(--status-success-foreground)',
-  boxShadow: 'inset 0 0 0 1px var(--status-success-border)',
+  backgroundColor: 'rgba(72, 187, 120, 0.1)',
+  color: '#2f855a',
+  border: '1px solid rgba(72, 187, 120, 0.3)',
 };
 
 const statusPendingStyle: CSSProperties = {
   ...statusBadgeBase,
-  background: 'var(--status-warning-bg)',
-  color: 'var(--status-warning-foreground)',
-  boxShadow: 'inset 0 0 0 1px var(--status-warning-border)',
+  backgroundColor: 'rgba(237, 137, 54, 0.1)',
+  color: '#c05621',
+  border: '1px solid rgba(237, 137, 54, 0.3)',
 };
 
 const statusNeutralStyle: CSSProperties = {
   ...statusBadgeBase,
-  background: 'rgba(71, 84, 103, 0.08)',
-  color: 'rgba(71, 84, 103, 0.9)',
-  boxShadow: 'inset 0 0 0 1px rgba(71, 84, 103, 0.12)',
+  backgroundColor: 'rgba(160, 174, 192, 0.1)',
+  color: '#4a5568',
+  border: '1px solid rgba(160, 174, 192, 0.3)',
 };
 
 type ReportRow = Record<string, string | number | null | undefined>;

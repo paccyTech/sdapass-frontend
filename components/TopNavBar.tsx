@@ -23,7 +23,7 @@ import {
 import { type RoleKey, ROLE_DEFINITIONS } from '@/lib/rbac';
 import type { AuthUser } from '@/lib/auth';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { fetchChurchDetail, fetchChurches, fetchDistrictDetail, fetchDistricts } from '@/lib/api';
+import { fetchAttendance, fetchChurchAdmins, fetchChurchDetail, fetchChurches, fetchDistrictDetail, fetchDistricts } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const navContainer: CSSProperties = {
@@ -298,10 +298,7 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(true);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<'EN' | 'FR' | 'RW'>('EN');
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const languageMenuRef = useRef<HTMLDivElement>(null);
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
   const { token, user: sessionUser } = useAuthSession();
   const effectiveUser = currentUser ?? sessionUser ?? null;
@@ -314,9 +311,6 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
       const target = event.target as Node;
       if (menuRef.current && !menuRef.current.contains(target)) {
         setIsMenuOpen(false);
-      }
-      if (languageMenuRef.current && !languageMenuRef.current.contains(target)) {
-        setIsLanguageMenuOpen(false);
       }
       if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(target)) {
         setIsNotificationsOpen(false);
@@ -339,14 +333,158 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
   };
 
   const roleDisplay = getRoleDisplayInfo(role);
-  const languageOptions = [
-    { code: 'EN', label: 'English', flag: <Flag size={16} /> },
-    { code: 'FR', label: 'French', flag: <Flag size={16} /> },
-    { code: 'RW', label: 'Kinyarwanda', flag: <Flag size={16} /> },
-  ] as const;
-  const activeLanguage = languageOptions.find((lang) => lang.code === selectedLanguage) ?? languageOptions[0];
+
+  const [realNotifications, setRealNotifications] = useState<any[]>([]);
 
   const [orgName, setOrgName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadNotifications() {
+      if (!token) {
+        if (isMounted) {
+          setRealNotifications([]);
+        }
+        return;
+      }
+
+      try {
+        if (role === 'DISTRICT_ADMIN' && districtId) {
+          const [churches, admins, attendance] = await Promise.all([
+            fetchChurches(token, { districtId }),
+            fetchChurchAdmins(token, { districtId }),
+            fetchAttendance(token, { districtId }),
+          ]);
+
+          if (!isMounted) return;
+
+          const churchesWithStats = churches.map((church) => {
+            const adminsForChurch = admins.filter((admin) => admin.churchId === church.id && admin.isActive);
+            const passesIssued = attendance.filter(
+              (record) => record.session?.church?.id === church.id && record.pass?.smsSentAt,
+            ).length;
+
+            return {
+              id: church.id,
+              name: church.name,
+              admins: adminsForChurch,
+              memberCount: church._count?.members ?? 0,
+              sessionCount: church._count?.sessions ?? 0,
+              passesIssued,
+            };
+          });
+
+          const notifications: any[] = [];
+
+          churchesWithStats.forEach((church) => {
+            if (church.admins.length === 0) {
+              notifications.push({
+                id: `${church.id}-no-admin`,
+                title: `${church.name} has no active admin`,
+                detail: 'Assign or reactivate a church administrator.',
+                time: 'Recent',
+              });
+            }
+
+            if (church.passesIssued === 0 && church.sessionCount > 0) {
+              notifications.push({
+                id: `${church.id}-no-passes`,
+                title: `${church.name} needs pass activations`,
+                detail: 'No members have approved passes yet.',
+                time: 'Recent',
+              });
+            }
+          });
+
+          if (notifications.length === 0) {
+            notifications.push({
+              id: 'all-clear',
+              title: 'All churches reporting',
+              detail: 'Every congregation has active admins and recent activity.',
+              time: 'Now',
+            });
+          }
+
+          setRealNotifications(notifications);
+        } else if (role === 'UNION_ADMIN') {
+          const districts = await fetchDistricts(token);
+          const allAdmins = await fetchChurchAdmins(token); // Assume fetches all for union
+
+          if (!isMounted) return;
+
+          const notifications: any[] = [];
+
+          districts.forEach((district) => {
+            const districtAdmins = allAdmins.filter((admin) => admin.districtId === district.id && admin.isActive);
+            if (districtAdmins.length === 0) {
+              notifications.push({
+                id: `district-${district.id}-no-pastor`,
+                title: `${district.name} has no assigned pastors`,
+                detail: 'Assign pastors to manage churches in this district.',
+                time: 'Recent',
+              });
+            }
+          });
+
+          if (notifications.length === 0) {
+            notifications.push({
+              id: 'all-clear-union',
+              title: 'All districts have pastors',
+              detail: 'Every district has active pastors assigned.',
+              time: 'Now',
+            });
+          }
+
+          setRealNotifications(notifications);
+        } else if (role === 'CHURCH_ADMIN' && churchId) {
+          const attendance = await fetchAttendance(token, { churchId });
+
+          if (!isMounted) return;
+
+          const approvedCount = attendance.filter((a) => a.status === 'APPROVED').length;
+          const notifications: any[] = [];
+
+          if (approvedCount === 0) {
+            notifications.push({
+              id: 'no-approved-attendance',
+              title: 'No approved attendance for your church',
+              detail: 'Review and approve pending attendance records.',
+              time: 'Recent',
+            });
+          } else {
+            notifications.push({
+              id: 'attendance-active',
+              title: 'Attendance is active',
+              detail: `${approvedCount} approved records this period.`,
+              time: 'Now',
+            });
+          }
+
+          setRealNotifications(notifications);
+        } else if (role === 'MEMBER') {
+          // No specific notifications for member, or could add pass-related alerts
+          setRealNotifications([]);
+        } else if (role === 'POLICE_VERIFIER') {
+          // No specific notifications for police verifier
+          setRealNotifications([]);
+        } else {
+          setRealNotifications([]);
+        }
+      } catch (error) {
+        console.error('Failed to load notifications', error);
+        if (isMounted) {
+          setRealNotifications([]);
+        }
+      }
+    }
+
+    loadNotifications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [role, districtId, token]);
 
   useEffect(() => {
     let isMounted = true;
@@ -381,6 +519,7 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
             const district = await fetchDistrictDetail(token, districtId);
             if (isMounted) {
               setOrgName(district?.name ?? null);
+              console.log('District orgName set to:', district?.name);
             }
             return;
           }
@@ -432,23 +571,9 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
     return roleDisplay.title;
   }, [role, orgName, roleDisplay.title]);
 
-  const notifications = useMemo(
-    () => [
-      {
-        id: 'notif-1',
-        title: 'Attendance summary ready',
-        detail: 'This week’s district attendance has been compiled.',
-        time: '2h ago',
-      },
-      {
-        id: 'notif-2',
-        title: 'Follow-up reminder',
-        detail: '3 churches have pending visit reports to review.',
-        time: 'Yesterday',
-      },
-    ],
-    [],
-  );
+  console.log('badgeLabel for role', role, ':', badgeLabel);
+
+  const notifications = useMemo(() => realNotifications, [realNotifications]);
 
   return (
     <header style={navContainer}>
@@ -457,94 +582,6 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
         <div style={roleBadge[role]}>{badgeLabel}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div style={{ position: 'relative' }} ref={languageMenuRef}>
-          <button
-            onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-            style={{
-              background: 'var(--surface-soft)',
-              border: '1px solid var(--surface-border)',
-              borderRadius: '9999px',
-              padding: '0.35rem 0.9rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: 'var(--shell-foreground)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-            }}
-            aria-haspopup="true"
-            aria-expanded={isLanguageMenuOpen}
-          >
-            <span role="img" aria-hidden="true" style={{ fontSize: '1rem' }}>
-              {activeLanguage.flag}
-            </span>
-            {activeLanguage.code}
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ transform: isLanguageMenuOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s ease' }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-          {isLanguageMenuOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                right: 0,
-                marginTop: '0.35rem',
-                backgroundColor: 'var(--surface-primary)',
-                borderRadius: '0.5rem',
-                boxShadow: '0 8px 20px rgba(15, 23, 42, 0.12)',
-                minWidth: '180px',
-                border: '1px solid var(--surface-border)',
-                zIndex: 60,
-                overflow: 'hidden',
-              }}
-            >
-              {languageOptions.map((language) => (
-                <button
-                  key={language.code}
-                  onClick={() => {
-                    setSelectedLanguage(language.code);
-                    setIsLanguageMenuOpen(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 1rem',
-                    background: language.code === selectedLanguage ? 'var(--surface-soft)' : 'transparent',
-                    border: 'none',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    color: 'var(--shell-foreground)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <span style={{ fontSize: '1rem' }} aria-hidden="true">
-                    {language.flag}
-                  </span>
-                  <span style={{ fontWeight: 600 }}>
-                    {language.label}
-                  </span>
-                  {language.code === selectedLanguage && (
-                    <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: '0.8rem' }}>Selected</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         <ThemeToggle />
 
         <div style={{ position: 'relative' }} ref={notificationsMenuRef}>
@@ -634,7 +671,12 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
               <span style={userName}>
                 {effectiveUser?.firstName || 'User'}
               </span>
-              <span style={userRole}>
+              <span style={{
+                ...userRole,
+                fontSize: '0.75rem',
+                color: 'var(--muted)',
+                fontWeight: 400
+              }}>
                 {ROLE_DEFINITIONS[role]?.name || role}
               </span>
             </div>
@@ -659,7 +701,9 @@ export const TopNavBar = ({ role, currentUser }: TopNavBarProps) => {
           {isMenuOpen && (
             <div style={dropdownMenu}>
               <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--surface-border)' }}>
-                <div style={userName}>{effectiveUser?.firstName} {effectiveUser?.lastName}</div>
+                <div style={userName}>
+                  {effectiveUser?.firstName} {effectiveUser?.lastName}
+                </div>
                 <div style={{
                   ...userRole,
                   display: 'flex',

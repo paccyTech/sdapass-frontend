@@ -83,7 +83,7 @@ const DistrictDirectoryPage = () => {
               border: 'none',
               borderRadius: '16px',
               padding: '0.7rem 1.3rem',
-              background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+              background: 'var(--primary)',
               color: 'white',
               fontWeight: 600,
               cursor: 'pointer',

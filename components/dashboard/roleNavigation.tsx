@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import {
   IconChartHistogram,
   IconClipboardList,
+  IconCalendarEvent,
   IconFileCertificate,
   IconFileSearch,
   IconGauge,
@@ -21,6 +22,7 @@ import type { RoleKey } from '@/lib/rbac';
 
 export type RoleNavItem = {
   label: string;
+  description?: string;
   href: string;
   badge?: string;
   icon?: ReactNode;
@@ -34,42 +36,43 @@ type RoleNavigationDefinition = {
 const ROLE_NAVIGATION: Record<RoleKey, RoleNavigationDefinition> = {
   UNION_ADMIN: {
     navItems: [
-      { label: 'Dashboard', href: '/union/dashboard', icon: <IconGauge size={18} stroke={1.6} /> },
-      { label: 'Governance', href: '/union/governance', icon: <IconClipboardList size={18} stroke={1.6} /> },
-      { label: 'Reports', href: '/union/reports', icon: <IconReportAnalytics size={18} stroke={1.6} /> },
-      { label: 'District Pastors', href: '/union/district-pastors', icon: <IconUsersGroup size={18} stroke={1.6} /> },
-      { label: 'Policies', href: '/union/policy', icon: <IconFileCertificate size={18} stroke={1.6} /> },
-      { label: 'Audit Logs', href: '/union/audit-logs', icon: <IconFileSearch size={18} stroke={1.6} /> },
-      { label: 'System Settings', href: '/union/settings', icon: <IconSettings size={18} stroke={1.6} /> },
+      { label: 'Dashboard', description: 'View union overview and stats', href: '/union/dashboard', icon: <IconGauge size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Umuganda Events', description: 'Manage umuganda events', href: '/union/umuganda-events', icon: <IconCalendarEvent size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Reports', description: 'View union reports and analytics', href: '/union/reports', icon: <IconReportAnalytics size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'District Pastors', description: 'Manage district pastors', href: '/union/district-pastors', icon: <IconUsersGroup size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Audit Logs', description: 'View audit logs', href: '/union/audit-logs', icon: <IconFileSearch size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'System Settings', description: 'Manage system settings', href: '/union/settings', icon: <IconSettings size={18} stroke={1.6} color="#ff8f3d" /> },
     ],
     sidebarSections: [],
   },
   DISTRICT_ADMIN: {
     navItems: [
-      { label: 'Overview', href: '/district/dashboard', icon: <IconLayoutDashboard size={18} stroke={1.6} /> },
-      { label: 'Church Administrators', href: '/district/church-admins', icon: <IconUsers size={18} stroke={1.6} /> },
-      { label: 'Manage Churches', href: '/district/churches', icon: <IconMap2 size={18} stroke={1.6} /> },
-      { label: 'Attendance Tracker', href: '/district/dashboard#attendance', icon: <IconChartHistogram size={18} stroke={1.6} /> },
-      { label: 'District Reports', href: '/district/reports', icon: <IconReportAnalytics size={18} stroke={1.6} /> },
-      { label: 'Pass Issuance', href: '/district/dashboard#passes', icon: <IconIdBadge size={18} stroke={1.6} /> },
+      { label: 'Overview', description: 'View district overview and stats', href: '/district/dashboard', icon: <IconLayoutDashboard size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Church admins', description: 'Manage church admins and roles', href: '/district/church-admins', icon: <IconUsers size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Manage Churches', description: 'Add and edit church details', href: '/district/churches', icon: <IconMap2 size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Attendance Tracker', description: 'Track attendance records', href: '/district/dashboard#attendance', icon: <IconChartHistogram size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'District Reports', description: 'View district reports and analytics', href: '/district/reports', icon: <IconReportAnalytics size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Pass Issuance', description: 'Issue and manage passes', href: '/district/dashboard#passes', icon: <IconIdBadge size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Settings', description: 'Manage your account settings', href: '/district/settings', icon: <IconSettings size={18} stroke={1.6} color="#ff8f3d" /> },
     ],
     sidebarSections: [],
   },
   CHURCH_ADMIN: {
     navItems: [
-      { label: 'Dashboard', href: '/church/dashboard', icon: <IconLayoutDashboard size={18} stroke={1.6} /> },
-      { label: 'Members', href: '/church/members', icon: <IconUsersGroup size={18} stroke={1.6} /> },
-      { label: 'Church Reports', href: '/church/reports', icon: <IconReportAnalytics size={18} stroke={1.6} /> },
-      { label: 'SMS & Email', href: '/church/sms', icon: <IconClipboardList size={18} stroke={1.6} /> },
-      { label: 'Attendance Log', href: '/church/attendance', icon: <IconChartHistogram size={18} stroke={1.6} /> },
-      { label: 'Volunteer Management', href: '/church/volunteers', icon: <IconUsers size={18} stroke={1.6} /> },
+      { label: 'Dashboard', description: 'View church overview and stats', href: '/church/dashboard', icon: <IconLayoutDashboard size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Members', description: 'Manage church members', href: '/church/members', icon: <IconUsersGroup size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Umuganda Events', description: 'Participate in umuganda events', href: '/church/umuganda-events', icon: <IconCalendarEvent size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Church Reports', description: 'View church reports and analytics', href: '/church/reports', icon: <IconReportAnalytics size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'SMS & Email', description: 'Send SMS and email notifications', href: '/church/sms', icon: <IconClipboardList size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Attendance Log', description: 'Log and track attendance', href: '/church/attendance', icon: <IconChartHistogram size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'Settings', description: 'Manage your account settings', href: '/church/settings', icon: <IconSettings size={18} stroke={1.6} color="#ff8f3d" /> },
     ],
     sidebarSections: [],
   },
   MEMBER: {
     navItems: [
-      { label: 'My Dashboard', href: '/member/dashboard', icon: <IconIdBadge size={18} stroke={1.6} /> },
-      { label: 'My Umuganda Pass', href: '/member/pass', icon: <IconFileCertificate size={18} stroke={1.6} /> },
+      { label: 'My Dashboard', href: '/', icon: <IconIdBadge size={18} stroke={1.6} color="#ff8f3d" /> },
+      { label: 'My Umuganda Pass', href: '/', icon: <IconFileCertificate size={18} stroke={1.6} color="#ff8f3d" /> },
     ],
   },
   POLICE_VERIFIER: {

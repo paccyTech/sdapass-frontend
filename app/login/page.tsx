@@ -2,45 +2,59 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import LoginForm from "./LoginForm";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { User, Globe, ChevronDown } from 'lucide-react';
 
 const LoginPage = () => (
   <div style={wrapperStyle}>
-    <div style={leftPanelStyle}>
-      <div className="fade-up" style={contentContainerStyle}>
-        <div style={logoContainerStyle}>
-          <Image 
-            src="/sda-white-logo.png" 
-            alt="SDA Logo" 
-            width={200} 
-            height={200} 
-            style={{ objectFit: 'contain' }}
-            priority
-          />
+    <header style={headerStyle}>
+      <div style={headerContent}>
+        <div style={topNavLeft}>
+          <div className="desktop-only" style={topNavMeta}>
+            <div style={topNavMetaLink}>
+              <User size={16} style={{ marginRight: '0.5rem' }} />
+              <span>SDA Account</span>
+            </div>
+          </div>
         </div>
-        <div style={contentStyle}>
-          <h1 style={titleStyle}>Secure access, simplified</h1>
-          <p style={subtitleStyle}>
-            Sign in with confidence knowing your SDA credentials stay protected across every ministry workflow.
-          </p>
+        <div style={topNavRight}>
+          <div className="desktop-only" style={topNavMeta}>
+            <div style={langPicker}>
+              <Globe size={16} style={{ marginRight: '0.5rem' }} />
+              <span>English</span>
+              <ChevronDown size={16} style={{ marginLeft: '0.25rem' }} />
+            </div>
+          </div>
         </div>
       </div>
-      <div style={footerStyle}>
-        <Link href="/" style={linkStyle}>
-          ← Back to Home
-        </Link>
-      </div>
-    </div>
+    </header>
 
-    {/* Right side with login form */}
-    <div className="fade-up delay-1" style={rightPanelStyle}>
+    <div style={contentStyle}>
+      <div style={logoContainerStyle}>
+        <Image 
+          src="/sda-logo.png" 
+          alt="SDA Logo" 
+          width={100}
+          height={100}
+          style={{ objectFit: 'contain' }}
+          priority
+        />
+      </div>
+      
       <div style={formHeaderStyle}>
         <h2 style={formTitleStyle}>Welcome Back</h2>
         <p style={formSubtitleStyle}>Sign in to your account</p>
       </div>
       
-      <LoginForm />
+      <div style={formContainer}>
+        <LoginForm />
+      </div>
       
       <div style={formFooterStyle}>
+        <Link href="/" style={backLinkStyle}>
+          ← Back to Home
+        </Link>
         <p style={helpTextStyle}>
           Need help?{' '}
           <a href="#help" style={helpLinkStyle}>
@@ -54,101 +68,114 @@ const LoginPage = () => (
 
 // Styles
 const wrapperStyle: CSSProperties = {
-  display: 'flex',
   minHeight: '100vh',
   width: '100%',
-  overflow: 'hidden',
-};
-
-const leftPanelStyle: CSSProperties = {
-  width: '50%',
-  backgroundColor: '#0a1a2e',
-  color: '#ffffff',
-  padding: '3rem',
-  display: 'flex',
-  flexDirection: 'column',
-  position: 'relative',
-  minHeight: '100vh',
-  backgroundImage: 'linear-gradient(135deg, #0a1a2e 0%, #1a365d 100%)',
-};
-
-const rightPanelStyle: CSSProperties = {
-  width: '50%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  padding: '3rem',
-  backgroundColor: '#ffffff',
-  overflowY: 'auto',
-};
-
-const contentContainerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
-  flex: 1,
-  width: '100%',
-  padding: '4rem 2rem 2rem',
+  padding: '0',
+  maxWidth: '100%',
+  backgroundColor: '#ffffff',
+  fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 };
 
-const logoContainerStyle: CSSProperties = {
-  marginBottom: '2.5rem',
-  textAlign: 'center',
+const headerStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '220px',
+  borderBottom: '1px solid #e2e8f0',
+  padding: '0.75rem 2rem',
+};
+
+const headerContent: CSSProperties = {
+  maxWidth: '1400px',
+  margin: '0 auto',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
 };
 
 const contentStyle: CSSProperties = {
-  maxWidth: '100%',
-  margin: '0.5rem auto 0',
-  textAlign: 'center',
-  padding: 0,
+  width: '100%',
+  maxWidth: '400px',
+  margin: '2rem auto',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  backgroundColor: '#ffffff',
+  flex: 1,
+  padding: '0 1rem',
 };
 
-const titleStyle: CSSProperties = {
-  fontSize: '2.4rem',
-  fontWeight: 700,
-  margin: '0 0 1rem',
-  lineHeight: 1.2,
+const topNavRight: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  gap: '1.25rem',
 };
 
-const subtitleStyle: CSSProperties = {
-  fontSize: '1.1rem',
-  opacity: 0.88,
-  lineHeight: 1.6,
-  margin: 0,
+const topNavLeft: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  gap: '1.25rem',
 };
 
-const footerStyle: CSSProperties = {
-  marginTop: 'auto',
-  textAlign: 'center',
-  paddingTop: '2rem',
-};
-
-const linkStyle: CSSProperties = {
-  color: 'rgba(255, 255, 255, 0.8)',
-  textDecoration: 'none',
+const topNavMeta: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '0.5rem',
-  transition: 'opacity 0.2s',
+  gap: '1.5rem',
+  fontSize: '1.1rem',
+  color: '#4b5563',
+};
+
+const topNavMetaLink: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0.35rem 0.5rem',
+  borderRadius: '0.25rem',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  },
+};
+
+const langPicker: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  padding: '0.35rem 0.5rem',
+  borderRadius: '0.25rem',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  },
+};
+
+const formContainer: CSSProperties = {
+  width: '100%',
+  marginTop: '1rem',
+};
+
+const logoContainerStyle: CSSProperties = {
+  marginBottom: '1.5rem',
+  textAlign: 'center',
+  width: '100%',
 };
 
 
 const formHeaderStyle: CSSProperties = {
   textAlign: 'center',
-  marginBottom: '2.5rem',
-  maxWidth: '420px',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  marginBottom: '1.5rem',
+  width: '100%',
 };
 
 const formTitleStyle: CSSProperties = {
-  fontSize: '2rem',
+  fontSize: '1.75rem',
   fontWeight: 700,
-  color: '#1a202c',
+  color: '#000000',
   margin: '0 0 0.5rem',
+  lineHeight: 1.2,
+  fontFamily: 'inherit',
 };
 
 const formSubtitleStyle: CSSProperties = {
@@ -156,26 +183,55 @@ const formSubtitleStyle: CSSProperties = {
   margin: 0,
   fontSize: '1rem',
   lineHeight: 1.6,
+  opacity: 0.9,
+  fontFamily: 'inherit',
 };
 
 const formFooterStyle: CSSProperties = {
   marginTop: '2rem',
   textAlign: 'center',
-  maxWidth: '420px',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1rem',
+  alignItems: 'center',
+};
+
+const backLinkStyle: CSSProperties = {
+  color: '#1a56db',
+  textDecoration: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  fontSize: '0.95rem',
+  transition: 'opacity 0.2s',
+  marginTop: '0.5rem',
+  fontFamily: 'inherit',
+};
+
+// Add hover effect for the back link
+const backLinkHoverStyle = {
+  '&:hover': {
+    opacity: 0.8,
+  },
 };
 
 const helpTextStyle: CSSProperties = {
-  color: '#718096',
+  color: '#6b7280',
   fontSize: '0.9rem',
-  margin: 0,
+  margin: '0.5rem 0 0',
+  fontFamily: 'inherit',
 };
 
 const helpLinkStyle: CSSProperties = {
-  color: '#3b82f6',
+  color: '#1a56db',
   textDecoration: 'none',
-  fontWeight: 600,
+  fontWeight: 500,
+  transition: 'opacity 0.2s',
+  fontFamily: 'inherit',
+  '&:hover': {
+    opacity: 0.8,
+  },
 };
 
 const inputStyle: CSSProperties = {

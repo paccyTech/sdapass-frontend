@@ -11,6 +11,7 @@ import {
   IconUsersGroup,
   IconUserPlus,
 } from '@tabler/icons-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import RequireRole from '@/components/RequireRole';
 import {
@@ -50,13 +51,15 @@ const statsGridStyle: CSSProperties = {
 };
 
 const cardStyle: CSSProperties = {
-  background: 'var(--surface-primary)',
-  borderRadius: '20px',
-  padding: '1.75rem',
+  backgroundColor: '#ffffff',
+  borderRadius: '12px',
+  padding: '1.5rem',
   display: 'grid',
   gap: '1.1rem',
-  boxShadow: '0 18px 36px rgba(12, 32, 62, 0.12)',
-  border: '1px solid color-mix(in srgb, var(--surface-border) 60%, transparent)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  border: '1px solid var(--surface-border)',
+  transition: 'all 0.2s ease',
+  color: 'var(--shell-foreground)',
 };
 
 const cardHeaderStyle: CSSProperties = {
@@ -82,46 +85,59 @@ const cardSubtitleStyle: CSSProperties = {
 
 const statCardStyle = (accent: string): CSSProperties => ({
   ...cardStyle,
-  gap: '0.6rem',
-  border: `1px solid color-mix(in srgb, ${accent} 35%, transparent)`,
-  boxShadow: `0 18px 38px color-mix(in srgb, ${accent} 22%, transparent)`,
+  gap: '0.8rem',
+  border: '1px solid var(--surface-border)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderColor: 'var(--primary)',
+  },
 });
 
 const statIconStyle = (accent: string): CSSProperties => ({
-  width: '42px',
-  height: '42px',
-  borderRadius: '14px',
-  display: 'grid',
-  placeItems: 'center',
-  background: `color-mix(in srgb, ${accent} 25%, transparent)`,
-  color: accent,
+  width: '48px',
+  height: '48px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  margin: '0 auto 0.75rem',
+  color: `var(--icon-${accent})`,
+  background: 'transparent',
 });
 
 const statValueStyle: CSSProperties = {
   fontSize: '2rem',
-  fontWeight: 700,
+  fontWeight: 600,
   letterSpacing: '-0.02em',
+  color: 'var(--shell-foreground)',
+  lineHeight: 1.2,
+  textAlign: 'center',
 };
 
 const statMetaStyle: CSSProperties = {
-  color: 'var(--muted)',
   fontSize: '0.9rem',
+  color: 'var(--muted)',
+  lineHeight: 1.5,
+  textAlign: 'center',
 };
 
 const heroStyle: CSSProperties = {
-  background: 'linear-gradient(135deg, rgba(22, 65, 145, 0.9), rgba(31, 157, 119, 0.92))',
-  borderRadius: '28px',
-  padding: '2.4rem',
-  color: 'rgba(255,255,255,0.95)',
-  display: 'grid',
-  gap: '1.8rem',
-  boxShadow: '0 32px 68px rgba(14, 52, 102, 0.38)',
+  background: 'linear-gradient(135deg, #1a365d 0%, #2c5282 100%)',
+  color: 'white',
+  borderRadius: '12px',
+  padding: '2rem',
+  position: 'relative',
+  overflow: 'hidden',
+  boxShadow: '0 4px 12px rgba(26, 54, 93, 0.15)',
+  marginBottom: '1.5rem',
 };
 
 const heroHeaderStyle: CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '1.6rem',
+  gap: '1rem',
   alignItems: 'flex-end',
   justifyContent: 'space-between',
 };
@@ -171,25 +187,32 @@ const quickActionsStyle: CSSProperties = {
 };
 
 const quickActionCard = (accent: string): CSSProperties => ({
-  borderRadius: '18px',
-  padding: '1.4rem',
-  border: '1px solid color-mix(in srgb, var(--surface-border) 60%, transparent)',
-  background: 'color-mix(in srgb, var(--surface-soft) 20%, transparent)',
+  ...cardStyle,
   display: 'grid',
-  gap: '0.75rem',
-  transition: 'transform 0.18s ease, box-shadow 0.18s ease',
-  color: 'var(--shell-foreground)',
+  gap: '1.1rem',
+  padding: '1.5rem',
   textDecoration: 'none',
-  boxShadow: '0 14px 28px rgba(10, 26, 48, 0.08)',
+  color: 'var(--shell-foreground)',
+  transition: 'all 0.25s ease',
+  border: '1px solid var(--surface-border)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderColor: '#1a365d',
+  },
 });
 
 const quickActionHeader = (accent: string): CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '0.65rem',
-  color: accent,
+  gap: '0.8rem',
   fontWeight: 600,
-  fontSize: '1rem',
+  fontSize: '1.1rem',
+  color: '#1a365d',
+  '& svg': {
+    color: '#1a365d',
+  },
 });
 
 const memberRowStyle: CSSProperties = {
@@ -216,6 +239,40 @@ const loadingCardStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   textAlign: 'center',
+};
+
+const MemberGrowthChart = ({ data }: { data: { date: string; count: number }[] }) => {
+  if (!data.length) {
+    return <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.9rem' }}>No member data available.</p>;
+  }
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Line type="monotone" dataKey="count" stroke="#1f9d77" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+};
+
+const ApprovalRateChart = ({ data }: { data: { date: string; rate: number }[] }) => {
+  if (!data.length) {
+    return <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.9rem' }}>No approval data available.</p>;
+  }
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis domain={[0, 100]} />
+        <Tooltip formatter={(value) => `${value}%`} />
+        <Line type="monotone" dataKey="rate" stroke="#3366ff" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
 };
 
 const formatNumber = (value: number): string => new Intl.NumberFormat().format(value);
@@ -455,6 +512,40 @@ export default function ChurchAdminDashboard() {
       }));
   }, [attendance]);
 
+  const memberGrowthData = useMemo(() => {
+    if (!members.length) return [];
+    const sorted = [...members].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const map = new Map<string, number>();
+    sorted.forEach(member => {
+      const month = new Date(member.createdAt).toISOString().slice(0, 7); // YYYY-MM
+      map.set(month, (map.get(month) || 0) + 1);
+    });
+    const cumulative: { date: string; count: number }[] = [];
+    let total = 0;
+    Array.from(map.entries()).sort().forEach(([month, newCount]) => {
+      total += newCount;
+      cumulative.push({ date: month, count: total });
+    });
+    return cumulative;
+  }, [members]);
+
+  const approvalRateData = useMemo(() => {
+    if (!attendance.length) return [];
+    const monthMap = new Map<string, { approved: number; total: number }>();
+    attendance.forEach(record => {
+      if (!record.session?.date) return;
+      const month = new Date(record.session.date).toISOString().slice(0, 7);
+      const existing = monthMap.get(month) || { approved: 0, total: 0 };
+      existing.total += 1;
+      if (record.status === 'APPROVED') existing.approved += 1;
+      monthMap.set(month, existing);
+    });
+    return Array.from(monthMap.entries()).sort().map(([month, { approved, total }]) => ({
+      date: month,
+      rate: total ? Math.round((approved / total) * 100) : 0
+    }));
+  }, [attendance]);
+
   const engagedMembers = useMemo(() => {
     if (!attendance.length) {
       return [];
@@ -544,24 +635,24 @@ export default function ChurchAdminDashboard() {
             ? `${membersWithoutPass} pending onboarding`
             : 'All members onboarded'
           : 'No members yet',
-        icon: <IconUsersGroup size={20} stroke={1.8} />,
-        accent: '#1f9d77',
+        icon: <IconUsersGroup size={28} stroke={1.6} />,
+        accent: 'accent', // Uses --icon-accent
       },
       {
         id: 'attendance-rate',
         title: 'Attendance rate',
         value: formatPercent(attendanceRate),
         meta: `${activeMembersThisMonth} members active this month`,
-        icon: <IconTrendingUp size={20} stroke={1.8} />,
-        accent: '#3366ff',
+        icon: <IconTrendingUp size={28} stroke={1.6} />,
+        accent: 'primary', // Uses --icon-primary
       },
       {
         id: 'pending-approvals',
         title: 'Approvals pending',
         value: formatNumber(pendingApprovals),
         meta: pendingApprovals ? 'Review attendance submissions' : 'All caught up',
-        icon: <IconChecklist size={20} stroke={1.8} />,
-        accent: '#ff8f3d',
+        icon: <IconChecklist size={28} stroke={1.6} />,
+        accent: 'warning', // Uses --icon-warning
       },
       {
         id: 'passes-issued',
@@ -570,8 +661,8 @@ export default function ChurchAdminDashboard() {
         meta: totalMembers
           ? `${Math.round((passesIssued / totalMembers) * 100)}% coverage`
           : 'No members yet',
-        icon: <IconCalendarEvent size={20} stroke={1.8} />,
-        accent: '#74266F',
+        icon: <IconCalendarEvent size={28} stroke={1.6} />,
+        accent: 'secondary', // Uses --icon-secondary
       },
     ],
     [
@@ -723,12 +814,38 @@ export default function ChurchAdminDashboard() {
         <section style={statsGridStyle}>
           {statCards.map((card) => (
             <div key={card.id} style={statCardStyle(card.accent)}>
-              <div style={statIconStyle(card.accent)}>{card.icon}</div>
-              <div style={statValueStyle}>{card.value}</div>
-              <div style={{ fontWeight: 600 }}>{card.title}</div>
-              <div style={statMetaStyle}>{card.meta}</div>
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={statIconStyle(card.accent)}>{card.icon}</div>
+                <div style={statValueStyle}>{card.value}</div>
+                <div style={{ textAlign: 'center', color: 'var(--shell-foreground)', fontSize: '1rem' }}>{card.title}</div>
+                <div style={statMetaStyle}>{card.meta}</div>
+              </div>
             </div>
           ))}
+        </section>
+
+        <section style={splitGridStyle}>
+          <article style={cardStyle}>
+            <div style={cardHeaderStyle}>
+              <div>
+                <h2 style={cardTitleStyle}>Member growth</h2>
+                <p style={cardSubtitleStyle}>Cumulative member enrollment over time.</p>
+              </div>
+              <IconUsersGroup size={22} stroke={1.8} color="#1f9d77" />
+            </div>
+            <MemberGrowthChart data={memberGrowthData} />
+          </article>
+
+          <article style={cardStyle}>
+            <div style={cardHeaderStyle}>
+              <div>
+                <h2 style={cardTitleStyle}>Approval rate trend</h2>
+                <p style={cardSubtitleStyle}>Percentage of attendance records approved over time.</p>
+              </div>
+              <IconTrendingUp size={22} stroke={1.8} color="#3366ff" />
+            </div>
+            <ApprovalRateChart data={approvalRateData} />
+          </article>
         </section>
 
         <section style={splitGridStyle}>
@@ -775,98 +892,6 @@ export default function ChurchAdminDashboard() {
           </article>
         </section>
 
-        <section style={splitGridStyle}>
-          <article style={cardStyle}>
-            <div style={cardHeaderStyle}>
-              <div>
-                <h2 style={cardTitleStyle}>Member momentum</h2>
-                <p style={cardSubtitleStyle}>The most recently engaged members based on approved attendance.</p>
-              </div>
-              <IconUsersGroup size={22} stroke={1.8} color="#1f9d77" />
-            </div>
-            {engagedMembers.length ? (
-              <ul style={listStyle}>
-                {engagedMembers.map((member) => (
-                  <li key={member.id} style={memberRowStyle}>
-                    <div style={{ display: 'grid', gap: '0.25rem' }}>
-                      <strong>{member.name}</strong>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                        {member.approvals} approvals • {formatRelative(member.lastActive)}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Active</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div style={emptyStateStyle}>
-                Once members attend and get approvals, you’ll see their activity here.
-              </div>
-            )}
-          </article>
-
-          <article style={cardStyle}>
-            <div style={cardHeaderStyle}>
-              <div>
-                <h2 style={cardTitleStyle}>Attention needed</h2>
-                <p style={cardSubtitleStyle}>Resolve these items to keep your congregation on track.</p>
-              </div>
-              <IconAlertTriangle size={22} stroke={1.8} color="#ff8f3d" />
-            </div>
-            {riskAlerts.length ? (
-              <ul style={listStyle}>
-                {riskAlerts.map((alert) => (
-                  <li key={alert.id} style={{ ...memberRowStyle, background: 'color-mix(in srgb, #ff8f3d 12%, transparent)' }}>
-                    <div style={{ display: 'grid', gap: '0.35rem' }}>
-                      <strong>{alert.title}</strong>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>{alert.detail}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div style={emptyStateStyle}>
-                Everything looks good. Keep encouraging timely attendance approvals and pass issuance.
-              </div>
-            )}
-          </article>
-        </section>
-
-        <section style={{ ...cardStyle, gap: '1.5rem' }}>
-          <div style={cardHeaderStyle}>
-            <div>
-              <h2 style={cardTitleStyle}>Quick actions</h2>
-              <p style={cardSubtitleStyle}>Jump into the workflows you manage most frequently.</p>
-            </div>
-          </div>
-          <div style={quickActionsStyle}>
-            {quickActions.map((action) => (
-              <Link
-                key={action.id}
-                href={action.href}
-                style={quickActionCard(action.accent)}
-                onMouseEnter={(event) => {
-                  event.currentTarget.style.transform = 'translateY(-3px)';
-                  event.currentTarget.style.boxShadow = '0 18px 34px rgba(14, 34, 62, 0.18)';
-                }}
-                onMouseLeave={(event) => {
-                  event.currentTarget.style.transform = 'translateY(0)';
-                  event.currentTarget.style.boxShadow = '0 14px 28px rgba(10, 26, 48, 0.08)';
-                }}
-              >
-                <div style={quickActionHeader(action.accent)}>
-                  {action.icon}
-                  <span>{action.title}</span>
-                </div>
-                <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.9rem' }}>{action.description}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.9rem', color: action.accent }}>
-                  Go to workspace
-                  <IconChevronRight size={16} stroke={1.8} />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
       </div>
     );
   };

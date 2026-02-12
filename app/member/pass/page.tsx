@@ -427,7 +427,7 @@ const printableCardStyle: CSSProperties = {
   position: 'relative',
   width: 'min(540px, 100%)',
   aspectRatio: '85.6 / 54',
-  background: 'linear-gradient(135deg, #f8fafc, #ffffff)',
+  backgroundColor: '#ffffff',
   borderRadius: '18px',
   overflow: 'hidden',
   border: '1px solid rgba(15,23,42,0.08)',
@@ -1029,8 +1029,6 @@ const MemberPassPage = () => {
         const imageX = (pageWidth - pdfWidth) / 2;
         const imageY = (pageHeight - pdfHeight) / 2;
 
-        pdfInstance.addImage(canvas, 'PNG', imageX, imageY, pdfWidth, pdfHeight, undefined, 'FAST');
-
         if (watermarkLogo && (pdfInstance as any).GState) {
           const watermarkWidth = pageWidth * 0.6;
           const watermarkHeight = watermarkWidth * (watermarkLogo.height / watermarkLogo.width);
@@ -1038,7 +1036,7 @@ const MemberPassPage = () => {
           const watermarkY = (pageHeight - watermarkHeight) / 2;
 
           pdfInstance.saveGraphicsState();
-          pdfInstance.setGState(new (pdfInstance as any).GState({ opacity: 0.08 }));
+          pdfInstance.setGState(new (pdfInstance as any).GState({ opacity: 0.06 }));
           pdfInstance.addImage(
             watermarkLogo,
             'PNG',
@@ -1052,6 +1050,8 @@ const MemberPassPage = () => {
           );
           pdfInstance.restoreGraphicsState();
         }
+
+        pdfInstance.addImage(canvas, 'PNG', imageX, imageY, pdfWidth, pdfHeight, undefined, 'FAST');
       });
     };
 

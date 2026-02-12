@@ -16,6 +16,9 @@ import {
 import { useRouter } from 'next/navigation';
 
 import RequireRole from '@/components/RequireRole';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { verifyPassToken, type PassVerificationResponse } from '@/lib/api';
 import { useTheme } from '@/components/theme/ThemeProvider';
@@ -41,27 +44,27 @@ const resetScanner = (reader: BrowserMultiFormatReader) => {
 
 const pageStyle: CSSProperties = {
   minHeight: '100vh',
-  background: 'linear-gradient(145deg, #f5f7fb 0%, #eef3ff 45%, #ffffff 100%)',
-  padding: 'clamp(2.4rem, 6vw, 3.5rem) clamp(1rem, 5vw, 6rem)',
+  background: '#ffffff',
+  padding: 'clamp(1.5rem, 4vw, 2rem) clamp(0.75rem, 3vw, 3rem)',
   display: 'flex',
   justifyContent: 'center',
 };
 
 const layoutStyle: CSSProperties = {
-  width: 'min(1180px, 100%)',
+  width: 'min(100%, 1200px)',
   margin: '0 auto',
   display: 'grid',
-  gap: 'clamp(1.6rem, 3vw, 2.75rem)',
+  gap: 'clamp(1rem, 2.5vw, 1.5rem)',
 };
 
 const topBarStyle: CSSProperties = {
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   alignItems: 'center',
-  gap: '1rem',
-  rowGap: '1.15rem',
-  padding: 'clamp(1rem, 2.5vw, 1.6rem)',
-  borderRadius: '20px',
+  gap: 'clamp(0.5rem, 2vw, 0.75rem)',
+  rowGap: '0.75rem',
+  padding: 'clamp(1rem, 2vw, 1.4rem)',
+  borderRadius: '16px',
   border: '1px solid rgba(15, 51, 92, 0.12)',
   background: 'linear-gradient(120deg, rgba(255, 255, 255, 0.82), rgba(238, 243, 255, 0.88))',
   boxShadow: '0 22px 44px rgba(11, 31, 51, 0.12)',
@@ -72,9 +75,9 @@ const topBarStyle: CSSProperties = {
 const topBarBrandStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '1.05rem',
+  gap: '1.5rem',
   minWidth: 0,
-  flex: '1 1 260px',
+  flex: '1 1 300px',
 };
 
 const brandLogoStyle: CSSProperties = {
@@ -185,18 +188,21 @@ const scannerCardStyle: CSSProperties = {
 
 const videoWrapperStyle: CSSProperties = {
   position: 'relative',
-  borderRadius: '22px',
+  borderRadius: '20px',
   overflow: 'hidden',
-  background: '#020817',
-  minHeight: 'clamp(240px, 40vw, 360px)',
+  background: 'linear-gradient(145deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)',
+  minHeight: 'clamp(280px, 45vw, 400px)',
   display: 'grid',
   placeItems: 'center',
+  boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3)',
+  border: '1px solid rgba(255, 255, 255, 0.05)',
 };
 
 const videoStyle: CSSProperties = {
   width: '100%',
   height: '100%',
   objectFit: 'cover',
+  filter: 'brightness(1.1) contrast(1.05)',
 };
 
 const cameraIdleOverlayStyle: CSSProperties = {
@@ -205,29 +211,39 @@ const cameraIdleOverlayStyle: CSSProperties = {
   display: 'grid',
   placeItems: 'center',
   textAlign: 'center',
-  padding: '2rem',
-  color: 'rgba(235, 243, 255, 0.92)',
-  background: 'linear-gradient(145deg, rgba(11, 31, 51, 0.72), rgba(24, 76, 140, 0.56))',
-  gap: '0.75rem',
+  padding: '2.5rem',
+  color: 'rgba(255, 255, 255, 0.95)',
+  background: 'linear-gradient(145deg, rgba(10, 10, 10, 0.9) 0%, rgba(20, 20, 20, 0.8) 50%, rgba(10, 10, 10, 0.9) 100%)',
+  gap: '1.5rem',
+  backdropFilter: 'blur(8px)',
 };
 
 const overlayFrameStyle: CSSProperties = {
   position: 'absolute',
-  inset: '14%',
-  border: '3px solid rgba(255,255,255,0.78)',
-  borderRadius: '24px',
-  boxShadow: '0 0 0 999px rgba(1, 15, 28, 0.45)',
+  left: '18%',
+  right: '18%',
+  top: '18%',
+  bottom: '18%',
+  border: '3px solid rgba(255,255,255,0.85)',
+  borderRadius: '20px',
+  boxShadow:
+    '0 0 0 2px rgba(255,255,255,0.2), ' +
+    '0 0 0 6px rgba(255,255,255,0.1), ' +
+    'inset 0 0 0 1px rgba(255,255,255,0.3)',
   pointerEvents: 'none',
+  animation: 'scanPulse 3s ease-in-out infinite',
 };
 
 const scanLineStyle: CSSProperties = {
   position: 'absolute',
-  left: '16%',
-  right: '16%',
-  height: '3px',
-  background: 'linear-gradient(90deg, transparent, rgba(47, 152, 208, 0.85), transparent)',
-  animation: 'scannerPulse 2.4s ease-in-out infinite',
+  left: '20%',
+  right: '20%',
+  height: '4px',
+  background: 'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.9), transparent)',
+  animation: 'scanMove 2.5s ease-in-out infinite',
   pointerEvents: 'none',
+  boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)',
+  borderRadius: '2px',
 };
 
 const feedbackCardStyle = (variant: 'success' | 'error'): CSSProperties => ({
@@ -514,7 +530,9 @@ const PoliceVerifyPage = () => {
   );
 
   const startCamera = useCallback(async () => {
+    console.log('startCamera called');
     if (!videoRef.current) {
+      console.log('videoRef.current is null');
       return;
     }
 
@@ -524,33 +542,56 @@ const PoliceVerifyPage = () => {
     setScanStatus('scanning');
     setCameraError(null);
 
+    try {
+      console.log('requesting camera permission');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log('camera permission granted, stream:', stream);
+      // Stop the stream since ZXing will handle it
+      stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+      console.log('camera permission denied', error);
+      setCameraError('Camera access denied. Please allow camera permissions and try again.');
+      setCameraActive(false);
+      setScanStatus('idle');
+      return;
+    }
+
     const reader = new BrowserMultiFormatReader();
+    console.log('created reader');
 
     try {
+      console.log('calling decodeFromVideoDevice');
       await reader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+        console.log('decode callback', { result, error, controls });
         if (controls) {
           controlsRef.current = controls;
         }
 
         if (result) {
+          console.log('result found', result.getText());
           verifyToken(result.getText());
         }
 
         if (error && error.name !== 'NotFoundException') {
+          console.log('error in callback', error);
           setCameraError('Camera error: ' + error.message);
         }
       });
+      console.log('decodeFromVideoDevice resolved');
     } catch (error) {
+      console.log('decodeFromVideoDevice threw error', error);
       resetScanner(reader);
       throw error;
     }
 
     return () => {
+      console.log('cleanup function called');
       resetScanner(reader);
     };
   }, [verifyToken]);
 
   useEffect(() => {
+    console.log('useEffect cameraActive:', cameraActive, 'isAuthReady:', isAuthReady, 'videoRef.current:', videoRef.current);
     if (!isAuthReady || !videoRef.current || !cameraActive) {
       if (!cameraActive) {
         controlsRef.current?.stop();
@@ -563,11 +604,14 @@ const PoliceVerifyPage = () => {
     }
 
     let cleanup: (() => void) | undefined;
+    console.log('calling startCamera');
     startCamera()
       .then((fn) => {
+        console.log('startCamera resolved');
         cleanup = fn;
       })
       .catch((error) => {
+        console.log('startCamera error:', error);
         const message = error instanceof Error ? error.message : 'Unable to access camera';
         setCameraError(message);
         setCameraActive(false);
@@ -575,6 +619,7 @@ const PoliceVerifyPage = () => {
       });
 
     return () => {
+      console.log('cleanup called');
       cleanup?.();
       controlsRef.current?.stop();
       controlsRef.current = null;
@@ -597,11 +642,15 @@ const PoliceVerifyPage = () => {
   }, [router, stopCamera]);
 
   const handleStartCamera = useCallback(() => {
+    alert('Start camera clicked');
+    console.log('handleStartCamera called');
     lastTokenRef.current = null;
     processingRef.current = false;
     setFeedback(null);
     setCameraError(null);
+    setIsModalOpen(false);
     setCameraActive(true);
+    console.log('setCameraActive to true');
   }, []);
 
   const handleResetCamera = useCallback(() => {
@@ -650,113 +699,302 @@ const PoliceVerifyPage = () => {
   return (
     <RequireRole allowed="POLICE_VERIFIER">
       <div style={pageStyle}>
-        <style>{`
-          @keyframes scannerPulse {
-            0% { top: 18%; opacity: 0; }
-            10% { opacity: 1; }
-            50% { top: 72%; opacity: 1; }
-            100% { top: 18%; opacity: 0; }
-          }
-        `}</style>
         <div style={layoutStyle}>
-          <div style={topBarStyle}>
-            <div style={topBarBrandStyle}>
-              <Image
-                src="/RNP_LOGO.png"
-                alt="Rwanda National Police"
-                width={60}
-                height={60}
-                priority
-                style={brandLogoStyle}
-              />
-              <div style={brandTextStyle}>
-                <span style={brandSubtitleStyle}>Rwanda National Police</span>
-                <div style={brandTitleRowStyle}>
-                  <span style={brandTitleStyle}>Umuganda Pass Verifier</span>
-                  <span style={roleBadgeStyle}>{formatRoleLabel(session.user?.role)}</span>
-                </div>
-              </div>
-            </div>
-            <div style={topBarRightStyle}>
-              <div style={topBarButtonsStyle}>
-                {cameraActive ? (
-                  <button type="button" style={buttonStyle('ghost')} onClick={stopCamera}>
-                    <IconPlayerStop size={16} style={{ marginRight: '0.35rem' }} /> Pause camera
-                  </button>
-                ) : (
-                <button type="button" style={buttonStyle('primary')} onClick={handleStartCamera}>
-                  <IconPlayerPlay size={16} style={{ marginRight: '0.35rem' }} /> Start camera
-                </button>
-              )}
-              <button
-                type="button"
-                style={buttonStyle('ghost')}
-                onClick={handleResetCamera}
-                disabled={!cameraActive || scanStatus === 'verifying'}
-              >
-                <IconRefresh size={16} style={{ marginRight: '0.35rem' }} /> Rescan
-              </button>
-              <button type="button" style={logoutButtonStyle} onClick={handleLogout}>
-                <IconLogout size={16} /> Log out
-              </button>
-              </div>
-              <Image
-                src="/sda-logo.png"
-                alt="Seventh-day Adventist Church"
-                width={72}
-                height={72}
-                priority
-                style={{ objectFit: 'contain' }}
-              />
+          {/* RNP Branding Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 2rem',
+            marginBottom: '1rem',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}>
+            <Image
+              src="/RNP_LOGO.png"
+              alt="Rwanda National Police Logo"
+              width={48}
+              height={48}
+              style={{
+                objectFit: 'contain',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                padding: '0.25rem',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              }}
+            />
+            <div style={{
+              display: 'grid',
+              gap: '0.25rem',
+              textAlign: 'center',
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#1e40af',
+                letterSpacing: '-0.01em',
+              }}>
+                Rwanda National Police
+              </h3>
+              <p style={{
+                margin: 0,
+                fontSize: '0.85rem',
+                color: '#6b7280',
+                fontWeight: 500,
+              }}>
+                Pass Verification System
+              </p>
             </div>
           </div>
-          <header style={headingBlockStyle}>
-            <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 'clamp(2.2rem, 3vw + 1rem, 3.6rem)', lineHeight: 1.05 }}>
-              Scan Umuganda passes instantly.
-            </h1>
-            <p style={{ margin: 0, maxWidth: '680px', color: 'rgba(11, 31, 51, 0.72)', fontSize: '1.02rem', lineHeight: 1.7 }}>
-              Use the secure camera feed below to verify member QR codes in the field. Every scan is auditable and does not expose personal data.
-            </p>
-          </header>
+
+          {/* Control Bar */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            padding: '1.5rem',
+            marginBottom: '1rem',
+            flexWrap: 'wrap',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.05)',
+          }}>
+            {/* Status indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              background: 'rgba(255, 255, 255, 0.8)',
+              borderRadius: '12px',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              color: '#374151',
+            }}>
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: scanStatus === 'scanning' ? '#10b981' : scanStatus === 'verifying' ? '#f59e0b' : '#6b7280',
+                animation: scanStatus === 'scanning' ? 'pulse 2s infinite' : 'none',
+              }} />
+              <span>{statusLabel}</span>
+            </div>
+
+            {/* Control buttons */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {!cameraActive ? (
+                <button
+                  onClick={handleStartCamera}
+                  style={{
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.625rem 1.25rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)';
+                  }}
+                >
+                  <IconPlayerPlay style={{ width: '1rem', height: '1rem' }} />
+                  Start camera
+                </button>
+              ) : (
+                <button
+                  onClick={stopCamera}
+                  disabled={scanStatus === 'verifying'}
+                  style={{
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.625rem 1.25rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: scanStatus === 'verifying' ? 'not-allowed' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease',
+                    opacity: scanStatus === 'verifying' ? 0.6 : 1,
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (scanStatus !== 'verifying') {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.3)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (scanStatus !== 'verifying') {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
+                    }
+                  }}
+                >
+                  <IconPlayerStop style={{ width: '1rem', height: '1rem' }} />
+                  Stop camera
+                </button>
+              )}
+
+              <button
+                onClick={handleResetCamera}
+                disabled={!cameraActive || scanStatus === 'verifying'}
+                style={{
+                  backgroundColor: (!cameraActive || scanStatus === 'verifying') ? '#f3f4f6' : '#3b82f6',
+                  color: (!cameraActive || scanStatus === 'verifying') ? '#9ca3af' : 'white',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '10px',
+                  padding: '0.625rem 1.25rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: (!cameraActive || scanStatus === 'verifying') ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s ease',
+                  opacity: (!cameraActive || scanStatus === 'verifying') ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (cameraActive && scanStatus !== 'verifying') {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.2)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (cameraActive && scanStatus !== 'verifying') {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <IconRefresh style={{ width: '1rem', height: '1rem' }} />
+                Rescan
+              </button>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#6b7280',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '10px',
+                  padding: '0.625rem 1.25rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(107, 114, 128, 0.1)';
+                  e.currentTarget.style.color = '#374151';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#6b7280';
+                }}
+              >
+                <IconLogout style={{ width: '1rem', height: '1rem' }} />
+                Log out
+              </button>
+            </div>
+          </div>
 
           <div style={gridStyle}>
-            <section style={scannerCardStyle}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={statusPillStyle(scanStatus)}>
-                  <IconCamera size={18} />
+            <Card className="border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconCamera className="h-5 w-5" />
                   {statusLabel}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div style={videoWrapperStyle}>
+                  <video ref={videoRef} style={videoStyle} muted playsInline width={640} height={480} />
+                  {!cameraActive && (
+                    <div style={cameraIdleOverlayStyle}>
+                      <div style={{
+                        display: 'grid',
+                        gap: '1.5rem',
+                        textAlign: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <div style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          animation: 'pulse 3s ease-in-out infinite',
+                        }}>
+                          <IconCamera
+                            size={36}
+                            color="rgba(255, 255, 255, 0.9)"
+                            style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' }}
+                          />
+                        </div>
+                        <div style={{ display: 'grid', gap: '0.75rem' }}>
+                          <strong style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '600',
+                            color: 'rgba(255, 255, 255, 0.95)',
+                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
+                          }}>
+                            Camera Ready
+                          </strong>
+                          <span style={{
+                            fontSize: '1rem',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            lineHeight: 1.5,
+                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                          }}>
+                            Click "Start camera" to begin scanning QR codes for pass verification.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              <div style={videoWrapperStyle}>
-                <video ref={videoRef} style={videoStyle} muted playsInline />
-                {cameraActive ? (
-                  <>
-                    <div style={overlayFrameStyle} />
-                    {scanStatus !== 'verifying' && <div style={scanLineStyle} />}
-                  </>
-                ) : (
-                  <div style={cameraIdleOverlayStyle}>
-                    <IconCamera size={48} />
-                    <strong style={{ fontSize: '1.05rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Camera paused</strong>
-                    <p style={{ margin: 0, maxWidth: '260px', lineHeight: 1.6 }}>
-                      When ready, start the camera to begin scanning QR passes.
-                    </p>
+                {cameraError && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-destructive flex gap-3">
+                    <IconAlertTriangle className="h-5 w-5 mt-0.5" />
+                    <div>
+                      <div className="font-semibold">Camera unavailable</div>
+                      <div className="text-sm">{cameraError}</div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        Check browser permissions or use manual token entry below.
+                      </div>
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {cameraError && (
-                <div style={feedbackCardStyle('error')}>
-                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <IconAlertTriangle size={20} /> Camera unavailable
-                  </strong>
-                  <p style={{ margin: 0, lineHeight: 1.55 }}>{cameraError}</p>
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(11, 31, 51, 0.62)' }}>
-                    Check browser permissions or switch to manual token entry below.
-                  </p>
-                </div>
-              )}
 
               {/* Modal for feedback */}
               <style jsx global>{`
@@ -767,264 +1005,385 @@ const PoliceVerifyPage = () => {
                 @keyframes slideUp {
                   from { 
                     opacity: 0;
-                    transform: translateY(20px);
+                    transform: translateY(30px) scale(0.95);
                   }
                   to { 
                     opacity: 1;
-                    transform: translateY(0);
-                  }
-                }
-                @keyframes scaleIn {
-                  from { 
-                    opacity: 0;
-                    transform: scale(0.8);
-                  }
-                  to { 
-                    opacity: 1;
-                    transform: scale(1);
+                    transform: translateY(0) scale(1);
                   }
                 }
                 @keyframes pulseSuccess {
-                  0% { 
-                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-                    transform: scale(1);
+                  0%, 100% {
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.1) inset;
                   }
-                  70% { 
-                    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
-                    transform: scale(1.05);
-                  }
-                  100% { 
-                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-                    transform: scale(1);
+                  50% {
+                    box-shadow: 0 0 0 20px rgba(16, 185, 129, 0), 0 0 0 10px rgba(16, 185, 129, 0.1) inset;
                   }
                 }
                 @keyframes pulseError {
-                  0% { 
-                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-                    transform: scale(1);
+                  0%, 100% {
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), 0 0 0 0 rgba(239, 68, 68, 0.1) inset;
                   }
-                  70% { 
-                    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
-                    transform: scale(1.05);
-                  }
-                  100% { 
-                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-                    transform: scale(1);
+                  50% {
+                    box-shadow: 0 0 0 20px rgba(239, 68, 68, 0), 0 0 0 10px rgba(239, 68, 68, 0.1) inset;
                   }
                 }
                 @keyframes iconBounce {
-                  0%, 100% { transform: translateY(0); }
-                  50% { transform: translateY(-5px); }
+                  0%, 100% { transform: translateY(0) rotate(0deg); }
+                  25% { transform: translateY(-8px) rotate(5deg); }
+                  50% { transform: translateY(-4px) rotate(-3deg); }
+                  75% { transform: translateY(-8px) rotate(2deg); }
+                }
+                @keyframes shimmer {
+                  0% { background-position: -200px 0; }
+                  100% { background-position: calc(200px + 100%) 0; }
+                }
+                .shimmer-bg {
+                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                  background-size: 200px 100%;
+                  animation: shimmer 2s infinite;
+                }
+                @keyframes pulse {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.5; }
+                }
+                @keyframes scanPulse {
+                  0%, 100% {
+                    opacity: 0.6;
+                    transform: scale(1);
+                  }
+                  50% {
+                    opacity: 1;
+                    transform: scale(1.02);
+                  }
+                }
+                @keyframes scanMove {
+                  0% { top: 20%; }
+                  50% { top: 50%; }
+                  100% { top: 80%; }
                 }
               `}</style>
               {isModalOpen && feedback && (
-                <div style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                  padding: '1rem',
-                  opacity: 0,
-                  animation: 'fadeIn 0.3s ease-out forwards',
-                  backdropFilter: 'blur(4px)',
-                }}>
-                  <div style={{
-                    backgroundColor: 'white',
-                    borderRadius: '20px',
-                    padding: '2.5rem 2rem',
-                    maxWidth: '500px',
-                    width: '100%',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                    textAlign: 'center',
-                    opacity: 0,
-                    transform: 'translateY(20px)',
-                    animation: 'slideUp 0.4s 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                    border: `1px solid ${feedback.variant === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
-                  }}>
-                    <div style={{
-                      width: '90px',
-                      height: '90px',
-                      borderRadius: '50%',
-                      backgroundColor: feedback.variant === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 1.75rem',
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '1rem',
+                    animation: 'fadeIn 0.3s ease-out',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <div
+                    style={{
+                      background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
+                      borderRadius: '24px',
+                      padding: '2.5rem 2rem',
+                      maxWidth: '520px',
+                      width: '100%',
+                      boxShadow: '0 32px 64px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+                      border: `2px solid ${feedback.variant === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                      animation: 'slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
                       position: 'relative',
-                      animation: feedback.variant === 'success' ? 'pulseSuccess 2s infinite' : 'pulseError 2s infinite',
-                    }}>
-                      <div style={{
-                        width: '72px',
-                        height: '72px',
+                      overflow: 'hidden',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Background decoration */}
+                    <div
+                      className="shimmer-bg"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        pointerEvents: 'none',
+                        opacity: 0.3,
+                      }}
+                    />
+
+                    {/* Close button */}
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      style={{
+                        position: 'absolute',
+                        top: '1.25rem',
+                        right: '1.25rem',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '1px solid rgba(0, 0, 0, 0.1)',
                         borderRadius: '50%',
-                        backgroundColor: feedback.variant === 'success' ? '#e6f7ed' : '#fde8e8',
+                        width: '36px',
+                        height: '36px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        animation: 'scaleIn 0.4s 0.2s cubic-bezier(0.36, 0, 0.66, -0.56) both',
-                      }}>
+                        cursor: 'pointer',
+                        color: '#6b7280',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        zIndex: 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      ×
+                    </button>
+
+                    {/* Icon container */}
+                    <div
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        borderRadius: '50%',
+                        background: feedback.variant === 'success'
+                          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.25))'
+                          : 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25))',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 2rem',
+                        position: 'relative',
+                        animation: feedback.variant === 'success' ? 'pulseSuccess 2s infinite' : 'pulseError 2s infinite',
+                        boxShadow: feedback.variant === 'success'
+                          ? '0 0 0 4px rgba(16, 185, 129, 0.1), inset 0 2px 4px rgba(16, 185, 129, 0.1)'
+                          : '0 0 0 4px rgba(239, 68, 68, 0.1), inset 0 2px 4px rgba(239, 68, 68, 0.1)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backdropFilter: 'blur(10px)',
+                          animation: 'scaleIn 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+                        }}
+                      >
                         {feedback.variant === 'success' ? (
-                          <IconShieldCheck 
-                            size={42} 
-                            color="#10b981" 
+                          <IconShieldCheck
+                            size={44}
+                            color="#10b981"
                             style={{
-                              animation: 'iconBounce 0.6s 0.4s ease-in-out',
-                            }} 
+                              animation: 'iconBounce 0.8s 0.4s ease-in-out',
+                              filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3))',
+                            }}
                           />
                         ) : (
-                          <IconAlertTriangle 
-                            size={42} 
-                            color="#ef4444" 
+                          <IconAlertTriangle
+                            size={44}
+                            color="#ef4444"
                             style={{
-                              animation: 'iconBounce 0.6s 0.4s ease-in-out',
-                            }} 
+                              animation: 'iconBounce 0.8s 0.4s ease-in-out',
+                              filter: 'drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3))',
+                            }}
                           />
                         )}
                       </div>
                     </div>
-                    <h2 style={{
-                      margin: '0 0 1rem',
-                      fontSize: '1.5rem',
-                      fontWeight: 600,
-                      color: feedback.variant === 'success' ? '#065f46' : '#991b1b',
-                    }}>
-                      {feedback.title}
-                    </h2>
-                    <p style={{
-                      margin: '0 0 1.5rem',
-                      fontSize: '1.1rem',
-                      lineHeight: 1.6,
-                      whiteSpace: 'pre-line',
-                      color: '#1f2937',
-                    }}>
-                      {feedback.message}
-                    </p>
-                    {feedback.variant === 'success' && feedback.details && (
-                      <div style={{
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '12px',
-                        padding: '1rem',
-                        marginBottom: '1.5rem',
-                        textAlign: 'left',
-                      }}>
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: '100px 1fr',
-                          gap: '0.75rem',
-                          fontSize: '0.95rem',
-                        }}>
-                          <span style={{ color: '#6b7280' }}>Church:</span>
-                          <span style={{ fontWeight: 500 }}>{feedback.details.churchName}</span>
-                          
-                          <span style={{ color: '#6b7280' }}>Session:</span>
-                          <span>{feedback.details.sessionDate}</span>
-                          
-                          <span style={{ color: '#6b7280' }}>Issued:</span>
-                          <span>{feedback.details.issuedAt}</span>
-                          
-                          <span style={{ color: '#6b7280' }}>Pass ID:</span>
-                          <code style={{
-                            fontFamily: 'var(--font-mono, monospace)',
-                            backgroundColor: '#e5e7eb',
-                            padding: '0.2rem 0.4rem',
-                            borderRadius: '4px',
-                            fontSize: '0.85em',
-                            wordBreak: 'break-all',
-                          }}>
-                            {feedback.details.passId}
-                          </code>
+
+                    {/* Content */}
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                      <h2
+                        style={{
+                          margin: '0 0 1.25rem',
+                          fontSize: '1.75rem',
+                          fontWeight: 700,
+                          color: feedback.variant === 'success' ? '#065f46' : '#991b1b',
+                          textAlign: 'center',
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        {feedback.title}
+                      </h2>
+
+                      <p
+                        style={{
+                          margin: '0 0 2rem',
+                          fontSize: '1.125rem',
+                          lineHeight: 1.6,
+                          whiteSpace: 'pre-line',
+                          color: '#374151',
+                          textAlign: 'center',
+                          fontWeight: 400,
+                        }}
+                      >
+                        {feedback.message}
+                      </p>
+
+                      {/* Success details */}
+                      {feedback.variant === 'success' && feedback.details && (
+                        <div
+                          style={{
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                            borderRadius: '16px',
+                            padding: '1.5rem',
+                            marginBottom: '2rem',
+                            border: '1px solid rgba(0, 0, 0, 0.05)',
+                            boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'grid',
+                              gap: '1rem',
+                              fontSize: '0.95rem',
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ color: '#6b7280', fontWeight: 500 }}>Church:</span>
+                              <span style={{ fontWeight: 600, color: '#1f2937' }}>{feedback.details.churchName}</span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ color: '#6b7280', fontWeight: 500 }}>Session:</span>
+                              <span style={{ color: '#1f2937' }}>{feedback.details.sessionDate}</span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ color: '#6b7280', fontWeight: 500 }}>Issued:</span>
+                              <span style={{ color: '#1f2937' }}>{feedback.details.issuedAt}</span>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              <span style={{ color: '#6b7280', fontWeight: 500 }}>Pass ID:</span>
+                              <code
+                                style={{
+                                  fontFamily: 'var(--font-mono, monospace)',
+                                  background: 'rgba(0, 0, 0, 0.05)',
+                                  padding: '0.5rem 0.75rem',
+                                  borderRadius: '8px',
+                                  fontSize: '0.85em',
+                                  wordBreak: 'break-all',
+                                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                                  color: '#1f2937',
+                                }}
+                              >
+                                {feedback.details.passId}
+                              </code>
+                            </div>
+                          </div>
                         </div>
+                      )}
+
+                      {/* Action button */}
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => {
+                            setIsModalOpen(false);
+                            if (feedback?.variant === 'error') {
+                              setFeedback(null);
+                            }
+                          }}
+                          style={{
+                            background: feedback.variant === 'success'
+                              ? 'linear-gradient(135deg, #10b981, #059669)'
+                              : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '0.875rem 2rem',
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: feedback.variant === 'success'
+                              ? '0 8px 24px rgba(16, 185, 129, 0.3)'
+                              : '0 8px 24px rgba(239, 68, 68, 0.3)',
+                            minWidth: '140px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = feedback.variant === 'success'
+                              ? '0 12px 32px rgba(16, 185, 129, 0.4)'
+                              : '0 12px 32px rgba(239, 68, 68, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = feedback.variant === 'success'
+                              ? '0 8px 24px rgba(16, 185, 129, 0.3)'
+                              : '0 8px 24px rgba(239, 68, 68, 0.3)';
+                          }}
+                        >
+                          <span style={{ position: 'relative', zIndex: 1 }}>
+                            {feedback.variant === 'success' ? 'Continue Scanning' : 'Try Again'}
+                          </span>
+                        </button>
                       </div>
-                    )}
-                    <button
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        // Reset feedback if it's an error to allow rescanning
-                        if (feedback?.variant === 'error') {
-                          setFeedback(null);
-                        }
-                      }}
-                      style={{
-                        backgroundColor: feedback.variant === 'success' ? '#10b981' : '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '0.75rem 1.5rem',
-                        fontSize: '1rem',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s',
-                        minWidth: '120px',
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = feedback.variant === 'success' ? '#059669' : '#dc2626';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = feedback.variant === 'success' ? '#10b981' : '#ef4444';
-                      }}
-                    >
-                      {feedback.variant === 'success' ? 'Continue' : 'Try Again'}
-                    </button>
+                    </div>
                   </div>
                 </div>
               )}
+                {cameraError && (
+                  <div style={feedbackCardStyle('error')}>
+                    <IconAlertTriangle className="h-5 w-5 mt-0.5" />
+                    <div>
+                      <div className="font-semibold">Camera unavailable</div>
+                      <div className="text-sm">{cameraError}</div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        Check browser permissions or use manual token entry below.
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              <form style={manualFormStyle} onSubmit={handleManualSubmit}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <strong style={{ fontSize: '0.95rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#184c8c' }}>
-                    Manual token entry
-                  </strong>
-                  <span style={{ fontSize: '0.82rem', color: 'rgba(11, 31, 51, 0.54)' }}>Paste the pass token if scanning fails.</span>
-                </div>
-                <input
-                  value={manualToken}
-                  onChange={(event) => setManualToken(event.target.value)}
-                  placeholder="Paste token from QR payload"
-                  style={inputStyle}
-                />
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <button type="submit" style={buttonStyle('primary')} disabled={!manualToken.trim() || manualSubmitting}>
-                    {manualSubmitting ? 'Checking…' : 'Verify token'}
-                  </button>
-                  <button type="button" style={buttonStyle('ghost')} onClick={() => setManualToken('')}>
-                    Clear
-                  </button>
-                </div>
-              </form>
-            </section>
+                <form onSubmit={handleManualSubmit} style={manualFormStyle}>
+                  <div className="text-sm font-semibold">Manual token entry</div>
+                  <div style={headerButtonRowStyle}>
+                    <Input
+                      value={manualToken}
+                      onChange={(event) => setManualToken(event.target.value)}
+                      placeholder="Paste token from QR payload"
+                      style={inputStyle}
+                    />
+                    <Button type="submit" disabled={!manualToken.trim() || manualSubmitting} style={buttonStyle()}>
+                      {manualSubmitting ? 'Checking…' : 'Verify token'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setManualToken('')} style={buttonStyle('ghost')}>
+                      Clear
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
 
-            <aside style={instructionCardStyle}>
-              <div style={{ display: 'grid', gap: '0.5rem' }}>
-                <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.8rem' }}>Field protocol</h2>
-                <p style={{ margin: 0, color: 'rgba(11, 31, 51, 0.7)', lineHeight: 1.65 }}>
-                  Present the QR code inside the frame. The scanner automatically attempts verification and provides immediate feedback.
+            <Card style={instructionCardStyle}>
+              <CardHeader>
+                <CardTitle>Field protocol</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  Present the QR code in front of the camera. The verifier will automatically validate and show the result.
                 </p>
-              </div>
-              <ol style={listStyle}>
-                {[
-                  'Ensure the device camera lens is clean and pointed directly at the QR code.',
-                  'Hold steady until you see a success or failure response.',
-                  'If a pass fails, confirm the member data and escalate to church administration.',
-                ].map((step) => (
-                  <li key={step} style={{ display: 'flex', gap: '0.7rem' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#2f98d0', marginTop: '0.4rem' }} />
-                    <span style={{ lineHeight: 1.6 }}>{step}</span>
-                  </li>
-                ))}
-              </ol>
-              <div style={{ background: 'rgba(47, 152, 208, 0.12)', borderRadius: '18px', padding: '1.1rem 1.25rem', border: '1px solid rgba(47, 152, 208, 0.22)', display: 'grid', gap: '0.45rem' }}>
-                <strong style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#184c8c' }}>Escalation</strong>
-                <p style={{ margin: 0, color: 'rgba(11, 31, 51, 0.68)', lineHeight: 1.6 }}>
-                  For tampered or suspicious passes, notify the supervising district pastor and record the incident. All scans are logged for audit purposes.
-                </p>
-              </div>
-            </aside>
+                <ol style={listStyle}>
+                  <li>Ensure the camera lens is clean and pointed directly at the QR code.</li>
+                  <li>Hold steady until you see a success or failure response.</li>
+                  <li>If a pass fails, confirm the member data and escalate to church administration.</li>
+                </ol>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

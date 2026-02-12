@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronLeft, FiChevronRight, FiUploadCloud, FiDownload, FiInfo } from 'react-icons/fi';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { deleteMember as deleteMemberApi, fetchChurchMembers } from '@/lib/api';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface Member {
   id: string;
@@ -17,19 +18,40 @@ interface Member {
 
 const statusStyles: Record<Member['status'], CSSProperties> = {
   active: {
-    backgroundColor: 'var(--surface-soft)',
-    color: 'var(--accent)',
-    border: '1px solid var(--surface-border)',
+    backgroundColor: 'rgba(72, 187, 120, 0.1)',
+    color: '#2f855a',
+    border: '1px solid rgba(72, 187, 120, 0.3)',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '999px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
   },
   inactive: {
-    backgroundColor: 'var(--surface-soft)',
-    color: 'var(--danger)',
-    border: '1px solid var(--surface-border)',
+    backgroundColor: 'rgba(245, 101, 101, 0.1)',
+    color: '#c53030',
+    border: '1px solid rgba(245, 101, 101, 0.3)',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '999px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
   },
   pending: {
-    backgroundColor: 'var(--surface-soft)',
-    color: 'var(--primary)',
-    border: '1px solid var(--surface-border)',
+    backgroundColor: 'rgba(237, 137, 54, 0.1)',
+    color: '#c05621',
+    border: '1px solid rgba(237, 137, 54, 0.3)',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '999px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
   },
 };
 
@@ -40,21 +62,113 @@ const fieldErrorStyle: CSSProperties = {
   fontWeight: 500,
 };
 
+const buttonBase: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.5rem',
+  borderRadius: '10px',
+  border: 'none',
+  padding: '0.6rem 1.1rem',
+  fontWeight: 500,
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  whiteSpace: 'nowrap',
+  minWidth: 'fit-content',
+};
+
+const primaryButton: CSSProperties = {
+  ...buttonBase,
+  backgroundColor: '#1a365d',
+  color: 'white',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: '#2c5282',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  },
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+};
+
+const secondaryButton: CSSProperties = {
+  ...buttonBase,
+  backgroundColor: 'white',
+  color: '#1a365d',
+  border: '1px solid #cbd5e0',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: '#f7fafc',
+    borderColor: '#a0aec0',
+    transform: 'translateY(-1px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+  },
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+};
+
+const iconButton: CSSProperties = {
+  ...buttonBase,
+  padding: '0.5rem',
+  borderRadius: '8px',
+  backgroundColor: 'transparent',
+  color: '#718096',
+  transition: 'all 0.2s ease',
+};
+
+const iconButtonHover = {
+  backgroundColor: 'rgba(26, 54, 93, 0.05)',
+  color: '#1a365d',
+};
+
 const bannerStyles: Record<'info' | 'success' | 'error', CSSProperties> = {
   info: {
-    background: 'rgba(24,76,140,0.08)',
-    border: '1px solid rgba(24,76,140,0.18)',
-    color: 'rgba(24,76,140,0.9)',
+    background: 'rgba(26, 54, 93, 0.05)',
+    border: '1px solid rgba(26, 54, 93, 0.1)',
+    color: '#1a365d',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.9rem',
+    fontWeight: 500,
   },
   success: {
-    background: 'rgba(31,157,119,0.12)',
-    border: '1px solid rgba(31,157,119,0.28)',
-    color: 'rgba(23,125,95,0.95)',
+    background: 'rgba(72, 187, 120, 0.1)',
+    border: '1px solid rgba(72, 187, 120, 0.3)',
+    color: '#2f855a',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.9rem',
+    fontWeight: 500,
   },
   error: {
-    background: 'rgba(220,38,38,0.12)',
-    border: '1px solid rgba(220,38,38,0.24)',
-    color: 'rgba(153,27,27,0.92)',
+    background: 'rgba(245, 101, 101, 0.1)',
+    border: '1px solid rgba(245, 101, 101, 0.3)',
+    color: '#c53030',
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.9rem',
+    fontWeight: 500,
   },
 };
 
@@ -531,10 +645,29 @@ export default function ChurchMembersPage() {
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(4,12,24,0.55)', display: 'grid', placeItems: 'center', zIndex: 100,
         }}>
-          <div style={{ background: 'var(--surface-primary)', borderRadius: 20, width: 'min(520px, 100%)', maxHeight: '90vh', overflowY: 'auto', padding: '1.6rem', display: 'grid', gap: '1rem', border: '1px solid var(--surface-border)', boxShadow: '0 20px 45px rgba(8, 22, 48, 0.18)' }}>
+          <div style={{ background: '#ffffff', borderRadius: 20, width: 'min(520px, 100%)', maxHeight: '90vh', overflowY: 'auto', padding: '1.6rem', display: 'grid', gap: '1rem', border: '1px solid var(--surface-border)', boxShadow: '0 20px 45px rgba(8, 22, 48, 0.18)' }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--shell-foreground)' }}>Add Member</h3>
-              <button type="button" style={{ border: 'none', background: 'transparent', color: 'var(--muted)', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }} onClick={() => setAddOpen(false)}>Close</button>
+              <button 
+                type="button" 
+                style={{
+                  ...iconButton,
+                  padding: '0.5rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(26, 54, 93, 0.05)';
+                  e.currentTarget.style.color = '#1a365d';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#718096';
+                }}
+                onClick={() => setAddOpen(false)}
+              >
+                Close
+              </button>
             </header>
             <form style={{ display: 'grid', gap: '0.9rem' }} onSubmit={handleCreateMember}>
               <div style={{ display: 'grid', gap: '0.6rem', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
@@ -566,28 +699,38 @@ export default function ChurchMembersPage() {
                   />
                   {addFormErrors.nationalId && <span style={fieldErrorStyle}>{addFormErrors.nationalId}</span>}
                 </label>
-                <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
-                  Password
-                  <input
-                    type="password"
+                <div style={{ display: 'grid', gap: '0.35rem' }}>
+                  <PasswordInput
+                    label="Password"
                     required
                     minLength={8}
                     value={addForm.password}
                     onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))}
-                    style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }}
+                    style={{ 
+                      borderRadius: 12, 
+                      border: '1px solid var(--surface-border)', 
+                      background: 'var(--surface-primary)', 
+                      color: 'var(--shell-foreground)',
+                      width: '100%'
+                    }}
                   />
-                </label>
-                <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 600, color: 'var(--shell-foreground)' }}>
-                  Confirm password
-                  <input
-                    type="password"
+                </div>
+                <div style={{ display: 'grid', gap: '0.35rem' }}>
+                  <PasswordInput
+                    label="Confirm password"
                     required
                     minLength={8}
                     value={addForm.confirmPassword}
                     onChange={e => setAddForm(f => ({ ...f, confirmPassword: e.target.value }))}
-                    style={{ borderRadius: 12, border: '1px solid var(--surface-border)', padding: '0.6rem 0.8rem', fontSize: '0.95rem', background: 'var(--surface-primary)', color: 'var(--shell-foreground)' }}
+                    style={{ 
+                      borderRadius: 12, 
+                      border: '1px solid var(--surface-border)', 
+                      background: 'var(--surface-primary)', 
+                      color: 'var(--shell-foreground)',
+                      width: '100%'
+                    }}
                   />
-                </label>
+                </div>
               </div>
               {addForm.error && (
                 <div style={{ padding: '0.9rem 1rem', borderRadius: 12, background: 'rgba(135,32,58,0.1)', border: '1px solid rgba(135,32,58,0.25)', color: '#87203a' }}>
@@ -618,7 +761,28 @@ export default function ChurchMembersPage() {
                 >
                   Cancel
                 </button>
-                <button type="submit" disabled={addForm.isSubmitting} style={{ borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'var(--on-primary)', padding: '0.55rem 1.15rem', fontWeight: 600, fontSize: '0.95rem', boxShadow: '0 14px 28px rgba(8, 22, 48, 0.18)', cursor: addForm.isSubmitting ? 'not-allowed' : 'pointer', opacity: addForm.isSubmitting ? 0.65 : 1 }}>
+                <button type="submit" disabled={addForm.isSubmitting} style={{ 
+                  borderRadius: 14, 
+                  border: 'none', 
+                  background: '#1a365d', 
+                  color: 'white', 
+                  padding: '0.55rem 1.15rem', 
+                  fontWeight: 600, 
+                  fontSize: '0.95rem', 
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  cursor: addForm.isSubmitting ? 'not-allowed' : 'pointer', 
+                  opacity: addForm.isSubmitting ? 0.65 : 1,
+                  transition: 'all 0.2s ease',
+                  ':hover': {
+                    backgroundColor: '#2c5282',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  },
+                  ':active': {
+                    transform: 'translateY(0)',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }
+                }}>
                   {addForm.isSubmitting ? 'Creating…' : 'Create member'}
                 </button>
               </div>
@@ -644,7 +808,7 @@ export default function ChurchMembersPage() {
               maxHeight: '90vh',
               overflowY: 'auto',
               borderRadius: 20,
-              background: 'var(--surface-primary)',
+              background: '#ffffff',
               border: '1px solid var(--surface-border)',
               padding: '1.75rem',
               display: 'grid',
@@ -667,6 +831,17 @@ export default function ChurchMembersPage() {
                   fontWeight: 600,
                   fontSize: '0.95rem',
                   cursor: 'pointer',
+                  padding: '0.5rem',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(26, 54, 93, 0.05)';
+                  e.currentTarget.style.color = '#1a365d';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--muted)';
                 }}
               >
                 Close
@@ -732,8 +907,8 @@ Jane,Doe,0780000000,janedoe@example.com,1234567890123456`}</pre>
                   gap: '0.5rem',
                   borderRadius: 14,
                   border: 'none',
-                  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                  color: 'var(--on-primary)',
+                  background: '#1a365d',
+                  color: 'white',
                   padding: '0.6rem 1.25rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -771,22 +946,30 @@ Jane,Doe,0780000000,janedoe@example.com,1234567890123456`}</pre>
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                color: 'var(--on-primary)',
-                border: 'none',
-                borderRadius: 14,
-                padding: '0.55rem 1.15rem',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                boxShadow: '0 14px 28px rgba(8, 22, 48, 0.18)',
+                backgroundColor: '#184c8c',
+                color: 'white',
+                border: '1px solid #184c8c',
+                borderRadius: '8px',
+                padding: '0.6rem 1.2rem',
+                fontWeight: 500,
+                fontSize: '0.9rem',
                 cursor: 'pointer',
-                transition: 'background 0.2s, box-shadow 0.2s',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.boxShadow = '0 18px 36px rgba(8, 22, 48, 0.26)';
+                e.currentTarget.style.backgroundColor = '#0f3a6e';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.boxShadow = '0 14px 28px rgba(8, 22, 48, 0.18)';
+                e.currentTarget.style.backgroundColor = '#184c8c';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.1)';
               }}
             >
               <FiPlus size={18} />

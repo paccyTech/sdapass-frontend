@@ -17,6 +17,7 @@ type RoleHeroProps = {
   headline: string;
   subheadline: string;
   stats: HeroStat[];
+  actions?: React.ReactNode;
 };
 
 const heroShell: CSSProperties = {
@@ -52,7 +53,7 @@ const statLabel: CSSProperties = {
   marginBottom: '0.6rem',
 };
 
-export const RoleHero = ({ role, headline, subheadline, stats }: RoleHeroProps) => {
+export const RoleHero = ({ role, headline, subheadline, stats, actions }: RoleHeroProps) => {
   const definition: RoleDefinition | undefined = useMemo(() => ROLE_DEFINITIONS[role], [role]);
 
   if (!definition) {
@@ -63,7 +64,6 @@ export const RoleHero = ({ role, headline, subheadline, stats }: RoleHeroProps) 
     <header style={heroShell}>
       <div style={heroContent}>
         <div style={{ display: 'grid', gap: '0.75rem' }}>
-          <span style={{ ...statLabel, color: 'rgba(24,76,140,0.6)' }}>{definition.name}</span>
           <h1
             style={{
               margin: 0,
@@ -110,6 +110,12 @@ export const RoleHero = ({ role, headline, subheadline, stats }: RoleHeroProps) 
             </article>
           ))}
         </div>
+
+        {actions && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {actions}
+          </div>
+        )}
       </div>
     </header>
   );

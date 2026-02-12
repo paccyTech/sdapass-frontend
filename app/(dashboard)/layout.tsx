@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import type { AuthUser } from '@/lib/auth';
-import { readAuthSession } from '@/lib/auth';
+import { AUTH_EVENT_KEY, readAuthSession } from '@/lib/auth';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import {
   DashboardShellProvider,
@@ -40,15 +40,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const { user: sessionUser } = readAuthSession();
-    
-    if (!sessionUser) {
-      router.replace('/login');
-      return;
-    }
-    
-    setUser(sessionUser);
-    setIsLoading(false);
+    const syncFromStorage = () => {
+      const { user: sessionUser } = readAuthSession();
+
+      if (!sessionUser) {
+        router.replace('/login');
+        return;
+      }
+
+      setUser(sessionUser);
+      setIsLoading(false);
+    };
+
+    syncFromStorage();
+
+    window.addEventListener(AUTH_EVENT_KEY, syncFromStorage);
+
+    return () => {
+      window.removeEventListener(AUTH_EVENT_KEY, syncFromStorage);
+    };
   }, [router]);
 
   if (isLoading || !user) {

@@ -112,7 +112,7 @@ const buttonStyle: CSSProperties = {
   border: 'none',
   borderRadius: '16px',
   padding: '0.65rem 1.2rem',
-  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+  background: 'var(--primary)',
   color: '#fff',
   fontWeight: 600,
   cursor: 'pointer',

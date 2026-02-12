@@ -10,8 +10,8 @@ const sidebarStyle: CSSProperties = {
   flexDirection: 'column',
   gap: '2rem',
   padding: '1.5rem',
-  background: 'var(--sidebar-bg)',
-  borderRight: '1px solid var(--surface-border)',
+  background: '#ffffff',
+  borderRight: '1px solid #fbbf24',
   height: '100%',
   overflowY: 'auto',
   width: '280px',
@@ -52,6 +52,24 @@ const linkHoverStyle = `
   .sidebar-link:hover {
     background-color: rgba(24, 76, 140, 0.08);
   }
+  
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 193, 36, 0.1);
+    border-radius: 3px;
+  }
+  
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(251, 191, 36, 0.6);
+    border-radius: 3px;
+  }
+  
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(251, 191, 36, 0.8);
+  }
 `;
 
 interface SidebarProps {
@@ -64,7 +82,7 @@ export function Sidebar({ sections }: SidebarProps) {
   return (
     <>
       <style>{linkHoverStyle}</style>
-      <aside style={sidebarStyle}>
+      <aside style={sidebarStyle} className="sidebar-scroll">
       {sections.map((section) => (
         <div key={section.title} style={sectionStyle}>
           <div style={sectionTitleStyle}>{section.title}</div>

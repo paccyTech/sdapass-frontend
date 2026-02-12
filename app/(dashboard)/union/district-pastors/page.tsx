@@ -13,7 +13,7 @@ import {
   type FormEvent,
 } from 'react';
 
-import { IconAlertTriangle, IconChartHistogram, IconMapPin, IconUsersGroup } from '@tabler/icons-react';
+import { IconAlertTriangle, IconChartHistogram, IconMapPin, IconUsersGroup, IconEye, IconEyeOff } from '@tabler/icons-react';
 
 import RequireRole from '@/components/RequireRole';
 import { RoleHero, type HeroStat } from '@/components/dashboard/RoleHero';
@@ -42,11 +42,11 @@ import {
 } from '@/lib/api';
 
 const cardStyle: CSSProperties = {
-  background: 'var(--surface-primary)',
+  background: 'transparent',
   borderRadius: '20px',
   padding: '2rem',
-  border: '1px solid var(--surface-border)',
-  boxShadow: '0 18px 32px rgba(8, 22, 48, 0.12)',
+  border: 'none',
+  boxShadow: 'none',
   display: 'grid',
   gap: '1.25rem',
 };
@@ -137,7 +137,7 @@ const buttonStyle = (variant: 'primary' | 'ghost' | 'danger' = 'primary'): CSSPr
 
   return {
     border: 'none',
-    background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+    background: 'var(--primary)',
     color: 'var(--on-primary)',
     fontWeight: 600,
     borderRadius: '16px',
@@ -171,8 +171,8 @@ const metricCardStyle: CSSProperties = {
   ...cardStyle,
   padding: '1.75rem',
   gap: '1.15rem',
-  background: 'var(--surface-primary)',
-  border: '1px solid var(--surface-border)',
+  background: 'transparent',
+  border: 'none',
 };
 
 const metricIconStyle: CSSProperties = {
@@ -204,6 +204,8 @@ const chartCardStyle: CSSProperties = {
   padding: '1.75rem',
   display: 'grid',
   gap: '1.25rem',
+  background: 'transparent',
+  border: 'none',
 };
 
 const chartHeaderStyle: CSSProperties = {
@@ -366,7 +368,7 @@ const modalOverlayStyle: CSSProperties = {
 };
 
 const modalBodyStyle: CSSProperties = {
-  background: 'var(--surface-primary)',
+  background: 'white',
   borderRadius: '24px',
   width: 'min(620px, 100%)',
   maxHeight: '80vh',
@@ -567,6 +569,8 @@ const DistrictPastorsPage = () => {
   const [isChurchEditOpen, setIsChurchEditOpen] = useState(false);
   const [isChurchDeleteOpen, setIsChurchDeleteOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -864,8 +868,8 @@ const DistrictPastorsPage = () => {
     () => (
       <RoleHero
         role="UNION_ADMIN"
-        headline="Create & manage District Pastors"
-        subheadline="Provision leadership credentials, register churches, and guarantee every district is covered."
+        headline=""
+        subheadline=""
         stats={heroStats}
       />
     ),
@@ -1851,30 +1855,78 @@ const DistrictPastorsPage = () => {
               <>
                 <label style={fieldLabel}>
                   Password
-                  <input
-                    type="password"
-                    value={pastorFormState.password}
-                    onChange={handlePastorFieldChange('password')}
-                    style={textInputStyle}
-                    placeholder="Set an initial password"
-                    minLength={8}
-                    required
-                  />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={pastorFormState.password}
+                      onChange={handlePastorFieldChange('password')}
+                      style={{
+                        ...textInputStyle,
+                        paddingRight: '3rem',
+                        width: '100%'
+                      }}
+                      placeholder="Set an initial password"
+                      minLength={8}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        color: 'var(--muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                    </button>
+                  </div>
                   <span style={{ fontSize: '0.85rem', color: 'rgba(24,76,140,0.65)', fontWeight: 400 }}>
                     Must be at least 8 characters. Share securely with the pastor.
                   </span>
                 </label>
                 <label style={fieldLabel}>
                   Confirm password
-                  <input
-                    type="password"
-                    value={pastorFormState.confirmPassword}
-                    onChange={handlePastorFieldChange('confirmPassword')}
-                    style={textInputStyle}
-                    placeholder="Re-enter password"
-                    minLength={8}
-                    required
-                  />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={pastorFormState.confirmPassword}
+                      onChange={handlePastorFieldChange('confirmPassword')}
+                      style={{
+                        ...textInputStyle,
+                        paddingRight: '3rem',
+                        width: '100%'
+                      }}
+                      placeholder="Re-enter password"
+                      minLength={8}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        color: 'var(--muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {showConfirmPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                    </button>
+                  </div>
                 </label>
               </>
             )}
@@ -2222,14 +2274,8 @@ const DistrictPastorsPage = () => {
       {editChurchModal}
       {deleteChurchModal}
       <RequireRole allowed="UNION_ADMIN">
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--primary)' }}>
-                Umuganda Command
-              </strong>
-              <span style={{ fontSize: '0.8rem', color: 'rgba(82,96,109,0.72)' }}>Leadership Console</span>
-            </div>
+        <div style={{ display: 'grid', gap: '1.5rem', padding: '0', width: '100%' }}>
+          <div style={{ padding: '0' }}>
 
             {globalFeedback && (
               <div
@@ -2290,86 +2336,6 @@ const DistrictPastorsPage = () => {
                   <p style={{ ...mutedText, color: '#87203a' }}>{error}</p>
                 </div>
               )}
-
-              <div style={analyticsGridStyle}>
-                {overviewMetrics.map((metric) => (
-                  <article key={metric.label} style={metricCardStyle}>
-                    <div style={metricIconStyle}>{metric.icon}</div>
-                    <div style={{ display: 'grid', gap: '0.35rem' }}>
-                      <p style={metricLabelStyle}>{metric.label}</p>
-                      <h3 style={metricValueStyle}>{metric.value}</h3>
-                      <p style={{ ...metricLabelStyle, color: 'rgba(11,31,51,0.55)' }}>{metric.context}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gap: '1.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
-                <article style={chartCardStyle}>
-                  <header style={chartHeaderStyle}>
-                    <h3 style={chartTitleStyle}>District coverage health</h3>
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(11,31,51,0.65)' }}>{coverageAverage}% average coverage</span>
-                  </header>
-                  <div style={{ display: 'grid', gap: '0.85rem' }}>
-                    {coverageInsightsSorted.length === 0 ? (
-                      <p style={mutedText}>Add districts and pastors to begin tracking coverage.</p>
-                    ) : (
-                      coverageInsightsSorted.map((insight) => (
-                        <div key={insight.id} style={coverageRowStyle}>
-                          <div style={coverageLabelStyle}>
-                            <span style={{ fontWeight: 600 }}>{insight.label}</span>
-                            <span>{insight.percent}%</span>
-                          </div>
-                          <div style={coverageTrackStyle}>
-                            <div style={coverageFillStyle(insight.percent, insight.color)} />
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem', color: 'rgba(11,31,51,0.6)' }}>
-                            <span>{insight.activePastors} active pastor{insight.activePastors === 1 ? '' : 's'}</span>
-                            <span>{insight.churches} church{insight.churches === 1 ? '' : 'es'}</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </article>
-
-                {(uncoveredDistricts.length > 0 || lowCoverageDistricts.length > 0) && (
-                  <article style={{ ...chartCardStyle, background: 'rgba(255, 193, 66, 0.16)', borderColor: 'rgba(255, 193, 66, 0.4)' }}>
-                    <header style={chartHeaderStyle}>
-                      <h3 style={{ ...chartTitleStyle, color: '#734d00' }}>Priority follow-up</h3>
-                      <IconAlertTriangle size={24} stroke={1.7} style={{ color: '#734d00' }} />
-                    </header>
-                    <div style={calloutListStyle}>
-                      {uncoveredDistricts.map((insight) => (
-                        <div key={`uncovered-${insight.id}`} style={calloutItemStyle}>
-                          <IconAlertTriangle size={18} stroke={1.6} />
-                          <span>
-                            <strong>{insight.label}</strong> has no active district pastor. Assign coverage immediately.
-                          </span>
-                        </div>
-                      ))}
-                      {lowCoverageDistricts.map((insight) => (
-                        <div key={`low-${insight.id}`} style={calloutItemStyle}>
-                          <IconAlertTriangle size={18} stroke={1.6} />
-                          <span>
-                            <strong>{insight.label}</strong> is at {insight.percent}% coverage. Consider onboarding additional support.
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
-                )}
-              </div>
-
-              <section style={{ display: 'grid', gap: '0.85rem' }}>
-                <header style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.35rem', color: 'var(--primary)' }}>Pastor coverage trend</h3>
-                  <span style={{ fontSize: '0.9rem', color: 'rgba(11,31,51,0.65)' }}>Top roster coverage</span>
-                </header>
-                <div style={{ padding: '0.5rem 0' }}>
-                  <Sparkline data={pastorTrendData} accentColor="#18508d" />
-                </div>
-              </section>
 
               <div style={actionsGridStyle}>
                 <article style={{ ...cardStyle, gap: '1.5rem' }}>
@@ -2539,7 +2505,7 @@ const DistrictPastorsPage = () => {
                       const district = districts.find((item) => item.id === pastor.districtId);
                       const churches = pastor.pastorChurches;
                       return (
-                        <article key={pastor.id} style={{ ...cardStyle, gap: '1rem' }}>
+                        <article key={pastor.id} style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', padding: '1.5rem', display: 'grid', gap: '1rem' }}>
                           <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
                             <div style={{ display: 'grid', gap: '0.25rem' }}>
                               <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.35rem', color: 'var(--primary)' }}>
@@ -2551,9 +2517,9 @@ const DistrictPastorsPage = () => {
                               <span
                                 style={{
                                   ...badgeStyle(),
-                                  background: pastor.isActive ? 'rgba(17,17,17,0.08)' : 'rgba(17,17,17,0.03)',
+                                  background: pastor.isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(17,17,17,0.03)',
                                   border: '1px solid rgba(17,17,17,0.12)',
-                                  color: pastor.isActive ? '#111' : 'rgba(17,17,17,0.55)',
+                                  color: pastor.isActive ? '#22c55e' : 'rgba(17,17,17,0.55)',
                                 }}
                               >
                                 {pastor.isActive ? 'Active' : 'Inactive'}
@@ -2566,13 +2532,13 @@ const DistrictPastorsPage = () => {
                           <div style={{ display: 'grid', gap: '0.6rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                               <strong style={{ color: 'var(--primary)' }}>District:</strong>
-                              <span style={chipStyle}>{district?.name ?? 'Unassigned'}</span>
+                              <span style={{ ...chipStyle, background: '#fef3c7', color: '#92400e', borderColor: '#f59e0b' }}><IconMapPin size={14} /> {district?.name ?? 'Unassigned'}</span>
                             </div>
                             <div style={{ display: 'grid', gap: '0.5rem' }}>
                               <strong style={{ color: 'var(--primary)' }}>Assigned churches</strong>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 {churches.length === 0 ? (
-                                  <span style={{ ...chipStyle, background: 'rgba(135,32,58,0.08)', borderColor: 'rgba(135,32,58,0.3)', color: '#87203a' }}>
+                                  <span style={{ color: '#dc2626', background: 'transparent', border: 'none' }}>
                                     No churches linked yet
                                   </span>
                                 ) : (

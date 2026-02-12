@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import type { CSSProperties, ReactNode } from "react";
-import { Manrope, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
 
-const display = Plus_Jakarta_Sans({
+const display = Inter({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "700"],
 });
 
-const body = Manrope({
+const body = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["400", "500", "600", "700"],
@@ -37,9 +38,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
       <body className="main-shell">
         <ThemeProvider>
           <main className="content">{children}</main>
-          <footer className="site-footer">
-            © {new Date().getFullYear()} SDA PASS MANAGEMENT
-          </footer>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

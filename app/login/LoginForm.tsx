@@ -201,8 +201,8 @@ const submitStyle: CSSProperties = {
   fontSize: '1rem',
   color: 'white',
   cursor: 'pointer',
-  background: 'linear-gradient(135deg, #184c8c, #1f9d77)',
-  boxShadow: '0 15px 25px rgba(24, 76, 140, 0.28)',
+  background: '#0c2e56',
+  boxShadow: '0 4px 12px rgba(12, 46, 86, 0.3)',
   opacity: 1,
   transition: 'opacity 0.2s ease',
 };

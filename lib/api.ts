@@ -1,6 +1,56 @@
 import type { RoleKey } from "@/lib/rbac";
 
+import { clearAuthSession } from '@/lib/auth';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
+
+export type UmugandaEventSummary = {
+  id: string;
+  date: string;
+  theme: string;
+  location: string | null;
+  unionId: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    attendance: number;
+  };
+  union: {
+    id: string;
+    name: string;
+  };
+  createdBy: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+
+export type CreateUmugandaEventInput = {
+  date: string;
+  theme: string;
+  location?: string | null;
+  description?: string | null;
+};
+
+export type UmugandaEventAttendance = {
+  id: string;
+  eventId: string;
+  memberId: string;
+  churchId: string;
+  checkedInAt: string;
+  member: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    nationalId: string;
+  };
+  church: {
+    id: string;
+    name: string;
+  };
+};
 
 export type DistrictSummary = {
   id: string;
@@ -214,6 +264,9 @@ const request = async <T>(path: string, { token, method = "GET", body }: Request
 
     if (!response.ok) {
       console.error("[api] request failed", { status: response.status, payload });
+      if (response.status === 401) {
+        clearAuthSession();
+      }
       const base = (payload as { error?: string })?.error ?? `Request failed (${response.status})`;
       const details = (payload as { details?: unknown })?.details;
       let detailMessage: string | null = null;
@@ -709,11 +762,22 @@ export const fetchMemberAttendance = (token: string, memberId: string) =>
     token,
   });
 
-export const fetchUpcomingSessions = (token: string, churchId?: string) => {
-  const url = churchId 
-    ? `/api/sessions/upcoming?churchId=${churchId}`
-    : '/api/sessions/upcoming';
-  return request<{ sessions: UpcomingSession[] }>(url, { token });
+export const fetchUpcomingSessions = async (token: string, churchId?: string) => {
+  const events = await fetchUmugandaEvents(token);
+  const now = new Date();
+  const upcoming = events.filter(event => new Date(event.date) > now);
+  const sessions: UpcomingSession[] = upcoming.map(event => ({
+    id: event.id,
+    date: event.date,
+    theme: event.theme,
+    callTime: '', // Not applicable for Umuganda events
+    location: event.location || '',
+    church: {
+      id: '',
+      name: '',
+    }, // Default, since Umuganda events are union-wide
+  }));
+  return { sessions };
 };
 
 export const requestPasswordReset = (input: { nationalId?: string; email?: string }) =>
@@ -722,8 +786,130 @@ export const requestPasswordReset = (input: { nationalId?: string; email?: strin
     body: input,
   });
 
-export const confirmPasswordReset = (input: { token: string; newPassword: string }) =>
-  request<{ success: boolean }>("/api/auth/password-reset/confirm", {
+export async function confirmPasswordReset(input: { token: string; newPassword: string }) {
+  return request<{ success: boolean }>("/api/auth/password-reset/confirm", {
     method: "POST",
     body: input,
   });
+}
+
+export type MeResponse = {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string | null;
+    role: RoleKey;
+    unionId: string | null;
+    districtId: string | null;
+    churchId: string | null;
+  };
+};
+
+export const fetchMe = async (token: string) => {
+  const payload = await request<MeResponse>("/api/users/me", { token });
+  return payload.user;
+};
+
+export const updateMe = async (
+  token: string,
+  input: Partial<{ firstName: string; lastName: string; email: string | null; phoneNumber: string }>,
+) => {
+  const payload = await request<MeResponse>("/api/users/me", {
+    token,
+    method: 'PATCH',
+    body: input,
+  });
+  return payload.user;
+};
+
+export const changePasswordRequest = async (
+  token: string,
+  input: { currentPassword: string; newPassword: string },
+) => {
+  return request<{ success: boolean }>("/api/auth/change-password", {
+    token,
+    method: 'POST',
+    body: input,
+  });
+};
+
+// Umuganda Events API
+export async function fetchUmugandaEvents(token: string) {
+  const payload = await request<{ events: UmugandaEventSummary[] }>("/api/umuganda-events", {
+    token,
+  });
+
+  return payload.events;
+}
+
+export async function createUmugandaEvent(token: string, input: CreateUmugandaEventInput) {
+  const payload = await request<{ event: UmugandaEventSummary }>("/api/umuganda-events", {
+    token,
+    method: "POST",
+    body: input,
+  });
+
+  return payload.event;
+}
+
+export async function fetchUmugandaEventById(token: string, eventId: string) {
+  const payload = await request<{ event: UmugandaEventSummary }>(`/api/umuganda-events/${eventId}`, {
+    token,
+  });
+
+  return payload.event;
+}
+
+export async function updateUmugandaEvent(
+  token: string,
+  eventId: string,
+  input: Partial<CreateUmugandaEventInput>,
+) {
+  const payload = await request<{ event: UmugandaEventSummary }>(`/api/umuganda-events/${eventId}`, {
+    token,
+    method: "PATCH",
+    body: input,
+  });
+
+  return payload.event;
+}
+
+export async function deleteUmugandaEvent(token: string, eventId: string) {
+  return request<{ success: boolean }>(`/api/umuganda-events/${eventId}`, {
+    token,
+    method: "DELETE",
+  });
+}
+
+export async function checkInToUmugandaEvent(token: string, eventId: string, memberToken: string) {
+  const payload = await request<{ attendance: UmugandaEventAttendance }>(
+    `/api/umuganda-events/${eventId}/attendance`,
+    {
+      token,
+      method: "POST",
+      body: { token: memberToken },
+    },
+  );
+
+  return payload.attendance;
+}
+
+export async function fetchUmugandaEventAttendance(
+  token: string,
+  eventId: string,
+  params?: { churchId?: string },
+) {
+  const query = new URLSearchParams();
+  if (params?.churchId) {
+    query.append("churchId", params.churchId);
+  }
+
+  const payload = await request<{ attendance: UmugandaEventAttendance[] }>(
+    `/api/umuganda-events/${eventId}/attendance${query.toString() ? `?${query.toString()}` : ""}`,
+    { token },
+  );
+
+  return payload.attendance;
+}

@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState, useId, type CSSProperties } from 'react';
+import { UserPlus, FileText, Church, MapPin, Bell, Users, Map, User } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import RequireRole from '@/components/RequireRole';
 import { DashboardShellProvider, useDashboardShellConfig } from '@/components/dashboard/DashboardShellContext';
@@ -67,13 +69,16 @@ const toFullLabel = (label?: string | null) => {
 
 const pageContainer: CSSProperties = {
   display: 'grid',
-  gap: '1.75rem',
+  gap: '2rem',
+  padding: '1.5rem',
+  width: '100%',
 };
 
 const statsGrid: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
   gap: '1.5rem',
+  marginBottom: '1rem',
 };
 
 const chartDimensions = {
@@ -84,53 +89,66 @@ const chartDimensions = {
 };
 
 const cardStyle: CSSProperties = {
-  backgroundColor: 'var(--surface-primary)',
-  borderRadius: '18px',
-  border: '1px solid var(--surface-border)',
-  boxShadow: '0 16px 40px rgba(8, 22, 48, 0.16)',
-  padding: '1.6rem',
+  background: 'white',
+  borderRadius: '12px',
+  padding: '2rem',
+  border: '1px solid #e5e7eb',
+  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   display: 'grid',
-  gap: '1rem',
+  gap: '1.25rem',
+  textAlign: 'center',
+  height: '100%',
+};
+
+const cardHoverStyle: CSSProperties = {
+  transform: 'translateY(-2px)',
+  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
 };
 
 const insightGrid: CSSProperties = {
   display: 'grid',
-  gap: '1.5rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+  gap: '1.75rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+  marginTop: '1rem',
 };
 
 const chartCardStyle: CSSProperties = {
-  ...cardStyle,
-  padding: '1.8rem',
-  overflow: 'hidden',
-  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
 };
 
 const chartSubtitleStyle: CSSProperties = {
-  margin: '0.35rem 0 0',
+  margin: '0.5rem 0 0',
   color: 'var(--muted)',
-  fontSize: '0.9rem',
+  fontSize: '0.92rem',
+  lineHeight: 1.5,
+  maxWidth: '90%',
 };
 
 const chartMetaRow: CSSProperties = {
   display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  gap: '1rem',
-  marginTop: '1.1rem',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  gap: '0.75rem',
+  marginTop: '0.5rem',
   flexWrap: 'wrap',
+  paddingBottom: '0.5rem',
 };
 
 const chipStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: '0.35rem',
-  padding: '0.25rem 0.75rem',
-  borderRadius: '999px',
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  backgroundColor: 'var(--surface-soft)',
+  padding: '0.4rem 0.9rem',
+  borderRadius: '8px',
+  fontSize: '0.8rem',
+  fontWeight: 500,
+  backgroundColor: 'white',
   color: 'var(--shell-foreground)',
+  border: '1px solid var(--surface-border)',
+  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+  transition: 'all 0.2s ease',
 };
 
 const chipDotStyle: CSSProperties = {
@@ -431,6 +449,7 @@ const AnimatedColumnChart = ({ points }: { points: ChartPoint[] }) => {
 const statValueStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
+  justifyContent: 'center',
   gap: '0.5rem',
   color: 'var(--shell-foreground)',
 };
@@ -482,10 +501,10 @@ const DashboardContent = () => {
             <Image src="/sda-logo.png" alt="SDA logo" width={64} height={64} priority />
           </div>
           <div style={{ display: 'grid', gap: '0.2rem' }}>
-            <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--primary)' }}>
+            <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: '#065f46' }}>
               Umuganda Command
             </strong>
-            <span style={{ fontSize: '0.8rem', color: 'rgba(82,96,109,0.72)' }}>Leadership Console</span>
+            <span style={{ fontSize: '0.8rem', color: '#92400e' }}>Leadership Console</span>
           </div>
         </div>
       ),
@@ -611,38 +630,69 @@ const DashboardContent = () => {
         label: 'Total members',
         value: stats?.totalMembers ?? 0,
         helper: 'Across all districts',
+        icon: <Users size={24} />,
+        color: '#3b82f6',
       },
       {
         label: 'Registered districts',
         value: stats?.totalDistricts ?? 0,
         helper: 'Active within your union',
+        icon: <Map size={24} />,
+        color: '#10b981',
       },
       {
         label: 'Active churches',
         value: stats?.totalChurches ?? 0,
         helper: 'Reporting attendance',
+        icon: <Church size={24} />,
+        color: '#f59e0b',
       },
       {
         label: 'District pastors',
         value: stats?.totalPastors ?? 0,
         helper: 'With active assignments',
+        icon: <User size={24} />,
+        color: '#8b5cf6',
       },
     ],
     [stats],
   );
 
   const renderActivityIcon = (type: string) => {
+    const iconSize = 20;
+    const iconStyle = { width: iconSize, height: iconSize };
+    
     switch (type) {
       case 'member_added':
-        return { icon: '👤', color: 'var(--surface-soft)', tint: 'var(--primary)' };
+        return { 
+          icon: <UserPlus style={iconStyle} />, 
+          color: 'transparent', 
+          tint: '#10b981' 
+        };
       case 'attendance_recorded':
-        return { icon: '📝', color: 'var(--surface-soft)', tint: 'var(--accent)' };
+        return { 
+          icon: <FileText style={iconStyle} />, 
+          color: 'transparent', 
+          tint: '#3b82f6' 
+        };
       case 'new_church':
-        return { icon: '⛪', color: 'var(--surface-soft)', tint: 'var(--primary)' };
+        return { 
+          icon: <Church style={iconStyle} />, 
+          color: 'transparent', 
+          tint: '#f59e0b' 
+        };
       case 'new_district':
-        return { icon: '🗺️', color: 'var(--surface-soft)', tint: 'var(--accent)' };
+        return { 
+          icon: <MapPin style={iconStyle} />, 
+          color: 'transparent', 
+          tint: '#8b5cf6' 
+        };
       default:
-        return { icon: '📌', color: 'var(--surface-soft)', tint: 'var(--muted)' };
+        return { 
+          icon: <Bell style={iconStyle} />, 
+          color: 'transparent', 
+          tint: '#ef4444' 
+        };
     }
   };
 
@@ -676,16 +726,52 @@ const DashboardContent = () => {
       <RequireRole allowed="UNION_ADMIN">
         <section style={statsGrid}>
           {statCards.map((stat) => (
-            <article key={stat.label} style={cardStyle}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 600 }}>
-                {stat.label}
-              </span>
-              <div style={statValueStyle}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 700 }}>
-                  {formatNumber(stat.value)}
+            <article 
+              key={stat.label} 
+              style={cardStyle}
+            >
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+              }}>
+                <span style={{ 
+                  color: 'var(--muted)', 
+                  fontSize: '0.9rem', 
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    color: stat.color,
+                  }}>
+                    {stat.icon}
+                  </span>
+                  {stat.label}
                 </span>
+                <div style={statValueStyle}>
+                  <span style={{ 
+                    fontFamily: 'var(--font-display)', 
+                    fontSize: '2.2rem', 
+                    fontWeight: 700,
+                    color: 'var(--shell-foreground)',
+                  }}>
+                    {formatNumber(stat.value)}
+                  </span>
+                </div>
+                <p style={{ 
+                  margin: 0, 
+                  color: 'var(--muted)', 
+                  fontSize: '0.92rem',
+                  opacity: 0.9,
+                  textAlign: 'center',
+                }}>
+                  {stat.helper}
+                </p>
               </div>
-              <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.92rem' }}>{stat.helper}</p>
             </article>
           ))}
         </section>
@@ -724,33 +810,39 @@ const DashboardContent = () => {
 
           <article style={chartCardStyle}>
             <header>
-              <h2 style={sectionTitleStyle}>Member growth (last 30 days)</h2>
-              <p style={chartSubtitleStyle}>Running total of new member registrations.</p>
+              <h2 style={sectionTitleStyle}>Member growth trend</h2>
+              <p style={chartSubtitleStyle}>Total members added per month.</p>
             </header>
             {growthTrendPoints.length ? (
               <>
                 <div style={chartMetaRow}>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#10b981' }} />
                     {growthLatestChipText}
                   </span>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#3b82f6' }} />
                     {growthAverageChipText}
                   </span>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#ef4444' }} />
                     {growthDeltaChipText}
                   </span>
                 </div>
-                <AnimatedSparkline points={growthTrendPoints} />
-                <div style={axisLabelRow}>
-                  <span>{growthAxisStartLabel}</span>
-                  <span>{growthAxisEndLabel}</span>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={growthTrendPoints.map(p => ({ name: p.label, value: p.value }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#10b981" animationBegin={0} animationDuration={1000} />
+                  </BarChart>
+                </ResponsiveContainer>
               </>
             ) : (
-              <p style={{ margin: '1rem 0 0', color: 'var(--muted)' }}>No recent member registrations yet.</p>
+              <p style={{ margin: '1rem 0 0', color: 'var(--muted)' }}>
+                Member growth activity will appear once registrations are recorded.
+              </p>
             )}
           </article>
 
@@ -763,23 +855,27 @@ const DashboardContent = () => {
               <>
                 <div style={chartMetaRow}>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#10b981' }} />
                     {attendanceLatestChipText}
                   </span>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#3b82f6' }} />
                     {attendanceAverageChipText}
                   </span>
                   <span style={chipStyle}>
-                    <span style={chipDotStyle} />
+                    <span style={{ ...chipDotStyle, backgroundColor: '#ef4444' }} />
                     {attendanceDeltaChipText}
                   </span>
                 </div>
-                <AnimatedColumnChart points={attendanceTrendColumns} />
-                <div style={axisLabelRow}>
-                  <span>{attendanceAxisStartLabel}</span>
-                  <span>{attendanceAxisEndLabel}</span>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={attendanceTrendColumns.map(p => ({ name: p.label, value: p.value }))}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#3b82f6" animationBegin={0} animationDuration={1000} />
+                  </BarChart>
+                </ResponsiveContainer>
               </>
             ) : (
               <p style={{ margin: '1rem 0 0', color: 'var(--muted)' }}>

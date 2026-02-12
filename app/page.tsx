@@ -9,7 +9,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ChevronRight, ClipboardList, Globe, Home, Search, ShieldCheck, Ticket, UsersRound, Download, User, LogOut, BarChart2, Building2, Church, CheckCircle, Flag, Landmark, Settings, UserCheck, Users } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { fetchMemberPass, type MemberPassDetails, type MemberPassViewer } from '@/lib/api';
+import { fetchMemberPass, fetchMemberAttendance, type MemberPassDetails, type MemberPassViewer, type MemberAttendance } from '@/lib/api';
 import { ROLE_DEFINITIONS, type RoleKey } from '@/lib/rbac';
 import type { AuthUser } from '@/lib/auth';
 
@@ -25,6 +25,7 @@ const HomePage = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const [memberPass, setMemberPass] = useState<MemberPassDetails | null>(null);
   const [memberProfile, setMemberProfile] = useState<MemberPassViewer | null>(null);
+  const [memberAttendance, setMemberAttendance] = useState<MemberAttendance[] | null>(null);
   const [loadingPass, setLoadingPass] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
   const [activeCardView, setActiveCardView] = useState<'front' | 'back'>('front');
@@ -127,11 +128,11 @@ const HomePage = () => {
   const categories = useMemo(
     () => [
       'View all',
-      'Pass issuance',
-      'Attendance tracking',
-      'Verification',
-      'Reports & insights',
-      'Administration',
+      'My Pass',
+      'My Attendance',
+      'Scan Reports',
+      'Reports & Insights',
+      'Settings',
     ],
     [],
   );
@@ -182,7 +183,7 @@ const HomePage = () => {
               />
             </div>
             <div style={brandTextBlock}>
-              <span style={brandHeadlineLight}>RUM</span>
+              <span style={brandHeadlineLight}>Rwanda Union Mission</span>
               <span style={brandHeadlineSecondary}>UMUGANDA PASS</span>
             </div>
           </div>

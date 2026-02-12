@@ -19,7 +19,7 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SDA PASS MANAGEMENT",
+  title: "RUM Umuganda Pass",
   description: "Streamlined Umuganda attendance management for SDA leadership, admins, and members.",
   icons: {
     icon: [

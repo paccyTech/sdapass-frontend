@@ -1,13 +1,16 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { Suspense } from "react";
 import LoginForm from "./LoginForm";
+import { LoginNotice } from "./LoginNotice";
 import Image from "next/image";
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
 import { User, Globe, ChevronDown } from 'lucide-react';
 
 const LoginPage = () => (
   <div style={wrapperStyle}>
+    <Suspense fallback={null}>
+      <LoginNotice />
+    </Suspense>
     <header style={headerStyle}>
       <div style={headerContent}>
         <div style={topNavLeft}>
@@ -135,9 +138,6 @@ const topNavMetaLink: CSSProperties = {
   borderRadius: '0.25rem',
   cursor: 'pointer',
   fontWeight: 'bold',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-  },
 };
 
 const langPicker: CSSProperties = {
@@ -146,9 +146,6 @@ const langPicker: CSSProperties = {
   cursor: 'pointer',
   padding: '0.35rem 0.5rem',
   borderRadius: '0.25rem',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-  },
 };
 
 const formContainer: CSSProperties = {
@@ -209,13 +206,6 @@ const backLinkStyle: CSSProperties = {
   fontFamily: 'inherit',
 };
 
-// Add hover effect for the back link
-const backLinkHoverStyle = {
-  '&:hover': {
-    opacity: 0.8,
-  },
-};
-
 const helpTextStyle: CSSProperties = {
   color: '#6b7280',
   fontSize: '0.9rem',
@@ -229,9 +219,6 @@ const helpLinkStyle: CSSProperties = {
   fontWeight: 500,
   transition: 'opacity 0.2s',
   fontFamily: 'inherit',
-  '&:hover': {
-    opacity: 0.8,
-  },
 };
 
 const inputStyle: CSSProperties = {

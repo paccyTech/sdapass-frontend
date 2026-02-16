@@ -10,6 +10,7 @@ export type ToastInput = {
 export type ToastItem = ToastInput & {
   id: string;
   createdAt: number;
+  open: boolean;
 };
 
 type Listener = (toasts: ToastItem[]) => void;
@@ -17,13 +18,29 @@ type Listener = (toasts: ToastItem[]) => void;
 let toasts: ToastItem[] = [];
 const listeners = new Set<Listener>();
 
+const EXIT_ANIMATION_MS = 220;
+
 const notify = () => {
   listeners.forEach((listener) => listener(toasts));
 };
 
 const removeToast = (id: string) => {
-  toasts = toasts.filter((toast) => toast.id !== id);
+  const target = toasts.find((toast) => toast.id === id);
+  if (!target) {
+    return;
+  }
+
+  if (!target.open) {
+    return;
+  }
+
+  toasts = toasts.map((toast) => (toast.id === id ? { ...toast, open: false } : toast));
   notify();
+
+  window.setTimeout(() => {
+    toasts = toasts.filter((toast) => toast.id !== id);
+    notify();
+  }, EXIT_ANIMATION_MS);
 };
 
 export function toast(input: ToastInput) {
@@ -35,6 +52,7 @@ export function toast(input: ToastInput) {
   const item: ToastItem = {
     id,
     createdAt: Date.now(),
+    open: true,
     variant: input.variant ?? 'default',
     durationMs: input.durationMs ?? 3500,
     title: input.title,

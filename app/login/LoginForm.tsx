@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react';
 import { storeAuthSession } from '@/lib/auth';
 import { ROLE_ROUTES } from '@/lib/rbac';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { toast } from '@/components/ui/use-toast';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5000';
 
@@ -32,13 +33,17 @@ export default function LoginForm() {
     const password = formData.get('password')?.toString();
 
     if (mode === 'member' && (!phoneNumber || !password)) {
-      setError('Phone number and password are required.');
+      const message = 'Phone number and password are required.';
+      setError(message);
+      toast({ title: 'Missing information', description: message, variant: 'destructive' });
       setIsLoading(false);
       return;
     }
 
     if (mode === 'admin' && (!email || !password)) {
-      setError('Email and password are required.');
+      const message = 'Email and password are required.';
+      setError(message);
+      toast({ title: 'Missing information', description: message, variant: 'destructive' });
       setIsLoading(false);
       return;
     }
@@ -71,11 +76,18 @@ export default function LoginForm() {
 
       storeAuthSession(token, user);
 
+      toast({
+        title: 'Signed in',
+        description: `Welcome back${user?.firstName ? `, ${user.firstName}` : ''}.`,
+        variant: 'success',
+      });
+
       const destination = ROLE_ROUTES[user.role as keyof typeof ROLE_ROUTES] ?? '/';
       router.push(destination);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setError(message);
+      toast({ title: 'Sign in failed', description: message, variant: 'destructive' });
       console.error('Login failed:', err);
     } finally {
       setIsLoading(false);

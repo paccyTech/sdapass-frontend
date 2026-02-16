@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       const { user: sessionUser } = readAuthSession();
 
       if (!sessionUser) {
-        router.replace('/login');
+        router.replace('/login?reason=session');
         return;
       }
 

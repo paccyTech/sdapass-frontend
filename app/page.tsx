@@ -6,17 +6,512 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { CSSProperties, ReactNode } from 'react';
-import { ChevronRight, ClipboardList, Globe, Home, Search, ShieldCheck, Ticket, UsersRound, Download, User, LogOut, BarChart2, Building2, Church, CheckCircle, Flag, Landmark, Settings, UserCheck, Users } from 'lucide-react';
+import { ChevronRight, ClipboardList, Globe, Home, Search, ShieldCheck, Ticket, UsersRound, Download, User, LogOut, BarChart2, Building2, Church, CheckCircle, Flag, Landmark, Settings, UserCheck, Users, ScanLine, MessageCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { fetchMemberPass, fetchMemberAttendance, type MemberPassDetails, type MemberPassViewer, type MemberAttendance } from '@/lib/api';
 import { ROLE_DEFINITIONS, type RoleKey } from '@/lib/rbac';
 import type { AuthUser } from '@/lib/auth';
+import { SupportChatbot } from '@/components/SupportChatbot';
+
+const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
+  en: {
+    login: "Log in",
+    supportCentre: "Support Centre",
+    english: "English",
+    kinyarwanda: "Kinyarwanda",
+    french: "French",
+    welcomeBack: "Welcome back",
+    accessPass: "Access your digital pass and manage your Umuganda participation",
+    digitalPass: "Digital Pass",
+    active: "Active",
+    readyCheckIn: "Your digital pass is ready for Umuganda check-in",
+    viewDownload: "View & Download Pass",
+    myProfile: "My Profile",
+    viewFullDashboard: "View Full Dashboard",
+    loadingAttendance: "Loading attendance records...",
+    noAttendance: "No Attendance Records",
+    noAttendanceDesc: "Your attendance records will appear here once you participate in Umuganda activities.",
+    present: "Present",
+    excused: "Excused",
+    absent: "Absent",
+    church: "Church",
+    hours: "Hours",
+    myDigitalPass: "My Digital Pass",
+    passNotAvailable: "Pass Not Available",
+    contactAdmin: "Your digital pass has not been issued yet. Please contact your church administrator.",
+    myAttendance: "My Attendance History",
+    viewRecords: "View your Umuganda participation records",
+    reportsInsights: "Reports & Insights",
+    personalSummary: "Your personal participation summary",
+    attendanceRate: "Attendance Rate",
+    presentOfSessions: "Present {present} of {total} sessions",
+    totalHours: "Total Hours",
+    viewPass: "Your Umuganda Digital Pass",
+    downloadPrint: "Download or print this official community service pass before Umuganda day.",
+    printPass: "Print pass",
+    downloadPdf: "Download PDF",
+    expires: "Expires",
+    issued: "Issued",
+    settings: "Settings",
+    unionDashboard: "Union Dashboard",
+    manageAdmins: "Manage Admins",
+    districtDashboard: "District Dashboard",
+    manageChurches: "Manage Churches",
+    churchDashboard: "Church Dashboard",
+    manageMembers: "Manage Members",
+    myPass: "My Pass",
+    attendance: "My Attendance",
+    scanReports: "Scan Reports",
+    verificationPortal: "Verification Portal",
+    verificationHistory: "Verification History",
+    signOut: "Sign out",
+    heroTitle: "Rwanda Union Mission",
+    heroSubtitle: "UMUGANDA PASS",
+    heroKicker: "Community Service Made Digital",
+    heroDescription: "Join the digital revolution in community service. Get your Umuganda pass, track attendance, and contribute to Rwanda's development.",
+    searchPlaceholder: "Search for services...",
+    getStarted: "Get Started",
+    features: "Features",
+    digitalPasses: "Digital Passes",
+    digitalPassesDesc: "Secure, QR-code based digital passes for easy verification and attendance tracking.",
+    attendanceTracking: "Attendance Tracking",
+    attendanceTrackingDesc: "Real-time attendance monitoring with SMS notifications and detailed reporting.",
+    communityEngagement: "Community Engagement",
+    communityEngagementDesc: "Connect with your local church and union for seamless participation.",
+    howItWorks: "How It Works",
+    register: "Register",
+    registerDesc: "Create your account through your church administrator.",
+    getPass: "Get Your Pass",
+    getPassDesc: "Receive your digital pass with QR code for verification.",
+    participate: "Participate",
+    participateDesc: "Attend Umuganda sessions and track your contributions.",
+    whyChoose: "Why Choose Our Platform",
+    secureReliable: "Secure & Reliable",
+    secureReliableDesc: "Bank-level security with 99.9% uptime guarantee.",
+    userFriendly: "User-Friendly",
+    userFriendlyDesc: "Intuitive interface designed for all age groups.",
+    communityFocused: "Community Focused",
+    communityFocusedDesc: "Built specifically for Rwanda's community service needs.",
+    getStartedToday: "Get Started Today",
+    joinThousands: "Join thousands of Rwandans in digital community service.",
+    contactUs: "Contact Us",
+    contactDesc: "Have questions? Our support team is here to help.",
+    allRightsReserved: "All rights reserved.",
+    loading: "Loading...",
+    loadingPass: "Loading your pass...",
+    loadingInsights: "Loading your insights...",
+    preparingPass: "Preparing your Umuganda pass…",
+    securelyFetching: "We are securely fetching your pass details.",
+    fetchingLatest: "Fetching your latest Umuganda status.",
+    showingRecent: "Showing 5 most recent. Click \"My Attendance\" tab for full history.",
+    noPassIssued: "No digital pass is currently issued for your account.",
+    passReady: "Your digital pass is ready. Share the QR code at Umuganda check-in and keep your profile up to date.",
+    passMissing: "Your pass has not been issued yet. Contact your church administrator if you believe this is an error.",
+    bringId: "Bring your ID",
+    bringIdDesc: "Carry your national ID and this digital pass for police verification on Umuganda day.",
+    updateContact: "Keep contact details current",
+    updateContactDesc: "Update your phone number or email under profile so SMS alerts reach you.",
+    needHelp: "Need help?",
+    needHelpDesc: "If your pass is missing or incorrect, contact your church administrator for assistance.",
+    passSummary: "Pass summary",
+    status: "Status",
+    member: "Member",
+    nationalId: "National ID",
+    passToken: "Pass token",
+    passExpires: "Pass expires",
+    notScheduled: "Not scheduled",
+    notIssued: "Not issued",
+    askAdmin: "Ask your church administrator to generate a pass",
+    smsSent: "SMS sent",
+    keepPhoneHandy: "Keep your phone handy for alerts",
+    noAlerts: "No alerts",
+    receiveOnceActive: "You will receive SMS once your pass is active",
+    shareQr: "Share this QR code at check-in",
+    shareQrDesc: "Keep this QR code ready for police verification at Umuganda check-in points.",
+    lifetime: "Lifetime",
+    validUntil: "Valid Until",
+    issuedAt: "Issued",
+    churchContact: "Church contact",
+    verification: "Verification",
+    policeScan: "Police officers should scan the QR code to validate authenticity. The pass remains property of the Rwanda Union Mission.",
+    disclaimer1: "Official Rwanda Union Mission pass. Present with national ID on Umuganda day.",
+    disclaimer2: "Non-transferable • Report misuse, loss, or damage immediately.",
+    frontSide: "Front Side",
+    backSide: "Back Side",
+    usageGuidelines: "Usage guidelines",
+    usageGuidelinesDesc: "Carry this pass with your national ID during Umuganda activities. Provide both documents to authorized officers when asked for verification.",
+    reportDamage: "Report damaged credentials to your church administrator.",
+    complianceNotice: "Compliance notice",
+    complianceNoticeDesc: "Property of the Seventh-day Adventist Church – Rwanda Union Mission. Any alteration, duplication, lending, or misuse voids this pass and may result in disciplinary or legal action.",
+    updateDetails: "Maintain up-to-date contact details with your church within 48 hours of any change.",
+    rightsAcknowledgements: "Rights & acknowledgements",
+    rightsAcknowledgementsDesc: "Using this pass confirms your agreement with the Umuganda participation guidelines of the Rwanda Union Mission. Serve with integrity, uphold community safety, and respect local leadership at all times.",
+    copyright: "© {year} SDA Rwanda Union Mission. All rights reserved.",
+    termsConditions: "TERMS & CONDITIONS:",
+    terms1: "1. This card is property of RUM Umuganda Program.",
+    terms2: "2. Must be presented for Umuganda attendance.",
+    terms3: "3. Report lost/stolen cards immediately.",
+    terms4: "4. Fraudulent use will result in prosecution.",
+    terms5: "5. Valid only with current membership status.",
+    signature: "Rwanda Union Mission Officer",
+    authorizedBy: "AUTHORIZED BY:",
+    churchAdmin: "Church Administration",
+    contact: "CONTACT:",
+    emergency: "Emergency line: 112",
+    officialSeal: "Official seal",
+    returnPass: "Return this pass to the Rwanda Union Mission if found.",
+    scanForVerification: "SCAN FOR VERIFICATION",
+    officialScan: "Official Scan",
+    churchAssignment: "Church assignment pending",
+    notProvided: "Not provided",
+    phoneNumber: "Phone number",
+    email: "Email",
+    notAvailable: "Not available",
+    unknownDate: "Unknown Date",
+    session: "session",
+    sessions: "sessions",
+    home: "Home",
+    trackPasses: "Track Passes",
+    viewAll: "View all",
+    nameLabel: "Name:",
+    nationalIdLabel: "National ID:",
+    churchLabel: "Church:",
+    umugandaSession: "Umuganda Session",
+  },
+  rw: {
+    login: "Injira",
+    supportCentre: "Ubufasha",
+    english: "Icyongereza",
+    kinyarwanda: "Kinyarwanda",
+    french: "Igifaransa",
+    welcomeBack: "Murakaza neza",
+    accessPass: "Kugera ku ikarita yawe y'ikoranabuhanga no kuyobora umuhango wawe wa Umuganda",
+    digitalPass: "Ikirita y'Ikoranabuhanga",
+    active: "Ikora",
+    readyCheckIn: "Ikirita yawe y'ikoranabuhanga yiteguye kugera mu Umuganda",
+    viewDownload: "Reba & Manura Ikirita",
+    myProfile: "Umwirondoro wanjye",
+    viewFullDashboard: "Reba Dashboard yose",
+    myAttendanceHistory: "Amateka y'Umuganda wanjye",
+    loadingAttendance: "Gutegura amateka y'Umuganda...",
+    noAttendance: "Nta mateka y'Umuganda",
+    noAttendanceDesc: "Amateka yawe y'Umuganda azagaragara hano nyuma yo kwitabira ibikorwa bya Umuganda.",
+    present: "Ahari",
+    excused: "Yarekurwe",
+    absent: "Atahari",
+    church: "Itorero",
+    hours: "Amasaha",
+    myDigitalPass: "Ikirita yanjye y'Ikoranabuhanga",
+    passNotAvailable: "Ikirita ntiboneka",
+    contactAdmin: "Ikirita yawe y'ikoranabuhanga ntiyatanze. Nyamuneka, hamagara umuyobozi w'itorero ryawe.",
+    viewRecords: "Reba amateka y'umuhango wawe wa Umuganda",
+    reportsInsights: "Raporo & Ubusobanuro",
+    personalSummary: "Incamake yawe y'umwihariko",
+    attendanceRate: "Urwego rw'Umuganda",
+    presentOfSessions: "Ahari {present} mu {total} sessions",
+    totalHours: "Amasaha yose",
+    viewPass: "Ikirita yawe y'Umuganda y'Ikoranabuhanga",
+    downloadPrint: "Manura cyangwa gucapa iyi kirita y'umuhango wa rubanda mbere y'umunsi wa Umuganda.",
+    printPass: "Capa kirita",
+    downloadPdf: "Manura PDF",
+    expires: "Iragira",
+    issued: "Yatanzwe",
+    settings: "Igenamiterere",
+    unionDashboard: "Dashboard y'Umuryango",
+    manageAdmins: "Kuyobora Abayobozi",
+    districtDashboard: "Dashboard y'Akarere",
+    manageChurches: "Kuyobora Amatorero",
+    churchDashboard: "Dashboard y'Itorero",
+    manageMembers: "Kuyobora Abanyamuryango",
+    myPass: "Ikirita yanjye",
+    myAttendance: "Umuganda wanjye",
+    scanReports: "Raporo zo Gusikana",
+    verificationPortal: "Urubuga rw'igenzura",
+    verificationHistory: "Amateka y'igenzura",
+    signOut: "Sohoka",
+    heroTitle: "Umuryango wa Union yo mu Rwanda",
+    heroSubtitle: "IKIRITA YA UMUGANDA",
+    heroKicker: "Umuganda w'Ikoranabuhanga",
+    heroDescription: "Jya mu mpinduka y'ikoranabuhanga mu muganda. Kugera ku kirita yawe ya Umuganda, kugenzura umuganda, no gutanga umusanzu mu iterambere ry'u Rwanda.",
+    searchPlaceholder: "Shakisha serivisi...",
+    getStarted: "Tangira",
+    features: "Ibikorwa",
+    digitalPasses: "Ibikarita by'Ikoranabuhanga",
+    digitalPassesDesc: "Ibikarita by'ikoranabuhanga byizewe, bifite QR-code kugirango bigenzurwe neza no kugenzura umuganda.",
+    attendanceTracking: "Kugenzura Umuganda",
+    attendanceTrackingDesc: "Kugenzura umuganda mu gihe nyakuri hamwe n'amatangazo ya SMS n'urupapuro rw'ibirimo.",
+    communityEngagement: "Umuganda w'Umuryango",
+    communityEngagementDesc: "Guhuza n'itorero ryawe no umuryango kugirango umuhango uhure neza.",
+    howItWorks: "Uko bikora",
+    register: "Iyandikishe",
+    registerDesc: "Kora konti yawe binyuze ku muyobozi w'itorero ryawe.",
+    getPass: "Kugera ku Kirita",
+    getPassDesc: "Akira kirita yawe y'ikoranabuhanga ifite QR-code kugirango igenzurwe.",
+    participate: "Itabire",
+    participateDesc: "Itabira mu miganda no kugenzura umusanzu wawe.",
+    whyChoose: "Kuki guhitamo urubuga rwacu",
+    secureReliable: "Bizewe kandi Bwizerwa",
+    secureReliableDesc: "Umutekano wa banki hamwe n'ubwizerane bwa 99.9%.",
+    userFriendly: "Bworoshye gukoresha",
+    userFriendlyDesc: "Interface yoroshye yagenewe abantu b'imyaka yose.",
+    communityFocused: "Kwibanda ku Muryango",
+    communityFocusedDesc: "Yubatswe byihariye kugirango igire icyo imarira ibikorwa bya Umuganda mu Rwanda.",
+    getStartedToday: "Tangira uyu munsi",
+    joinThousands: "Jya mu bihumbi by'Abanyarwanda mu muganda w'ikoranabuhanga.",
+    contactUs: "Twandikire",
+    contactDesc: "Ufite ibibazo? Itsinda ryacu ry'ubufasha riri hano kugufasha.",
+    allRightsReserved: "Uburenganzira bwose burabitswe.",
+    loading: "Gutegura...",
+    loadingPass: "Gutegura kirita yawe...",
+    loadingInsights: "Gutegura ubusobanuro bwawe...",
+    preparingPass: "Gutegura kirita yawe ya Umuganda…",
+    securelyFetching: "Turimo kubona amakuru yawe y'ikoranabuhanga.",
+    fetchingLatest: "Kubona imiterere yawe ya Umuganda ya vuba.",
+    showingRecent: "Garagaza 5 ya vuba. Kanda \"Umuganda wanjye\" tab kugirango urebe yose.",
+    noPassIssued: "Nta kirita y'ikoranabuhanga yatanzwe ku konti yawe.",
+    passReady: "Ikirita yawe y'ikoranabuhanga yiteguye. Sangiza QR-code ku muganda kugenzura no gukomeza umwirondoro wawe.",
+    passMissing: "Ikirita yawe ntiyatanzwe. Kontakita umuyobozi w'itorero ryawe niba wumva hari ikibazo.",
+    bringId: "Zana ID yawe",
+    bringIdDesc: "Zana ID yawe y'igihugu n'iki kirita cy'ikoranabuhanga kugirango police igenzure ku munsi wa Umuganda.",
+    updateContact: "Komeza amakuru yo guhura ari mashya",
+    updateContactDesc: "Hindura numero ya telefone cyangwa email yawe munsi y'umwirondoro kugirango amatangazo ya SMS agereho.",
+    needHelp: "Ukeneye ubufasha?",
+    needHelpDesc: "Niba kirita yawe irabuze cyangwa itari yo, kontakita umuyobozi w'itorero ryawe kugirango ufashwe.",
+    passSummary: "Incamake ya kirita",
+    status: "Imiterere",
+    member: "Umunyamuryango",
+    nationalId: "ID y'igihugu",
+    passToken: "Token ya kirita",
+    passExpires: "Kirita irangira",
+    notScheduled: "Ntabwo yagenwe",
+    notIssued: "Ntiyatanzwe",
+    askAdmin: "Saba umuyobozi w'itorero ryawe gutanga kirita",
+    smsSent: "SMS yoherejwe",
+    keepPhoneHandy: "Komeza telefone yawe iri hafi kugirango amatangazo agere",
+    noAlerts: "Nta matangazo",
+    receiveOnceActive: "Uzahabwa SMS kirita yawe ikora",
+    shareQr: "Sangiza iyi QR-code ku muganda",
+    shareQrDesc: "Komeza iyi QR-code yiteguye kugirango police igenzure ku biro bya Umuganda.",
+    lifetime: "Ubuzima bwose",
+    validUntil: "Byemewe kugeza",
+    issuedAt: "Yatanzwe",
+    churchContact: "Aho guhura n'itorero",
+    verification: "Igenzura",
+    policeScan: "Polisi igomba gusikana QR-code kugirango yemeze ko ari yo. Kirita iguma ari umutungo wa Umuryango wa Union yo mu Rwanda.",
+    disclaimer1: "Kirita y'umuryango wa Union yo mu Rwanda. Zana hamwe na ID y'igihugu ku munsi wa Umuganda.",
+    disclaimer2: "Ntigicuruzwa • Tanga amakuru y'ikibazo, gutakaza, cyangwa kubangamirwa ako kanya.",
+    frontSide: "Imbere",
+    backSide: "Inyuma",
+    usageGuidelines: "Amabwiriza yo gukoresha",
+    usageGuidelinesDesc: "Zana iki kirita hamwe na ID y'igihugu mu miganda. Tanga impapuro zombi ku bayobozi bahagarariwe iyo babisabye.",
+    reportDamage: "Tanga amakuru y'ibyangiritse ku muyobozi w'itorero ryawe.",
+    complianceNotice: "Iburira ry'ubumvira",
+    complianceNoticeDesc: "Umutungo wa Kiliziya ya Seventh-day Adventist – Umuryango wa Union yo mu Rwanda. Ihinduka ryose, kwigana, gutanga, cyangwa gukoresha nabi birahagarika iki kirita kandi bishobora gutera ibihano cyangwa iby'amategeko.",
+    updateDetails: "Komeza amakuru yo guhura mashya n'itorero ryawe mu masaha 48 yo guhindura.",
+    rightsAcknowledgements: "Uburenganzira & Kwemera",
+    rightsAcknowledgementsDesc: "Gukoresha iki kirita bivuze ko wemeye amabwiriza y'umuhango wa Umuganda wa Umuryango wa Union yo mu Rwanda. Kora umurimo w'umuganda n'umutimanama, komeza umutekano w'umuryango, no kubaha ubuyobozi bwaho.",
+    copyright: "© {year} SDA Umuryango wa Union yo mu Rwanda. Uburenganzira bwose burabitswe.",
+    termsConditions: "AMABWIRIZA N'IBYO BIKORA:",
+    terms1: "1. Iki kirita ni umutungo wa gahunda ya RUM Umuganda.",
+    terms2: "2. Igomba kwerekanwa mu muganda.",
+    terms3: "3. Tanga amakuru y'ibyangiritse cyangwa byibwe ako kanya.",
+    terms4: "4. Guhindura nabi bishobora gutera ibihano cyangwa iby'amategeko.",
+    terms5: "5. Byemewe gusa ku muryango wa kigezweho.",
+    signature: "Umuyobozi wa Umuryango wa Union yo mu Rwanda",
+    authorizedBy: "BYEMEJWE NA:",
+    churchAdmin: "Abayobozi b'Itorero",
+    contact: "GUHURA:",
+    emergency: "Umurongo w'ubutabazi: 112",
+    officialSeal: "Ikimenyetso cy'umuryango",
+    returnPass: "Garura iki kirita ku Umuryango wa Union yo mu Rwanda niba ukibonye.",
+    scanForVerification: "SIKANA KUGIRANGO UGENZURE",
+    officialScan: "Igenzura y'umuryango",
+    churchAssignment: "Itorero ntirigenwe",
+    notProvided: "Ntibyatanze",
+    phoneNumber: "Numero ya telefone",
+    email: "Email",
+    notAvailable: "Ntibiboneka",
+    unknownDate: "Itariki itazwi",
+    session: "umuhango",
+    sessions: "imihango",
+    home: "Ahabanza",
+    trackpasses: "Genzura",
+    viewAll: "Reba byose",
+    nameLabel: "Izina:",
+    nationalIdLabel: "ID y'igihugu:",
+    churchLabel: "Itorero:",
+    umugandaSession: "Umuganda Session",
+  },
+  fr: {
+    login: "Se connecter",
+    supportCentre: "Centre de support",
+    english: "Anglais",
+    kinyarwanda: "Kinyarwanda",
+    french: "Français",
+    welcomeBack: "Bienvenue",
+    accessPass: "Accéder à votre passe numérique et gérer votre participation à l'Umuganda",
+    digitalPass: "Passe numérique",
+    active: "Actif",
+    readyCheckIn: "Votre passe numérique est prêt pour l'enregistrement Umuganda",
+    viewDownload: "Voir & Télécharger le passe",
+    myProfile: "Mon profil",
+    viewFullDashboard: "Voir le tableau de bord complet",
+    myAttendanceHistory: "Historique de présence",
+    loadingAttendance: "Chargement des enregistrements de présence...",
+    noAttendance: "Aucun enregistrement de présence",
+    noAttendanceDesc: "Vos enregistrements de présence apparaîtront ici une fois que vous participerez aux activités Umuganda.",
+    present: "Présent",
+    excused: "Excusé",
+    absent: "Absent",
+    church: "Église",
+    hours: "Heures",
+    myDigitalPass: "Mon passe numérique",
+    passNotAvailable: "Passe non disponible",
+    contactAdmin: "Votre passe numérique n'a pas encore été délivré. Veuillez contacter l'administrateur de votre église.",
+    viewRecords: "Voir vos enregistrements de participation à l'Umuganda",
+    reportsInsights: "Rapports & Insights",
+    personalSummary: "Votre résumé personnel de participation",
+    attendanceRate: "Taux de présence",
+    presentOfSessions: "Présent {present} sur {total} sessions",
+    totalHours: "Heures totales",
+    viewPass: "Votre passe Umuganda numérique",
+    downloadPrint: "Téléchargez ou imprimez ce passe officiel de service communautaire avant le jour Umuganda.",
+    printPass: "Imprimer le passe",
+    downloadPdf: "Télécharger PDF",
+    expires: "Expire",
+    issued: "Délivré",
+    settings: "Paramètres",
+    unionDashboard: "Tableau de bord Union",
+    manageAdmins: "Gérer les administrateurs",
+    manageChurches: "Gérer les églises",
+    churchDashboard: "Tableau de bord Église",
+    manageMembers: "Gérer les membres",
+    myPass: "Mon passe",
+    myAttendance: "Ma présence",
+    scanReports: "Rapports de scan",
+    verificationPortal: "Portail de vérification",
+    verificationHistory: "Historique de vérification",
+    signOut: "Se déconnecter",
+    heroTitle: "Mission Union Rwanda",
+    heroSubtitle: "PASSE UMUGANDA",
+    heroKicker: "Service communautaire numérisé",
+    heroDescription: "Rejoignez la révolution numérique dans le service communautaire. Obtenez votre passe Umuganda, suivez la présence, et contribuez au développement du Rwanda.",
+    searchPlaceholder: "Rechercher des services...",
+    getStarted: "Commencer",
+    features: "Fonctionnalités",
+    digitalPasses: "Passes numériques",
+    digitalPassesDesc: "Passes numériques sécurisés basés sur QR-code pour une vérification facile et un suivi de présence.",
+    attendanceTracking: "Suivi de présence",
+    attendanceTrackingDesc: "Surveillance de présence en temps réel avec notifications SMS et rapports détaillés.",
+    communityEngagement: "Engagement communautaire",
+    communityEngagementDesc: "Connectez-vous avec votre église locale et union pour une participation transparente.",
+    howItWorks: "Comment ça marche",
+    register: "S'inscrire",
+    registerDesc: "Créez votre compte via l'administrateur de votre église.",
+    getPass: "Obtenir votre passe",
+    getPassDesc: "Recevez votre passe numérique avec QR-code pour vérification.",
+    participate: "Participer",
+    participateDesc: "Participez aux sessions Umuganda et suivez vos contributions.",
+    whyChoose: "Pourquoi choisir notre plateforme",
+    secureReliable: "Sécurisé & Fiable",
+    secureReliableDesc: "Sécurité de niveau bancaire avec garantie de disponibilité 99,9%.",
+    userFriendly: "Facile à utiliser",
+    userFriendlyDesc: "Interface intuitive conçue pour tous les groupes d'âge.",
+    communityFocused: "Axé sur la communauté",
+    communityFocusedDesc: "Conçu spécifiquement pour les besoins de service communautaire du Rwanda.",
+    getStartedToday: "Commencez aujourd'hui",
+    joinThousands: "Rejoignez des milliers de Rwandais dans le service communautaire numérique.",
+    contactUs: "Contactez-nous",
+    contactDesc: "Des questions ? Notre équipe de support est là pour aider.",
+    allRightsReserved: "Tous droits réservés.",
+    loading: "Chargement...",
+    loadingPass: "Chargement de votre passe...",
+    loadingInsights: "Chargement de vos insights...",
+    preparingPass: "Préparation de votre passe Umuganda…",
+    securelyFetching: "Nous récupérons en toute sécurité vos détails de passe.",
+    fetchingLatest: "Récupération de votre dernier statut Umuganda.",
+    showingRecent: "Affichage des 5 plus récents. Cliquez sur l'onglet \"Ma présence\" pour l'historique complet.",
+    noPassIssued: "Aucun passe numérique n'est actuellement délivré pour votre compte.",
+    passReady: "Votre passe numérique est prêt. Partagez le QR-code à l'enregistrement Umuganda et gardez votre profil à jour.",
+    passMissing: "Votre passe n'a pas encore été délivré. Contactez l'administrateur de votre église si vous pensez qu'il y a une erreur.",
+    bringId: "Apportez votre ID",
+    bringIdDesc: "Portez votre ID national et ce passe numérique pour la vérification policière le jour Umuganda.",
+    updateContact: "Gardez les coordonnées à jour",
+    updateContactDesc: "Mettez à jour votre numéro de téléphone ou email dans le profil afin que les alertes SMS vous parviennent.",
+    needHelp: "Besoin d'aide ?",
+    needHelpDesc: "Si votre passe est manquant ou incorrect, contactez l'administrateur de votre église pour assistance.",
+    passSummary: "Résumé du passe",
+    status: "Statut",
+    member: "Membre",
+    nationalId: "ID national",
+    passToken: "Jeton du passe",
+    passExpires: "Le passe expire",
+    notScheduled: "Non programmé",
+    notIssued: "Non délivré",
+    askAdmin: "Demandez à l'administrateur de votre église de générer un passe",
+    smsSent: "SMS envoyé",
+    keepPhoneHandy: "Gardez votre téléphone à portée de main pour les alertes",
+    noAlerts: "Aucune alerte",
+    receiveOnceActive: "Vous recevrez des SMS une fois votre passe actif",
+    shareQr: "Partagez ce QR-code à l'enregistrement",
+    shareQrDesc: "Gardez ce QR-code prêt pour la vérification policière aux points d'enregistrement Umuganda.",
+    lifetime: "À vie",
+    validUntil: "Valide jusqu'à",
+    issuedAt: "Délivré",
+    churchContact: "Contact église",
+    verification: "Vérification",
+    policeScan: "Les policiers doivent scanner le QR-code pour valider l'authenticité. Le passe reste propriété de la Mission Union Rwanda.",
+    disclaimer1: "Passe officiel Mission Union Rwanda. Présenter avec ID national le jour Umuganda.",
+    disclaimer2: "Non transférable • Signaler toute utilisation abusive, perte ou dommage immédiatement.",
+    frontSide: "Recto",
+    backSide: "Verso",
+    usageGuidelines: "Directives d'utilisation",
+    usageGuidelinesDesc: "Portez ce passe avec votre ID national pendant les activités Umuganda. Fournissez les deux documents aux officiers autorisés lorsqu'on vous le demande.",
+    reportDamage: "Signalez les documents endommagés à l'administrateur de votre église.",
+    complianceNotice: "Avis de conformité",
+    complianceNoticeDesc: "Propriété de l'Église adventiste du septième jour – Mission Union Rwanda. Toute altération, duplication, prêt ou mauvais usage annule ce passe et peut entraîner des sanctions disciplinaires ou légales.",
+    updateDetails: "Maintenez des coordonnées à jour avec votre église dans les 48 heures de tout changement.",
+    rightsAcknowledgements: "Droits & Reconnaissances",
+    rightsAcknowledgementsDesc: "L'utilisation de ce passe confirme votre accord avec les directives de participation Umuganda de la Mission Union Rwanda. Servez avec intégrité, maintenez la sécurité communautaire, et respectez le leadership local à tout moment.",
+    copyright: "© {year} SDA Mission Union Rwanda. Tous droits réservés.",
+    termsConditions: "CONDITIONS GÉNÉRALES :",
+    terms1: "1. Cette carte est propriété du programme RUM Umuganda.",
+    terms2: "2. Doit être présenté pour la présence Umuganda.",
+    terms3: "3. Signaler immédiatement les cartes perdues/volées.",
+    terms4: "4. L'utilisation frauduleuse entraînera des poursuites.",
+    terms5: "5. Valide uniquement avec le statut d'adhésion actuel.",
+    signature: "Officier Mission Union Rwanda",
+    authorizedBy: "AUTORISÉ PAR :",
+    churchAdmin: "Administration de l'église",
+    contact: "CONTACT :",
+    emergency: "Ligne d'urgence : 112",
+    officialSeal: "Sceau officiel",
+    returnPass: "Retournez ce passe à la Mission Union Rwanda si trouvé.",
+    scanForVerification: "SCANNER POUR VÉRIFICATION",
+    officialScan: "Scan officiel",
+    churchAssignment: "Assignation d'église en attente",
+    notProvided: "Non fourni",
+    phoneNumber: "Numéro de téléphone",
+    email: "Email",
+    notAvailable: "Non disponible",
+    unknownDate: "Date inconnue",
+    session: "session",
+    sessions: "sessions",
+    home: "Accueil",
+    trackpasses: "Suivre les passes",
+    viewAll: "Voir tout",
+    nameLabel: "Nom:",
+    nationalIdLabel: "ID national:",
+    churchLabel: "Église:",
+    umugandaSession: "Session Umuganda",
+  },
+};
 
 const HomePage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('View all');
+  const [activeCategory, setActiveCategory] = useState('viewAll');
   const [mounted, setMounted] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { token, user } = useAuthSession();
@@ -29,6 +524,33 @@ const HomePage = () => {
   const [loadingPass, setLoadingPass] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
   const [activeCardView, setActiveCardView] = useState<'front' | 'back'>('front');
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'rw' | 'fr'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('selectedLanguage');
+      if (stored && ['en', 'rw', 'fr'].includes(stored)) {
+        return stored as 'en' | 'rw' | 'fr';
+      }
+    }
+    return 'en';
+  });
+
+  // Save language to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('selectedLanguage', selectedLanguage);
+  }, [selectedLanguage]);
+
+  const effectiveLanguage = mounted ? selectedLanguage : 'en';
+
+  const t = (key: string, replacements?: Record<string, string>) => {
+    let text = translations[effectiveLanguage]?.[key] || key;
+    if (replacements) {
+      Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+      });
+    }
+    return text;
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -49,10 +571,23 @@ const HomePage = () => {
   useEffect(() => {
     if (mounted && token && user?.role === 'MEMBER' && user?.id) {
       setLoadingPass(true);
+      
       fetchMemberPass(token, user.id)
         .then((response) => {
           setMemberPass(response.pass);
           setMemberProfile(response.member);
+
+          // Fetch attendance data after member profile is set
+          console.log('Fetching attendance for member ID:', response.member.id);
+          fetchMemberAttendance(token, response.member.id)
+            .then((attendanceResponse) => {
+              console.log('Attendance response:', attendanceResponse);
+              setMemberAttendance(attendanceResponse.attendance);
+            })
+            .catch((error) => {
+              console.error('Failed to fetch member attendance:', error);
+              // Don't fail the whole thing if attendance fails
+            });
         })
         .catch((error) => {
           console.error('Failed to fetch member pass:', error);
@@ -88,31 +623,31 @@ const HomePage = () => {
 
   const getUserMenuItems = (role: RoleKey) => {
     const baseItems = [
-      { label: 'Profile', href: '/profile', icon: <User size={18} /> },
-      { label: 'Settings', href: '/settings', icon: <Settings size={18} /> },
+      { labelKey: 'settings', href: '/settings', icon: <Settings size={18} /> },
       { type: 'divider' } as const,
     ];
 
     const roleSpecificItems = {
       UNION_ADMIN: [
-        { label: 'Union Dashboard', href: '/union', icon: <BarChart2 size={18} /> },
-        { label: 'Manage Admins', href: '/union/admins', icon: <Users size={18} /> },
+        { labelKey: 'unionDashboard', href: '/union', icon: <BarChart2 size={18} /> },
+        { labelKey: 'manageAdmins', href: '/union/admins', icon: <Users size={18} /> },
       ],
       DISTRICT_ADMIN: [
-        { label: 'District Dashboard', href: '/district', icon: <BarChart2 size={18} /> },
-        { label: 'Manage Churches', href: '/district/churches', icon: <Home size={18} /> },
+        { labelKey: 'districtDashboard', href: '/district', icon: <BarChart2 size={18} /> },
+        { labelKey: 'manageChurches', href: '/district/churches', icon: <Home size={18} /> },
       ],
       CHURCH_ADMIN: [
-        { label: 'Church Dashboard', href: '/church', icon: <BarChart2 size={18} /> },
-        { label: 'Manage Members', href: '/church/members', icon: <Users size={18} /> },
+        { labelKey: 'churchDashboard', href: '/church', icon: <BarChart2 size={18} /> },
+        { labelKey: 'manageMembers', href: '/church/members', icon: <Users size={18} /> },
       ],
       MEMBER: [
-        { label: 'My Profile', href: '/member/profile', icon: <User size={18} /> },
-        { label: 'My Attendance', href: '/member/attendance', icon: <CheckCircle size={18} /> },
+        { labelKey: 'myPass', href: '/#my-pass', icon: <Ticket size={18} /> },
+        { labelKey: 'myAttendance', href: '/#my-attendance', icon: <CheckCircle size={18} /> },
+        { labelKey: 'scanReports', href: '/#scan-reports', icon: <ScanLine size={18} /> },
       ],
       POLICE_VERIFIER: [
-        { label: 'Verification Portal', href: '/verify', icon: <Search size={18} /> },
-        { label: 'Verification History', href: '/verify/history', icon: <ClipboardList size={18} /> },
+        { labelKey: 'verificationPortal', href: '/verify', icon: <Search size={18} /> },
+        { labelKey: 'verificationHistory', href: '/verify/history', icon: <ClipboardList size={18} /> },
       ],
     };
 
@@ -120,21 +655,21 @@ const HomePage = () => {
       ...baseItems,
       ...(roleSpecificItems[role] ?? []),
       { type: 'divider' } as const,
-      { label: 'Sign out', href: '/logout', icon: <LogOut size={18} /> },
+      { labelKey: 'signOut', href: '/logout', icon: <LogOut size={18} /> },
     ];
   };
 
-  const isMenuLink = (item: any): item is { label: string; href: string; icon: ReactNode } => 'href' in item;
+  const isMenuLink = (item: any): item is { labelKey: string; href: string; icon: ReactNode } => 'href' in item;
   const categories = useMemo(
     () => [
-      'View all',
-      'My Pass',
-      'My Attendance',
-      'Scan Reports',
-      'Reports & Insights',
-      'Settings',
+      { key: 'viewAll', label: t('viewAll') },
+      { key: 'myPass', label: t('myPass') },
+      { key: 'myAttendance', label: t('myAttendance') },
+      { key: 'scanReports', label: t('scanReports') },
+      { key: 'reportsInsights', label: t('reportsInsights') },
+      { key: 'settings', label: t('settings') },
     ],
-    [],
+    [t],
   );
 
   useEffect(() => {
@@ -157,6 +692,10 @@ const HomePage = () => {
             .home-tabs::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.18); border-radius: 999px; }
             .home-nav-link { color: rgba(15, 23, 42, 0.75); }
             .home-nav-link:hover { color: rgba(15, 23, 42, 1); }
+            @keyframes passPulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.6; transform: scale(1.5); }
+            }
           `,
         }}
       />
@@ -207,7 +746,7 @@ const HomePage = () => {
                 fontWeight: isActive ? 500 : 400,
               }}>
                 <span style={topNavLinkIcon}>{link.icon}</span>
-                {link.label}
+                {t(link.label.toLowerCase().replace(/\s+/g, ''))}
               </Link>
                 );
               })()
@@ -217,12 +756,16 @@ const HomePage = () => {
 
         <div style={topNavRight}>
           <div className="desktop-only" style={topNavMeta}>
-            <Link href="#support" className="home-nav-link" style={topNavMetaLink}>
-              Support Centre
-            </Link>
-            <div style={langPicker}>
+            <button 
+              onClick={() => setIsChatbotOpen(true)}
+              style={{ ...topNavMetaLink, background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <MessageCircle size={16} />
+              {t('supportCentre')}
+            </button>
+            <div style={langPicker} onClick={() => setSelectedLanguage(prev => prev === 'en' ? 'rw' : prev === 'rw' ? 'fr' : 'en')}>
               <Globe size={16} />
-              <span>English</span>
+              <span>{t(effectiveLanguage === 'en' ? 'english' : effectiveLanguage === 'rw' ? 'kinyarwanda' : 'french')}</span>
               <span style={{ opacity: 0.7 }}>▾</span>
             </div>
           </div>
@@ -314,18 +857,21 @@ const HomePage = () => {
                               }
 
                               return (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  style={{
-                                    ...dropdownItem,
-                                    textDecoration: 'none',
-                                    color: item.label === 'Sign out' ? 'var(--danger)' : 'var(--shell-foreground)',
-                                  }}
-                                >
-                                  <span>{item.icon}</span>
-                                  {item.label}
-                                </Link>
+                                item.labelKey ? (
+                                  <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setProfileMenuOpen(false)}
+                                    style={{
+                                      ...dropdownItem,
+                                      textDecoration: 'none',
+                                      color: item.labelKey === 'signOut' ? 'var(--danger)' : 'var(--shell-foreground)',
+                                    }}
+                                  >
+                                    <span>{item.icon}</span>
+                                    {t(item.labelKey)}
+                                  </Link>
+                                ) : null
                               );
                             })}
                           </div>
@@ -336,10 +882,7 @@ const HomePage = () => {
                 ) : (
                   <>
                     <Link href="/login" style={authGhostButton}>
-                      Log in
-                    </Link>
-                    <Link href="/login" style={authPrimaryButton}>
-                      Sign up
+                      {t('login')}
                     </Link>
                   </>
                 )}
@@ -347,10 +890,7 @@ const HomePage = () => {
             ) : (
               <>
                 <Link href="/login" style={authGhostButton}>
-                  Log in
-                </Link>
-                <Link href="/login" style={authPrimaryButton}>
-                  Sign up
+                  {t('login')}
                 </Link>
               </>
             )}
@@ -404,7 +944,7 @@ const HomePage = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <span style={topNavLinkIcon}>{link.icon}</span>
-                  {link.label}
+                  {t(link.label.toLowerCase().replace(/\s+/g, ''))}
                 </Link>
                   );
                 })()
@@ -427,31 +967,30 @@ const HomePage = () => {
                       }
 
                       return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsMenuOpen(false)}
-                          className="home-nav-link"
-                          style={{
-                            ...topNavLink,
-                            justifyContent: 'flex-start',
-                            textDecoration: 'none',
-                            color: item.label === 'Sign out' ? 'var(--danger)' : 'inherit',
-                          }}
-                        >
-                          <span style={topNavLinkIcon}>{item.icon}</span>
-                          {item.label}
-                        </Link>
+                        item.labelKey ? (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="home-nav-link"
+                            style={{
+                              ...topNavLink,
+                              justifyContent: 'flex-start',
+                              textDecoration: 'none',
+                              color: item.labelKey === 'signOut' ? 'var(--danger)' : 'inherit',
+                            }}
+                          >
+                            <span style={topNavLinkIcon}>{item.icon}</span>
+                            {t(item.labelKey)}
+                          </Link>
+                        ) : null
                       );
                     })}
                   </div>
                 ) : (
                   <>
                     <Link href="/login" style={authGhostButton} onClick={() => setIsMenuOpen(false)}>
-                      Log in
-                    </Link>
-                    <Link href="/login" style={authPrimaryButton} onClick={() => setIsMenuOpen(false)}>
-                      Sign up
+                      {t('login')}
                     </Link>
                   </>
                 )
@@ -1013,13 +1552,43 @@ const HomePage = () => {
           </div>
         )}
 
+        {/* Floating Support Centre Button for Members */}
+        {mounted && user?.role === 'MEMBER' && (
+          <button
+            onClick={() => setIsChatbotOpen(true)}
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+              border: 'none',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 100,
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            aria-label="Open Support Centre"
+          >
+            <MessageCircle size={24} />
+          </button>
+        )}
+
         <section style={heroOuter}>
           <div style={heroCard}>
             <div style={heroOverlay} />
             <div style={heroInner}>
               <div style={heroTextBlockNew}>
                 <p style={heroKicker}>Welcome to</p>
-                <h1 style={heroTitleNew}>RUM-UMUGANDA PASS</h1>
+                <h1 style={heroTitleNew}>{t('heroTitle')}</h1>
                 <div style={poweredByPill}>Secure. Trackable. Role-based.</div>
               </div>
 
@@ -1040,18 +1609,18 @@ const HomePage = () => {
           <div style={tabsRow}>
             <div className="home-tabs" style={tabsScroller}>
               {categories.map((category) => {
-                const active = category === activeCategory;
+                const active = category.key === activeCategory;
                 return (
                   <button
-                    key={category}
+                    key={category.key}
                     type="button"
-                    onClick={() => setActiveCategory(category)}
+                    onClick={() => setActiveCategory(category.key)}
                     style={{
                       ...tabButton,
                       ...(active ? tabButtonActive : null),
                     }}
                   >
-                    {category}
+                    {category.label}
                   </button>
                 );
               })}
@@ -1062,124 +1631,855 @@ const HomePage = () => {
           </div>
         </section>
 
+        <SupportChatbot
+          isOpen={isChatbotOpen}
+          onClose={() => setIsChatbotOpen(false)}
+          user={user}
+          memberProfile={memberProfile}
+          memberPass={memberPass}
+        />
+
+        {/* Floating Chat Button */}
+        {mounted && (
+          <button
+            onClick={() => setIsChatbotOpen(true)}
+            style={floatingChatButton}
+            aria-label="Open support chat"
+          >
+            <MessageCircle size={24} />
+          </button>
+        )}
+
         {/* Member Dashboard Section */}
         {mounted && user?.role === 'MEMBER' && (
           <section style={memberDashboardSection}>
             <div style={memberDashboardContainer}>
-              <h2 style={memberWelcomeTitle}>
-                Welcome back, {user.firstName || 'Member'}!
-              </h2>
-              <p style={memberWelcomeSubtitle}>
-                Access your digital pass and manage your Umuganda participation
-              </p>
-              
-              <div style={memberCardsGrid}>
-                {/* Pass Status Card */}
-                <article style={memberCardStyle}>
-                  <div style={memberCardHeader}>
-                    <div style={memberCardIcon}>
-                      <Ticket size={24} />
-                    </div>
-                    <h3 style={memberCardTitle}>Digital Pass</h3>
-                  </div>
-                  <div style={memberCardContent}>
-                    {loadingPass ? (
-                      <div style={passLoadingStyle}>
-                        <div style={passSpinnerStyle} />
-                        <p style={passLoadingText}>Loading your pass...</p>
-                      </div>
-                    ) : memberPass ? (
-                      <div style={passActiveStyle}>
-                        <div style={passStatusBadge}>
-                          <span style={passStatusDot} />
-                          Active
-                        </div>
-                        <p style={passInfoText}>
-                          Your digital pass is ready for Umuganda check-in
+              {(() => {
+                switch (activeCategory) {
+                  case 'viewAll':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          {t('welcomeBack')} {user.firstName || 'Member'}!
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          {t('accessPass')}
                         </p>
-                        {memberPass.expiresAt && (
-                          <p style={passExpiryText}>
-                            Expires: {new Date(memberPass.expiresAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={passInactiveStyle}>
-                        <div style={passStatusBadgeInactive}>
-                          <span style={passStatusDotInactive} />
-                          Not Issued
-                        </div>
-                        <p style={passInfoText}>
-                          Contact your church administrator to get your digital pass
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <div style={memberCardActions}>
-                    {memberPass ? (
-                      <button 
-                        onClick={() => setShowPassModal(true)}
-                        style={primaryActionButton}
-                      >
-                        <Download size={16} />
-                        View & Download Pass
-                      </button>
-                    ) : (
-                      <button 
-                        disabled 
-                        style={disabledActionButton}
-                      >
-                        <Ticket size={16} />
-                        Pass Not Available
-                      </button>
-                    )}
-                  </div>
-                </article>
+                        
+                        <div style={memberCardsGrid}>
+                          {/* Pass Status Card */}
+                          <article style={memberCardStyle}>
+                            <div style={memberCardHeader}>
+                              <div style={memberCardIcon}>
+                                <Ticket size={24} />
+                              </div>
+                              <h3 style={memberCardTitle}>{t('digitalPass')}</h3>
+                            </div>
+                            <div style={memberCardContent}>
+                              {loadingPass ? (
+                                <div style={passLoadingStyle}>
+                                  <div style={passSpinnerStyle} />
+                                  <p style={passLoadingText}>Loading your pass...</p>
+                                </div>
+                              ) : memberPass ? (
+                                <div style={passActiveStyle}>
+                                  <div style={passStatusBadge}>
+                                    <span style={passStatusDot} />
+                                    {t('active')}
+                                  </div>
+                                  <p style={passInfoText}>
+                                    {t('readyCheckIn')}
+                                  </p>
+                                  {memberPass.expiresAt && (
+                                    <p style={passExpiryText}>
+                                      Expires: {new Date(memberPass.expiresAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <div style={passInactiveStyle}>
+                                  <div style={passStatusBadgeInactive}>
+                                    <span style={passStatusDotInactive} />
+                                    Not Issued
+                                  </div>
+                                  <p style={passInfoText}>
+                                    Contact your church administrator to get your digital pass
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            <div style={memberCardActions}>
+                              {memberPass ? (
+                                <button 
+                                  onClick={() => setShowPassModal(true)}
+                                  style={primaryActionButton}
+                                >
+                                  <Download size={16} />
+                                  {t('viewDownload')}
+                                </button>
+                              ) : (
+                                <button 
+                                  disabled 
+                                  style={disabledActionButton}
+                                >
+                                  <Ticket size={16} />
+                                  Pass Not Available
+                                </button>
+                              )}
+                            </div>
+                          </article>
 
-                {/* Profile Card */}
-                <article style={memberCardStyle}>
-                  <div style={memberCardHeader}>
-                    <div style={memberCardIcon}>
-                      <User size={24} />
-                    </div>
-                    <h3 style={memberCardTitle}>My Profile</h3>
-                  </div>
-                  <div style={memberCardContent}>
-                    <div style={profileInfoStyle}>
-                      <div style={profileDetailRow}>
-                        <span style={profileLabel}>Name:</span>
-                        <span style={profileValue}>
-                          {memberProfile 
-                            ? `${memberProfile.firstName || ''} ${memberProfile.lastName || ''}`.trim()
-                            : `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                          }
-                        </span>
+                          {/* Profile Card */}
+                          <article style={memberCardStyle}>
+                            <div style={memberCardHeader}>
+                              <div style={memberCardIcon}>
+                                <User size={24} />
+                              </div>
+                              <h3 style={memberCardTitle}>{t('myProfile')}</h3>
+                            </div>
+                            <div style={memberCardContent}>
+                              <div style={profileInfoStyle}>
+                                <div style={profileDetailRow}>
+                                  <span style={profileLabel}>{t('nameLabel')}</span>
+                                  <span style={profileValue}>
+                                    {memberProfile 
+                                      ? `${memberProfile.firstName || ''} ${memberProfile.lastName || ''}`.trim()
+                                      : `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                    }
+                                  </span>
+                                </div>
+                                {memberProfile?.nationalId && (
+                                  <div style={profileDetailRow}>
+                                    <span style={profileLabel}>{t('nationalIdLabel')}</span>
+                                    <span style={profileValue}>{memberProfile.nationalId}</span>
+                                  </div>
+                                )}
+                                {memberProfile?.church && (
+                                  <div style={profileDetailRow}>
+                                    <span style={profileLabel}>{t('churchLabel')}</span>
+                                    <span style={profileValue}>{memberProfile.church.name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div style={memberCardActions}>
+                              <button 
+                                onClick={() => setShowPassModal(true)}
+                                style={secondaryActionButton}
+                              >
+                                <User size={16} />
+                                {t('viewFullDashboard')}
+                              </button>
+                            </div>
+                          </article>
+                        </div>
+
+                        {/* Attendance History Section */}
+                        <div style={{ marginTop: '2rem' }}>
+                          <h3 style={{ ...memberWelcomeTitle, fontSize: '1.5rem', marginBottom: '1rem' }}>
+                            {t('myAttendanceHistory')}
+                          </h3>
+                          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                            {loadingPass ? (
+                              <div style={passLoadingStyle}>
+                                <div style={passSpinnerStyle} />
+                                <p style={passLoadingText}>Loading attendance records...</p>
+                              </div>
+                            ) : memberAttendance && memberAttendance.length > 0 ? (
+                              <div style={{ display: 'grid', gap: '1rem' }}>
+                                {memberAttendance.slice(0, 5).map((attendance) => {
+                                  const isPresent = (attendance.status ?? 'Present') === 'Present';
+                                  const isExcused = (attendance.status ?? 'Present') === 'Excused';
+                                  const badgeBg = isPresent ? '#fef3c7' : isExcused ? '#dbeafe' : '#fee2e2';
+                                  const badgeText = isPresent ? '#92400e' : isExcused ? '#1d4ed8' : '#991b1b';
+                                  const dotBg = isPresent ? '#eab308' : isExcused ? '#3b82f6' : '#ef4444';
+
+                                  return (
+                                    <article key={attendance.id} style={attendanceCardStyle}>
+                                      <div style={attendanceCardHeader}>
+                                        <div style={attendanceCardIcon}>
+                                          <ClipboardList size={20} />
+                                        </div>
+
+                                        <div style={{ flex: 1 }}>
+                                          <h4 style={attendanceCardTitle}>
+                                            {attendance.theme || t('umugandaSession')}
+                                          </h4>
+                                          <p style={attendanceCardDate}>
+                                            {attendance.date
+                                              ? new Date(attendance.date).toLocaleDateString('en-US', {
+                                                  weekday: 'long',
+                                                  year: 'numeric',
+                                                  month: 'long',
+                                                  day: 'numeric',
+                                                })
+                                              : 'Unknown Date'}
+                                          </p>
+                                        </div>
+
+                                        <div style={{ ...attendanceStatusBadge, background: badgeBg, color: badgeText }}>
+                                          {!isPresent && <span style={{ ...attendanceStatusDot, background: dotBg }} />}
+                                          {attendance.status || t('present')}
+                                        </div>
+                                      </div>
+
+                                      <div style={attendanceCardDetails}>
+                                        <div style={attendanceDetailRow}>
+                                          <span style={attendanceDetailLabel}>{t('church')}</span>
+                                          <span style={attendanceDetailValue}>{attendance.church?.name || '-'}</span>
+                                        </div>
+                                        <div style={attendanceDetailRow}>
+                                          <span style={attendanceDetailLabel}>{t('hours')}</span>
+                                          <span style={attendanceDetailValue}>{typeof attendance.hours === 'number' ? `${attendance.hours}h` : '-'}</span>
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                                {memberAttendance.length > 5 && (
+                                  <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
+                                    {t('showingRecent')}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div style={{
+                                textAlign: 'center',
+                                padding: '3rem',
+                                background: '#f8fafc',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0',
+                              }}>
+                                <CheckCircle size={48} style={{ color: '#94a3b8', marginBottom: '1rem' }} />
+                                <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>{t('noAttendance')}</h4>
+                                <p style={{ margin: 0, color: '#64748b' }}>
+                                  {t('noAttendanceDesc')}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  case 'myPass':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          My Digital Pass
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          View your Umuganda digital pass
+                        </p>
+                        
+                        <div style={{ display: 'grid', gap: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+                          {loadingPass ? (
+                            <div style={passLoadingStyle}>
+                              <div style={passSpinnerStyle} />
+                              <p style={passLoadingText}>Loading your pass...</p>
+                            </div>
+                          ) : memberPass && memberProfile ? (
+                            <div style={passDisplayStyle}>
+                              {/* Pass Status */}
+                              <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                                <div style={passStatusBadge}>
+                                  <span style={passStatusDot} />
+                                  Active Pass
+                                </div>
+                                {memberPass.expiresAt && (
+                                  <p style={passExpiryText}>
+                                    Expires: {new Date(memberPass.expiresAt).toLocaleDateString()}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Card Preview */}
+                              <div style={cardDisplayStyle}>
+                                {/* Card Tabs */}
+                                <div style={cardTabsStyle}>
+                                  <button 
+                                    style={activeCardView === 'front' ? activeCardTab : inactiveCardTab}
+                                    onClick={() => setActiveCardView('front')}
+                                  >
+                                    Front Side
+                                  </button>
+                                  <button 
+                                    style={activeCardView === 'back' ? activeCardTab : inactiveCardTab}
+                                    onClick={() => setActiveCardView('back')}
+                                  >
+                                    Back Side
+                                  </button>
+                                </div>
+
+                                {/* Front Side Preview */}
+                                <div style={cardPreviewContainer}>
+                                  <div style={cardScaleStyle}>
+                                    <div style={cardFrontStyle}>
+                                      {/* Background Pattern */}
+                                      <div style={cardBackgroundPattern}>
+                                        <div style={cardPatternCircle1} />
+                                        <div style={cardPatternCircle2} />
+                                        <div style={cardPatternCircle3} />
+                                      </div>
+                                      
+                                      {/* Header */}
+                                      <div style={cardHeaderStyle}>
+                                        <div style={cardLogoStyle}>
+                                          <div style={cardLogoIcon}>
+                                            <img 
+                                              src="/sda-logo.png" 
+                                              alt="SDA Logo" 
+                                              style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                objectFit: 'contain',
+                                              }}
+                                            />
+                                          </div>
+                                          <div>
+                                            <div style={cardBrandStyle}>RUM</div>
+                                            <div style={cardTitleStyle}>UMUGANDA</div>
+                                            <div style={cardSubtitleStyle}>PASS</div>
+                                          </div>
+                                        </div>
+                                        <div style={cardIdStyle}>
+                                          <div style={cardIdLabel}>Member ID</div>
+                                          <div style={cardIdValue}>{memberProfile.nationalId || 'N/A'}</div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Main Content Area */}
+                                      <div style={cardMainContentStyle}>
+                                        {/* Left Side - Member Info */}
+                                        <div style={cardLeftSectionStyle}>
+                                          <div style={cardPhotoStyle}>
+                                            {memberProfile.firstName?.[0]?.toUpperCase() || 'M'}
+                                          </div>
+                                          <div style={cardMemberInfoStyle}>
+                                            <div style={cardNameStyle}>{`${memberProfile.firstName || ''} ${memberProfile.lastName || ''}`.trim()}</div>
+                                            <div style={cardRoleStyle}>CHURCH MEMBER</div>
+                                            {memberProfile.church && (
+                                              <div style={cardChurchStyle}>{memberProfile.church.name}</div>
+                                            )}
+                                            {memberProfile.phoneNumber && (
+                                              <div style={cardPhoneStyle}>{memberProfile.phoneNumber}</div>
+                                            )}
+                                            {memberProfile.email && (
+                                              <div style={cardEmailStyle}>{memberProfile.email}</div>
+                                            )}
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Right Side - QR Code */}
+                                        <div style={cardRightSectionStyle}>
+                                          <div style={cardQRLabelStyle}>SCAN FOR VERIFICATION</div>
+                                          <div style={cardQRContainerStyle}>
+                                            <div style={cardQRStyle} data-qr-code>
+                                              {memberPass.token ? (
+                                                <QRCodeSVG 
+                                                  value={memberPass.token}
+                                                  size={72}
+                                                  level="H"
+                                                  includeMargin={true}
+                                                  bgColor="#ffffff"
+                                                  fgColor="#000000"
+                                                />
+                                              ) : (
+                                                <div style={cardQRPlaceholderStyle}>QR CODE</div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Footer */}
+                                      <div style={cardFooterStyle}>
+                                        <div>
+                                          <div style={cardFooterLabelStyle}>Valid Until</div>
+                                          <div style={cardFooterValueStyle}>{memberPass.expiresAt ? new Date(memberPass.expiresAt).toLocaleDateString() : 'Lifetime'}</div>
+                                        </div>
+                                        <div style={cardTokenStyle}>
+                                          <div style={cardFooterLabelStyle}>Issued</div>
+                                          <div style={cardFooterValueStyle}>{new Date().toLocaleDateString()}</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Back Side Preview */}
+                                <div style={{ ...cardPreviewContainer, display: activeCardView === 'back' ? 'flex' : 'none' }}>
+                                  <div style={cardScaleStyle}>
+                                    <div style={cardBackStyle}>
+                                      {/* Header */}
+                                      <div style={cardBackHeaderStyle}>
+                                        <div style={cardBackTitleStyle}>RUM-UMUGANDA PASS</div>
+                                        <div style={cardBackSubtitleStyle}>Official Identification Card</div>
+                                      </div>
+                                      
+                                      {/* Terms and Conditions */}
+                                      <div style={cardTermsStyle}>
+                                        <div style={cardTermsTitleStyle}>TERMS & CONDITIONS:</div>
+                                        <div style={cardTermsTextStyle}>
+                                          1. This card is property of RUM Umuganda Program.<br/>
+                                          2. Must be presented for Umuganda attendance.<br/>
+                                          3. Report lost/stolen cards immediately.<br/>
+                                          4. Fraudulent use will result in prosecution.<br/>
+                                          5. Valid only with current membership status.
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Signature */}
+                                      <div style={cardSignatureStyle}>
+                                        <div style={cardSignatureTitleStyle}>Rwand Union Mission signature</div>
+                                        <div style={cardSignatureLineStyle} />
+                                      </div>
+                                      
+                                      {/* Authority and Contact */}
+                                      <div style={cardAuthorityStyle}>
+                                        <div>
+                                          <div style={cardAuthorityTitleStyle}>AUTHORIZED BY:</div>
+                                          <div>Church Administration</div>
+                                        </div>
+                                        <div style={cardContactStyle}>
+                                          <div style={cardAuthorityTitleStyle}>CONTACT:</div>
+                                          <div>www.rum-umuganda.rw</div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Security Features */}
+                                      <div style={cardSecurityFeature1} />
+                                      <div style={cardSecurityFeature2} />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+                                <button 
+                                  onClick={() => setShowPassModal(true)}
+                                  style={primaryActionButton}
+                                >
+                                  <Download size={16} />
+                                  Download PDF
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={passNotAvailableStyle}>
+                              <div style={passNotAvailableIconStyle}>
+                                <Ticket size={48} />
+                              </div>
+                              <h4 style={passNotAvailableTitleStyle}>Pass Not Available</h4>
+                              <p style={passNotAvailableTextStyle}>
+                                Your digital pass has not been issued yet. Please contact your church administrator.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  case 'myAttendance':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          My Attendance History
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          View your Umuganda participation records
+                        </p>
+                        
+                        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                          {loadingPass ? (
+                            <div style={passLoadingStyle}>
+                              <div style={passSpinnerStyle} />
+                              <p style={passLoadingText}>Loading attendance records...</p>
+                            </div>
+                          ) : memberAttendance && memberAttendance.length > 0 ? (
+                            <div style={{ display: 'grid', gap: '1rem' }}>
+                              {memberAttendance.map((attendance) => {
+                                const isPresent = (attendance.status ?? 'Present') === 'Present';
+                                const isExcused = (attendance.status ?? 'Present') === 'Excused';
+                                const badgeBg = isPresent ? '#fef3c7' : isExcused ? '#dbeafe' : '#fee2e2';
+                                const badgeText = isPresent ? '#92400e' : isExcused ? '#1d4ed8' : '#991b1b';
+                                const dotBg = isPresent ? '#eab308' : isExcused ? '#3b82f6' : '#ef4444';
+
+                                return (
+                                  <article key={attendance.id} style={attendanceCardStyle}>
+                                    <div style={attendanceCardHeader}>
+                                      <div style={attendanceCardIcon}>
+                                        <ClipboardList size={20} />
+                                      </div>
+
+                                      <div style={{ flex: 1 }}>
+                                        <h4 style={attendanceCardTitle}>
+                                          {attendance.theme || 'Umuganda Session'}
+                                        </h4>
+                                        <p style={attendanceCardDate}>
+                                          {attendance.date
+                                            ? new Date(attendance.date).toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                              })
+                                            : 'Unknown Date'}
+                                        </p>
+                                      </div>
+
+                                      <div style={{ ...attendanceStatusBadge, background: badgeBg, color: badgeText }}>
+                                        {!isPresent && <span style={{ ...attendanceStatusDot, background: dotBg }} />}
+                                        {attendance.status || 'Present'}
+                                      </div>
+                                    </div>
+
+                                    <div style={attendanceCardDetails}>
+                                      <div style={attendanceDetailRow}>
+                                        <span style={attendanceDetailLabel}>Church</span>
+                                        <span style={attendanceDetailValue}>{attendance.church?.name || '-'}</span>
+                                      </div>
+                                      <div style={attendanceDetailRow}>
+                                        <span style={attendanceDetailLabel}>Hours</span>
+                                        <span style={attendanceDetailValue}>{typeof attendance.hours === 'number' ? `${attendance.hours}h` : '-'}</span>
+                                      </div>
+                                    </div>
+                                  </article>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div style={{
+                              textAlign: 'center',
+                              padding: '3rem',
+                              background: '#f8fafc',
+                              borderRadius: '12px',
+                              border: '1px solid #e2e8f0',
+                            }}>
+                              <CheckCircle size={48} style={{ color: '#94a3b8', marginBottom: '1rem' }} />
+                              <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>No Attendance Records</h4>
+                              <p style={{ margin: 0, color: '#64748b' }}>
+                                Your attendance records will appear here once you participate in Umuganda activities.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  case 'reportsInsights':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          Reports & Insights
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          Your personal participation summary
+                        </p>
+
+                        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
+                          {loadingPass ? (
+                            <div style={passLoadingStyle}>
+                              <div style={passSpinnerStyle} />
+                              <p style={passLoadingText}>Loading your insights...</p>
+                            </div>
+                          ) : (
+                            (() => {
+                              const records = memberAttendance ?? [];
+                              const totalSessions = records.length;
+                              const presentCount = records.filter((r) => (r.status ?? 'Present') === 'Present').length;
+                              const excusedCount = records.filter((r) => (r.status ?? 'Present') === 'Excused').length;
+                              const absentCount = Math.max(0, totalSessions - presentCount - excusedCount);
+                              const totalHours = records.reduce((acc, r) => acc + (typeof r.hours === 'number' ? r.hours : 0), 0);
+
+                              const lastAttendance = records
+                                .map((r) => (r.date ? new Date(r.date) : null))
+                                .filter((d): d is Date => Boolean(d) && !Number.isNaN(d!.getTime()))
+                                .sort((a, b) => b.getTime() - a.getTime())[0];
+
+                              const passStatus = memberPass ? 'Active' : 'Not Issued';
+                              const attendanceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
+
+                              return (
+                                <>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                                    <article style={memberCardStyle}>
+                                      <div style={memberCardHeader}>
+                                        <div style={memberCardIcon}>
+                                          <BarChart2 size={24} />
+                                        </div>
+                                        <h3 style={memberCardTitle}>Attendance Rate</h3>
+                                      </div>
+                                      <div style={memberCardContent}>
+                                        <p style={{ margin: 0, fontSize: '2rem', fontWeight: 700, color: '#184c8c' }}>{attendanceRate}%</p>
+                                        <p style={{ margin: '0.25rem 0 0', color: '#64748b' }}>
+                                          Present {presentCount} of {totalSessions} sessions
+                                        </p>
+                                      </div>
+                                    </article>
+
+                                    <article style={memberCardStyle}>
+                                      <div style={memberCardHeader}>
+                                        <div style={memberCardIcon}>
+                                          <ClipboardList size={24} />
+                                        </div>
+                                        <h3 style={memberCardTitle}>Total Hours</h3>
+                                      </div>
+                                      <div style={memberCardContent}>
+                                        <p style={{ margin: 0, fontSize: '2rem', fontWeight: 700, color: '#1f9d77' }}>{totalHours}h</p>
+                                        <p style={{ margin: '0.25rem 0 0', color: '#64748b' }}>Logged across all records</p>
+                                      </div>
+                                    </article>
+
+                                    <article style={memberCardStyle}>
+                                      <div style={memberCardHeader}>
+                                        <div style={memberCardIcon}>
+                                          <Ticket size={24} />
+                                        </div>
+                                        <h3 style={memberCardTitle}>Pass Status</h3>
+                                      </div>
+                                      <div style={memberCardContent}>
+                                        <p style={{ margin: 0, fontSize: '1.6rem', fontWeight: 700, color: memberPass ? '#166534' : '#991b1b' }}>{passStatus}</p>
+                                        <p style={{ margin: '0.25rem 0 0', color: '#64748b' }}>{memberProfile?.church?.name ? `Church: ${memberProfile.church.name}` : 'Church not available'}</p>
+                                      </div>
+                                    </article>
+                                  </div>
+
+                                  <article style={memberCardStyle}>
+                                    <div style={memberCardHeader}>
+                                      <div style={memberCardIcon}>
+                                        <UserCheck size={24} />
+                                      </div>
+                                      <h3 style={memberCardTitle}>Latest Activity</h3>
+                                    </div>
+                                    <div style={memberCardContent}>
+                                      <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                        <div style={profileDetailRow}>
+                                          <span style={profileLabel}>Last attendance:</span>
+                                          <span style={profileValue}>{lastAttendance ? lastAttendance.toLocaleDateString() : '-'}</span>
+                                        </div>
+                                        <div style={profileDetailRow}>
+                                          <span style={profileLabel}>Present:</span>
+                                          <span style={profileValue}>{presentCount}</span>
+                                        </div>
+                                        <div style={profileDetailRow}>
+                                          <span style={profileLabel}>Excused:</span>
+                                          <span style={profileValue}>{excusedCount}</span>
+                                        </div>
+                                        <div style={profileDetailRow}>
+                                          <span style={profileLabel}>Absent:</span>
+                                          <span style={profileValue}>{absentCount}</span>
+                                        </div>
+                                      </div>
+                                      {totalSessions === 0 ? (
+                                        <p style={{ margin: '1rem 0 0', color: '#64748b' }}>
+                                          Once you attend Umuganda sessions, this page will show your insights here.
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </article>
+                                </>
+                              );
+                            })()
+                          )}
+                        </div>
+                      </>
+                    );
+                  case 'settings':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          Settings
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          Manage your account preferences
+                        </p>
+                        
+                        <div style={{ maxWidth: '980px', margin: '0 auto', display: 'grid', gap: '1.5rem' }}>
+                          {loadingPass ? (
+                            <div style={passLoadingStyle}>
+                              <div style={passSpinnerStyle} />
+                              <p style={passLoadingText}>Loading your account...</p>
+                            </div>
+                          ) : (
+                            <>
+                              <div
+                                style={{
+                                  display: 'grid',
+                                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                  gap: '1.5rem',
+                                  alignItems: 'start',
+                                }}
+                              >
+                                <article style={memberCardStyle}>
+                                  <div style={memberCardHeader}>
+                                    <div style={memberCardIcon}>
+                                      <User size={24} />
+                                    </div>
+                                    <h3 style={memberCardTitle}>Account</h3>
+                                  </div>
+                                  <div style={memberCardContent}>
+                                    <div style={{ display: 'grid', gap: '0.85rem' }}>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Name</span>
+                                        <span style={profileValue}>
+                                          {memberProfile
+                                            ? `${memberProfile.firstName || ''} ${memberProfile.lastName || ''}`.trim() || '-'
+                                            : `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || '-'}
+                                        </span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Phone</span>
+                                        <span style={profileValue}>{memberProfile?.phoneNumber ?? user?.phoneNumber ?? '-'}</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Email</span>
+                                        <span style={profileValue}>{memberProfile?.email ?? user?.email ?? '-'}</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>National ID</span>
+                                        <span style={profileValue}>{memberProfile?.nationalId ?? '-'}</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Church</span>
+                                        <span style={profileValue}>{memberProfile?.church?.name ?? '-'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </article>
+
+                                <article style={memberCardStyle}>
+                                  <div style={memberCardHeader}>
+                                    <div style={memberCardIcon}>
+                                      <Ticket size={24} />
+                                    </div>
+                                    <h3 style={memberCardTitle}>Pass</h3>
+                                  </div>
+                                  <div style={memberCardContent}>
+                                    <div style={{ display: 'grid', gap: '0.85rem' }}>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Status</span>
+                                        <span style={profileValue}>{memberPass ? 'Active' : 'Not Issued'}</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Expires</span>
+                                        <span style={profileValue}>{memberPass?.expiresAt ? new Date(memberPass.expiresAt).toLocaleDateString() : memberPass ? 'Never' : '-'}</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>SMS sent</span>
+                                        <span style={profileValue}>{memberPass?.smsSentAt ? 'Yes' : memberPass ? 'No' : '-'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div style={memberCardActions}>
+                                    {memberPass ? (
+                                      <button onClick={() => setShowPassModal(true)} style={primaryActionButton}>
+                                        <Download size={16} />
+                                        View & Download Pass
+                                      </button>
+                                    ) : (
+                                      <button disabled style={disabledActionButton}>
+                                        <Ticket size={16} />
+                                        Pass Not Available
+                                      </button>
+                                    )}
+                                  </div>
+                                </article>
+
+                                <article style={memberCardStyle}>
+                                  <div style={memberCardHeader}>
+                                    <div style={memberCardIcon}>
+                                      <Settings size={24} />
+                                    </div>
+                                    <h3 style={memberCardTitle}>App</h3>
+                                  </div>
+                                  <div style={memberCardContent}>
+                                    <div style={{ display: 'grid', gap: '0.85rem' }}>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Language</span>
+                                        <span style={profileValue}>English</span>
+                                      </div>
+                                      <div style={profileDetailRow}>
+                                        <span style={profileLabel}>Role</span>
+                                        <span style={profileValue}>{user?.role ?? '-'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div style={memberCardActions}>
+                                    <Link href="/logout" style={{ textDecoration: 'none' }}>
+                                      <button type="button" style={secondaryActionButton}>
+                                        <LogOut size={16} />
+                                        Sign out
+                                      </button>
+                                    </Link>
+                                  </div>
+                                </article>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    );
+                  case 'scanReports':
+                    return (
+                      <>
+                        <h2 style={memberWelcomeTitle}>
+                          Pass Information
+                        </h2>
+                        <p style={memberWelcomeSubtitle}>
+                          Details of your digital pass
+                        </p>
+                        
+                        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                          {memberPass ? (
+                            <article style={memberCardStyle}>
+                              <h3 style={{ ...memberCardTitle, marginBottom: '1rem' }}>Digital Pass Details</h3>
+                              <div style={{ display: 'grid', gap: '1rem' }}>
+                                <div style={profileDetailRow}>
+                                  <span style={profileLabel}>Pass Token:</span>
+                                  <span style={profileValue}>{memberPass.token}</span>
+                                </div>
+                                <div style={profileDetailRow}>
+                                  <span style={profileLabel}>Issued:</span>
+                                  <span style={profileValue}>{new Date(memberPass.smsSentAt || memberPass.id).toLocaleDateString()}</span>
+                                </div>
+                                <div style={profileDetailRow}>
+                                  <span style={profileLabel}>Expires:</span>
+                                  <span style={profileValue}>{memberPass.expiresAt ? new Date(memberPass.expiresAt).toLocaleDateString() : 'Never'}</span>
+                                </div>
+                                <div style={profileDetailRow}>
+                                  <span style={profileLabel}>SMS Sent:</span>
+                                  <span style={profileValue}>{memberPass.smsSentAt ? 'Yes' : 'No'}</span>
+                                </div>
+                              </div>
+                            </article>
+                          ) : (
+                            <div style={{
+                              textAlign: 'center',
+                              padding: '3rem',
+                              background: '#f8fafc',
+                              borderRadius: '12px',
+                              border: '1px solid #e2e8f0',
+                            }}>
+                              <Ticket size={48} style={{ color: '#94a3b8', marginBottom: '1rem' }} />
+                              <h4 style={{ margin: '0 0 1rem 0', color: '#1e293b' }}>No Pass Issued</h4>
+                              <p style={{ margin: 0, color: '#64748b' }}>
+                                Your digital pass has not been issued yet. Please contact your church administrator.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  default:
+                    return (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '3rem',
+                      }}>
+                        <p style={{ margin: 0, color: '#64748b' }}>Select a category to view content.</p>
                       </div>
-                      {memberProfile?.nationalId && (
-                        <div style={profileDetailRow}>
-                          <span style={profileLabel}>National ID:</span>
-                          <span style={profileValue}>{memberProfile.nationalId}</span>
-                        </div>
-                      )}
-                      {memberProfile?.church && (
-                        <div style={profileDetailRow}>
-                          <span style={profileLabel}>Church:</span>
-                          <span style={profileValue}>{memberProfile.church.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={memberCardActions}>
-                    <button 
-                      onClick={() => setShowPassModal(true)}
-                      style={secondaryActionButton}
-                    >
-                      <User size={16} />
-                      View Full Dashboard
-                    </button>
-                  </div>
-                </article>
-              </div>
+                    );
+                }
+              })()}
             </div>
           </section>
         )}
@@ -1422,6 +2722,7 @@ const langPicker: CSSProperties = {
   border: '1px solid rgba(15, 23, 42, 0.12)',
   background: 'rgba(255, 255, 255, 0.9)',
   whiteSpace: 'nowrap',
+  cursor: 'pointer',
 };
 
 const topNavAuth: CSSProperties = {
@@ -1599,15 +2900,18 @@ const tabButton: CSSProperties = {
   padding: '0.55rem 0',
   fontSize: '0.93rem',
   fontWeight: 600,
-  color: 'rgba(15, 23, 42, 0.65)',
+  color: '#475569',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-  borderBottom: '2px solid transparent',
+  borderBottom: 'none',
 };
 
 const tabButtonActive: CSSProperties = {
-  color: '#2563eb',
-  borderBottomColor: '#2563eb',
+  color: '#1e293b',
+  textDecoration: 'underline',
+  textDecorationColor: '#2563eb',
+  textDecorationThickness: '2px',
+  textUnderlineOffset: '4px',
 };
 
 const tabsNext: CSSProperties = {
@@ -1811,6 +3115,7 @@ const passStatusDot: CSSProperties = {
   height: '8px',
   borderRadius: '50%',
   background: '#22c55e',
+  animation: 'passPulse 1.5s ease-in-out infinite',
 };
 
 const passStatusDotInactive: CSSProperties = {
@@ -3356,5 +4661,134 @@ const safeguards = [
   'SMS alerts for abnormal attendance spikes',
   'Dedicated success team monitoring monthly rollouts',
 ];
+
+const attendanceCardStyle: CSSProperties = {
+  background: '#ffffff',
+  borderRadius: '12px',
+  padding: '1.25rem',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+  border: '1px solid #f1f5f9',
+  transition: 'box-shadow 0.2s ease',
+};
+
+const attendanceCardHeader: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1rem',
+  marginBottom: '1rem',
+};
+
+const attendanceCardIcon: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '44px',
+  height: '44px',
+  borderRadius: '10px',
+  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+  color: '#ffffff',
+  flexShrink: 0,
+};
+
+const attendanceCardTitle: CSSProperties = {
+  fontSize: '1.1rem',
+  fontWeight: 600,
+  color: '#1e293b',
+  margin: '0 0 0.25rem 0',
+  lineHeight: 1.3,
+};
+
+const attendanceCardDate: CSSProperties = {
+  fontSize: '0.875rem',
+  color: '#64748b',
+  margin: 0,
+  lineHeight: 1.4,
+};
+
+const attendanceStatusBadge: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  padding: '0.375rem 0.75rem',
+  borderRadius: '20px',
+  background: '#dcfce7',
+  color: '#166534',
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  whiteSpace: 'nowrap',
+};
+
+const attendanceStatusDot: CSSProperties = {
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  background: '#22c55e',
+};
+
+const attendanceCardDetails: CSSProperties = {
+  display: 'grid',
+  gap: '0.75rem',
+};
+
+const attendanceDetailRow: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0.5rem 0',
+  borderBottom: '1px solid #f8fafc',
+};
+
+const attendanceDetailLabel: CSSProperties = {
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  color: '#64748b',
+};
+
+const attendanceDetailValue: CSSProperties = {
+  fontSize: '0.9rem',
+  fontWeight: 500,
+  color: '#1e293b',
+};
+
+const emptyStateStyle: CSSProperties = {
+  textAlign: 'center',
+  padding: '3rem 2rem',
+  background: '#f8fafc',
+  borderRadius: '12px',
+  border: '1px solid #e2e8f0',
+};
+
+const emptyStateTitle: CSSProperties = {
+  fontSize: '1.25rem',
+  fontWeight: 600,
+  color: '#1e293b',
+  margin: '1rem 0 0.5rem 0',
+};
+
+const emptyStateText: CSSProperties = {
+  fontSize: '0.95rem',
+  color: '#64748b',
+  lineHeight: 1.5,
+  margin: 0,
+};
+
+const floatingChatButton: CSSProperties = {
+  position: 'fixed',
+  bottom: '20px',
+  right: '20px',
+  width: '56px',
+  height: '56px',
+  borderRadius: '50%',
+  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+  border: 'none',
+  color: '#ffffff',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)',
+  zIndex: 1000,
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+};
 
 export default HomePage;

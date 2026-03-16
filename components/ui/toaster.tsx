@@ -105,7 +105,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: str
       className="toast-card"
       style={{
         ...toastCardStyle,
-        background: meta.surface ?? toastCardStyle.background,
+        background: 'white',
         border: `1px solid ${meta.border ?? 'var(--surface-border)'}`,
       }}
     >

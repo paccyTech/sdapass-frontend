@@ -12,6 +12,7 @@ import { useAuthSession } from '@/hooks/useAuthSession';
 import { fetchMemberPass, fetchMemberAttendance, type MemberPassDetails, type MemberPassViewer, type MemberAttendance } from '@/lib/api';
 import { ROLE_DEFINITIONS, type RoleKey } from '@/lib/rbac';
 import type { AuthUser } from '@/lib/auth';
+import { toast } from '@/components/ui/use-toast';
 import { SupportChatbot } from '@/components/SupportChatbot';
 
 const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
@@ -40,7 +41,7 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     myDigitalPass: "My Digital Pass",
     passNotAvailable: "Pass Not Available",
     contactAdmin: "Your digital pass has not been issued yet. Please contact your church administrator.",
-    myAttendance: "My Attendance History",
+    myAttendanceHistory: "My Attendance History",
     viewRecords: "View your Umuganda participation records",
     reportsInsights: "Reports & Insights",
     personalSummary: "Your personal participation summary",
@@ -171,7 +172,7 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     unknownDate: "Unknown Date",
     session: "session",
     sessions: "sessions",
-    home: "Home",
+    trackpasses: "Track Passes",
     trackPasses: "Track Passes",
     viewAll: "View all",
     nameLabel: "Name:",
@@ -187,16 +188,15 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     french: "Igifaransa",
     welcomeBack: "Murakaza neza",
     accessPass: "Kugera ku ikarita yawe y'ikoranabuhanga no kuyobora umuhango wawe wa Umuganda",
-    digitalPass: "Ikirita y'Ikoranabuhanga",
-    active: "Ikora",
+    digitalPass: "Ikarita y'Ikoranabuhanga",
+    active: "Irahari",
     readyCheckIn: "Ikirita yawe y'ikoranabuhanga yiteguye kugera mu Umuganda",
     viewDownload: "Reba & Manura Ikirita",
     myProfile: "Umwirondoro wanjye",
     viewFullDashboard: "Reba Dashboard yose",
-    myAttendanceHistory: "Amateka y'Umuganda wanjye",
     loadingAttendance: "Gutegura amateka y'Umuganda...",
-    noAttendance: "Nta mateka y'Umuganda",
-    noAttendanceDesc: "Amateka yawe y'Umuganda azagaragara hano nyuma yo kwitabira ibikorwa bya Umuganda.",
+    noAttendance: "Nta makuru y'Umuganda",
+    noAttendanceDesc: "Amakuru yawe y'Umuganda azagaragara hano nyuma yo kwitabira ibikorwa bya Umuganda.",
     present: "Ahari",
     excused: "Yarekurwe",
     absent: "Atahari",
@@ -204,7 +204,7 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     hours: "Amasaha",
     myDigitalPass: "Ikirita yanjye y'Ikoranabuhanga",
     passNotAvailable: "Ikirita ntiboneka",
-    contactAdmin: "Ikirita yawe y'ikoranabuhanga ntiyatanze. Nyamuneka, hamagara umuyobozi w'itorero ryawe.",
+    contactAdmin: "Ikirita yawe y'ikoranabuhanga ntiyatanzwe. Nyamuneka, hamagara umuyobozi w'itorero ryawe.",
     viewRecords: "Reba amateka y'umuhango wawe wa Umuganda",
     reportsInsights: "Raporo & Ubusobanuro",
     personalSummary: "Incamake yawe y'umwihariko",
@@ -225,7 +225,7 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     churchDashboard: "Dashboard y'Itorero",
     manageMembers: "Kuyobora Abanyamuryango",
     myPass: "Ikirita yanjye",
-    myAttendance: "Umuganda wanjye",
+    myAttendanceHistory: "Amateka y'Umuganda wanjye",
     scanReports: "Raporo zo Gusikana",
     verificationPortal: "Urubuga rw'igenzura",
     verificationHistory: "Amateka y'igenzura",
@@ -307,7 +307,7 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     usageGuidelinesDesc: "Zana iki kirita hamwe na ID y'igihugu mu miganda. Tanga impapuro zombi ku bayobozi bahagarariwe iyo babisabye.",
     reportDamage: "Tanga amakuru y'ibyangiritse ku muyobozi w'itorero ryawe.",
     complianceNotice: "Iburira ry'ubumvira",
-    complianceNoticeDesc: "Umutungo wa Kiliziya ya Seventh-day Adventist – Umuryango wa Union yo mu Rwanda. Ihinduka ryose, kwigana, gutanga, cyangwa gukoresha nabi birahagarika iki kirita kandi bishobora gutera ibihano cyangwa iby'amategeko.",
+    complianceNoticeDesc: "Umutungo Seventh-day Adventist – Umuryango wa Union yo mu Rwanda. Ihinduka ryose, kwigana, gutanga, cyangwa gukoresha nabi birahagarika iki kirita kandi bishobora gutera ibihano cyangwa iby'amategeko.",
     updateDetails: "Komeza amakuru yo guhura mashya n'itorero ryawe mu masaha 48 yo guhindura.",
     rightsAcknowledgements: "Uburenganzira & Kwemera",
     rightsAcknowledgementsDesc: "Gukoresha iki kirita bivuze ko wemeye amabwiriza y'umuhango wa Umuganda wa Umuryango wa Union yo mu Rwanda. Kora umurimo w'umuganda n'umutimanama, komeza umutekano w'umuryango, no kubaha ubuyobozi bwaho.",
@@ -335,7 +335,6 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     unknownDate: "Itariki itazwi",
     session: "umuhango",
     sessions: "imihango",
-    home: "Ahabanza",
     trackpasses: "Genzura",
     viewAll: "Reba byose",
     nameLabel: "Izina:",
@@ -387,8 +386,6 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     manageChurches: "Gérer les églises",
     churchDashboard: "Tableau de bord Église",
     manageMembers: "Gérer les membres",
-    myPass: "Mon passe",
-    myAttendance: "Ma présence",
     scanReports: "Rapports de scan",
     verificationPortal: "Portail de vérification",
     verificationHistory: "Historique de vérification",
@@ -498,7 +495,6 @@ const translations: Record<'en' | 'rw' | 'fr', Record<string, string>> = {
     unknownDate: "Date inconnue",
     session: "session",
     sessions: "sessions",
-    home: "Accueil",
     trackpasses: "Suivre les passes",
     viewAll: "Voir tout",
     nameLabel: "Nom:",
@@ -642,7 +638,7 @@ const HomePage = () => {
       ],
       MEMBER: [
         { labelKey: 'myPass', href: '/#my-pass', icon: <Ticket size={18} /> },
-        { labelKey: 'myAttendance', href: '/#my-attendance', icon: <CheckCircle size={18} /> },
+        { labelKey: 'myAttendanceHistory', href: '/#my-attendance', icon: <CheckCircle size={18} /> },
         { labelKey: 'scanReports', href: '/#scan-reports', icon: <ScanLine size={18} /> },
       ],
       POLICE_VERIFIER: [
@@ -664,12 +660,12 @@ const HomePage = () => {
     () => [
       { key: 'viewAll', label: t('viewAll') },
       { key: 'myPass', label: t('myPass') },
-      { key: 'myAttendance', label: t('myAttendance') },
+      { key: 'myAttendance', label: t('myAttendanceHistory') },
       { key: 'scanReports', label: t('scanReports') },
       { key: 'reportsInsights', label: t('reportsInsights') },
       { key: 'settings', label: t('settings') },
     ],
-    [t],
+    [effectiveLanguage],
   );
 
   useEffect(() => {
@@ -1553,13 +1549,13 @@ const HomePage = () => {
         )}
 
         {/* Floating Support Centre Button for Members */}
-        {mounted && user?.role === 'MEMBER' && (
+        {mounted && user?.role === 'MEMBER' && !isChatbotOpen && (
           <button
             onClick={() => setIsChatbotOpen(true)}
             style={{
               position: 'fixed',
               bottom: '20px',
-              right: '20px',
+              left: '20px',
               width: '60px',
               height: '60px',
               borderRadius: '50%',
@@ -1640,7 +1636,7 @@ const HomePage = () => {
         />
 
         {/* Floating Chat Button */}
-        {mounted && (
+        {mounted && user?.role !== 'MEMBER' && !isChatbotOpen && (
           <button
             onClick={() => setIsChatbotOpen(true)}
             style={floatingChatButton}

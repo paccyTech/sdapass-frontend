@@ -84,7 +84,7 @@ const translations = {
 const chatContainer: CSSProperties = {
   position: 'fixed',
   bottom: '20px',
-  right: '20px',
+  left: '20px',
   width: '380px',
   height: '500px',
   background: 'var(--surface-primary)',
@@ -332,7 +332,7 @@ export function SupportChatbot({ isOpen, onClose, user, memberProfile, memberPas
           onFocus={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
           onBlur={(e) => e.currentTarget.style.borderColor = 'var(--surface-border)'}
         />
-        <button onClick={handleSend} style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+        <button onClick={() => handleSend()} style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
           <Send size={16} />
         </button>
       </div>

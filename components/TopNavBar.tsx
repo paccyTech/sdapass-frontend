@@ -230,6 +230,7 @@ const getUserMenuItems = (role: RoleKey): MenuItem[] => {
     DISTRICT_ADMIN: [
       { label: 'District Dashboard', href: '/district', icon: <BarChart2 size={18} /> },
       { label: 'Manage Churches', href: '/district/churches', icon: <Home size={18} /> },
+      { label: 'Attendance Tracker', href: '/district/attendance', icon: <CheckCircle size={18} /> },
     ],
     CHURCH_ADMIN: [
       { label: 'Church Dashboard', href: '/church', icon: <BarChart2 size={18} /> },

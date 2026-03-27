@@ -907,61 +907,99 @@ const DistrictChurchAdminsPage = () => {
             ) : filteredAdmins.length === 0 ? (
               <p style={{ margin: 0, color: 'var(--muted)' }}>No church admins match your filters. Adjust your search or invite someone new.</p>
             ) : (
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                {filteredAdmins.map((admin) => (
-                  <article
-                    key={admin.id}
-                    style={{
-                      border: '1px solid var(--surface-border)',
-                      borderRadius: 18,
-                      padding: '1.4rem 1.5rem',
-                      display: 'grid',
-                      gap: '0.9rem',
-                      background: 'white',
-                    }}
-                  >
-                    <header
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '1rem',
-                      }}
-                    >
-                      <div style={{ display: 'grid', gap: '0.35rem' }}>
-                        <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', color: 'var(--shell-foreground)' }}>
+              <div style={{ border: '1px solid var(--surface-border)', borderRadius: '12px', overflow: 'hidden', background: 'white' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ background: 'white', color: '#1e293b', borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Name</th>
+                      <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Church</th>
+                      <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Contact</th>
+                      <th style={{ padding: '0.875rem 1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Status</th>
+                      <th style={{ padding: '0.875rem 1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAdmins.map((admin, index) => (
+                      <tr key={admin.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '1rem', fontWeight: '600', color: '#1e293b' }}>
                           {admin.firstName} {admin.lastName}
-                        </strong>
-                        <span style={{ color: 'var(--muted)' }}>{admin.church?.name ?? 'Unassigned church'}</span>
-                      </div>
-                      <span style={statusPill(admin.isActive)}>{admin.isActive ? <IconCheck size={12} /> : <IconX size={12} />}</span>
-                    </header>
-
-                    <div style={contactListStyle}>
-                      {admin.email ? (
-                        <ContactChip icon={<IconMail size={14} />} href={`mailto:${admin.email}`} label={admin.email} variant="email" />
-                      ) : null}
-                      {admin.phoneNumber ? (
-                        <ContactChip icon={<IconPhone size={14} />} href={`tel:${admin.phoneNumber}`} label={admin.phoneNumber} variant="phone" />
-                      ) : null}
-                      <ContactChip
-                        icon={<IconChurch size={14} />}
-                        label={admin.church?.name ?? 'Awaiting assignment'}
-                        variant="church"
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <Button type="button" tone="ghost" onClick={() => openEdit(admin)} aria-label="Edit admin" style={{ border: '1px solid #3b82f6' }}>
-                        <IconEdit size={16} stroke="#3b82f6" />
-                      </Button>
-                      <Button type="button" tone="danger" onClick={() => openDelete(admin)} aria-label="Remove admin" style={{ background: 'transparent', boxShadow: 'none', border: '1px solid var(--danger)' }}>
-                        <IconTrash size={16} stroke="var(--danger)" />
-                      </Button>
-                    </div>
-                  </article>
-                ))}
+                        </td>
+                        <td style={{ padding: '1rem', color: '#64748b' }}>
+                          {admin.church?.name ?? 'Unassigned'}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            {admin.email && (
+                              <a href={`mailto:${admin.email}`} style={{ color: '#3b82f6', fontSize: '0.85rem', textDecoration: 'none' }}>
+                                {admin.email}
+                              </a>
+                            )}
+                            {admin.phoneNumber && (
+                              <a href={`tel:${admin.phoneNumber}`} style={{ color: '#3b82f6', fontSize: '0.85rem', textDecoration: 'none' }}>
+                                {admin.phoneNumber}
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '999px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            background: admin.isActive ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+                            color: admin.isActive ? '#166534' : '#dc2626',
+                            border: `1px solid ${admin.isActive ? '#86efac' : '#fca5a5'}`,
+                          }}>
+                            {admin.isActive ? <IconCheck size={12} /> : <IconX size={12} />}
+                            {admin.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => openEdit(admin)}
+                              style={{
+                                padding: '0.5rem',
+                                borderRadius: '8px',
+                                border: '1px solid #3b82f6',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              aria-label="Edit admin"
+                            >
+                              <IconEdit size={16} stroke="#3b82f6" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openDelete(admin)}
+                              style={{
+                                padding: '0.5rem',
+                                borderRadius: '8px',
+                                border: '1px solid #dc2626',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              aria-label="Remove admin"
+                            >
+                              <IconTrash size={16} stroke="#dc2626" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
         </div>

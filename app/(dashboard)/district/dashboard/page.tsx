@@ -9,11 +9,9 @@ import RequireRole from '@/components/RequireRole';
 import { useDashboardShellConfig } from '@/components/dashboard/DashboardShellContext';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import {
-  fetchAttendance,
   fetchChurchAdmins,
   fetchChurches,
   fetchDistrictDetail,
-  type AttendanceRecordSummary,
   type ChurchAdminSummary,
   type ChurchSummary,
   type DistrictPayload,
@@ -319,7 +317,6 @@ const DistrictDashboardPage = () => {
   const [district, setDistrict] = useState<DistrictPayload | null>(null);
   const [churches, setChurches] = useState<ChurchSummary[]>([]);
   const [churchAdmins, setChurchAdmins] = useState<ChurchAdminSummary[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecordSummary[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -349,21 +346,19 @@ const DistrictDashboardPage = () => {
           return;
         }
 
-        const [districtDetail, districtChurches, admins, attendance] = await Promise.all([
+        const [districtDetail, districtChurches, admins] = await Promise.all([
           fetchDistrictDetail(token, user.districtId),
           fetchChurches(token, { districtId: user.districtId }),
           fetchChurchAdmins(token, { districtId: user.districtId }),
-          fetchAttendance(token, { districtId: user.districtId }),
         ]);
 
         if (!mounted) {
           return;
         }
 
-        setDistrict(districtDetail ?? null);
+        setDistrict(districtDetail);
         setChurches(districtChurches ?? []);
         setChurchAdmins(admins ?? []);
-        setAttendanceRecords(attendance ?? []);
         setStatus('loaded');
       } catch (err) {
         if (!mounted) {
@@ -390,10 +385,7 @@ const DistrictDashboardPage = () => {
     return churches
       .map((church) => {
         const adminsForChurch = churchAdmins.filter((admin) => admin.churchId === church.id && admin.isActive);
-        const passesIssued = attendanceRecords.filter(
-          (record) => record.session?.church?.id === church.id && record.pass?.smsSentAt,
-        ).length;
-
+        
         return {
           id: church.id,
           name: church.name,
@@ -401,11 +393,10 @@ const DistrictDashboardPage = () => {
           admins: adminsForChurch,
           memberCount: church._count?.members ?? 0,
           sessionCount: church._count?.sessions ?? 0,
-          passesIssued,
         };
       })
       .sort((a, b) => b.memberCount - a.memberCount);
-  }, [churches, churchAdmins, attendanceRecords]);
+  }, [churches, churchAdmins]);
 
   const riskItems = useMemo(() => {
     const items: Array<{ id: string; title: string; detail: string; level: RiskAlert['level'] }> = [];
@@ -415,17 +406,8 @@ const DistrictDashboardPage = () => {
         items.push({
           id: `${church.id}-no-admin`,
           title: `${church.name} has no active admin`,
-          detail: 'Assign or reactivate a church administrator to keep pass issuance running.',
+          detail: 'Assign or reactivate a church administrator to keep operations running.',
           level: 'critical',
-        });
-      }
-
-      if (church.passesIssued === 0) {
-        items.push({
-          id: `${church.id}-no-passes`,
-          title: `${church.name} needs pass activations`,
-          detail: 'No members have approved passes yet. Follow up with the congregation on attendance logging.',
-          level: 'warning',
         });
       }
     });
@@ -434,7 +416,7 @@ const DistrictDashboardPage = () => {
       items.push({
         id: 'all-clear',
         title: 'All churches reporting',
-        detail: 'Every congregation has active admins and recent pass activity. Keep reinforcing good habits.',
+        detail: 'Every congregation has active admins. Keep reinforcing good practices.',
         level: 'warning',
       });
     }
@@ -449,28 +431,18 @@ const DistrictDashboardPage = () => {
     if (atRiskChurch) {
       tasks.push({
         title: `Recruit admin for ${atRiskChurch.name}`,
-        detail: 'Coordinate with union leadership to identify a candidate and invite them via the Church Admins page.',
+        detail: 'Coordinate with union leadership to identify a candidate and invite them via Church Admins page.',
         owner: 'You',
         due: 'This week',
       });
     }
 
-    const lowPassChurch = churchesWithStats.find((church) => church.passesIssued === 0);
-    if (lowPassChurch) {
-      tasks.push({
-        title: `Check attendance process at ${lowPassChurch.name}`,
-        detail: 'Review recent Sabbath attendance entries and confirm the QR issuance flow with the local team.',
-        owner: 'You',
-        due: 'Next Sabbath',
-      });
-    }
-
     if (!tasks.length) {
       tasks.push({
-        title: 'Celebrate wins',
-        detail: 'Share district highlights with the union leadership to reinforce strong performance.',
+        title: 'Conduct quarterly review',
+        detail: 'Schedule district-wide compliance check and review all church performance metrics.',
         owner: 'You',
-        due: 'Friday morning',
+        due: 'Next month',
       });
     }
 
@@ -480,29 +452,26 @@ const DistrictDashboardPage = () => {
   const churchCoverage = useMemo(() => {
     return churchesWithStats.map((church) => ({
       name: church.name,
-      coverage: church.passesIssued && church.memberCount ? Math.min(100, Math.round((church.passesIssued / church.memberCount) * 100)) : 0,
-      change: church.admins.length === 0 ? '- admin missing' : `${church.passesIssued} passes`,
+      coverage: church.admins.length > 0 ? 100 : 0,
+      change: church.admins.length === 0 ? '- admin missing' : `${church.admins.length} admins`,
       color: church.admins.length === 0 ? 'var(--danger)' : 'var(--accent)',
     }));
   }, [churchesWithStats]);
 
   const approvedPassesPie = useMemo(() => {
     const palette = ['#2563eb', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#14b8a6', '#0ea5e9', '#f97316'];
-
+    
     return churchesWithStats
       .map((church, index) => ({
         label: church.name,
-        value: attendanceRecords.filter(
-          (record) => record.status === 'APPROVED' && record.session?.church?.id === church.id,
-        ).length,
+        value: church.admins.length,
         color: palette[index % palette.length],
       }))
       .sort((a, b) => b.value - a.value);
-  }, [attendanceRecords, churchesWithStats]);
+  }, [churchesWithStats]);
 
   const activeChurchCount = churchesWithStats.length;
   const activeAdminCount = churchAdmins.filter((admin) => admin.isActive).length;
-  const approvedAttendanceCount = attendanceRecords.filter((record) => record.status === 'APPROVED').length;
 
   const loadingCard = (
     <section style={{ ...cardStyle, alignItems: 'center', justifyContent: 'center', minHeight: '280px' }}>
@@ -578,8 +547,8 @@ const DistrictDashboardPage = () => {
               <div style={cardStyle}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center' }}>
                   <IconCheck size={24} style={{ color: '#10b981' }} />
-                  <div style={{ fontSize: '2rem', fontWeight: 700, color: '#166534' }}>{approvedAttendanceCount}</div>
-                  <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Approved Passes</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: '#166534' }}>{activeAdminCount}</div>
+                  <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Active Admins</div>
                 </div>
               </div>
             </section>

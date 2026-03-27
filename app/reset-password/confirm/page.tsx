@@ -87,7 +87,7 @@ export default function PasswordResetConfirmPage() {
         </div>
         <div style={leftFooterStyle}>
           <Link href="/" style={leftFooterLinkStyle}>
-            ← Back to Home
+            ← Home
           </Link>
         </div>
       </div>

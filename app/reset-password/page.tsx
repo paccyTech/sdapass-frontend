@@ -83,7 +83,7 @@ export default function PasswordResetRequestPage() {
         </div>
         <div style={leftFooterStyle}>
           <Link href="/" style={leftFooterLinkStyle}>
-            ← Back to Home
+            ← Home
           </Link>
         </div>
       </div>

@@ -56,7 +56,7 @@ const LoginPage = () => (
       
       <div style={formFooterStyle}>
         <Link href="/" style={backLinkStyle}>
-          ← Back to Home
+          ← Home
         </Link>
         <p style={helpTextStyle}>
           Need help?{' '}

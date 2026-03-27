@@ -3,6 +3,7 @@
 import { jsPDF } from 'jspdf';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { IconCalendar, IconFilter, IconDownload, IconFileTypePdf, IconFileTypeCsv, IconRefresh } from '@tabler/icons-react';
 
 import RequireRole from '@/components/RequireRole';
 import { RoleHero, type HeroStat } from '@/components/dashboard/RoleHero';
@@ -19,24 +20,88 @@ import {
   type MemberSummary,
 } from '@/lib/api';
 
+const pageWrapperStyle: CSSProperties = {
+  maxWidth: '1400px',
+  margin: '0 auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+};
+
+const filtersContainerStyle: CSSProperties = {
+  background: 'white',
+  borderRadius: '16px',
+  padding: '1.5rem',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '1rem',
+  alignItems: 'flex-end',
+};
+
+const filterGroupStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5rem',
+  minWidth: '180px',
+};
+
+const filterLabelStyle: CSSProperties = {
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  color: '#475569',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+};
+
+const filterInputStyle: CSSProperties = {
+  padding: '0.65rem 0.875rem',
+  borderRadius: '10px',
+  border: '1px solid #cbd5e0',
+  fontSize: '0.9rem',
+  background: 'white',
+  color: '#1e293b',
+  outline: 'none',
+  transition: 'all 0.2s ease',
+};
+
+const filterSelectStyle: CSSProperties = {
+  ...filterInputStyle,
+  cursor: 'pointer',
+};
+
+const refreshButtonStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  padding: '0.65rem 1.25rem',
+  borderRadius: '10px',
+  border: '1px solid #3b82f6',
+  background: 'white',
+  color: '#3b82f6',
+  fontWeight: 600,
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+};
+
 const gridStyle: CSSProperties = {
   display: 'grid',
-  gap: '1.9rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+  gap: '1.5rem',
 };
 
 const cardStyle: CSSProperties = {
-  background: 'var(--surface-primary)',
-  borderRadius: '12px',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+  borderRadius: '16px',
   padding: '1.75rem',
-  border: '1px solid var(--surface-border)',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-  display: 'grid',
-  gap: '1.35rem',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    borderColor: '#1a365d',
-  },
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.25rem',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 };
 
 const cardHeaderStyle: CSSProperties = {
@@ -67,10 +132,11 @@ const descriptionStyle: CSSProperties = {
 };
 
 const previewShellStyle: CSSProperties = {
-  borderRadius: '18px',
-  border: '1px solid var(--surface-border)',
+  borderRadius: '12px',
+  border: '1px solid #e2e8f0',
   overflow: 'hidden',
-  background: 'var(--surface-secondary)',
+  background: 'white',
+  boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
 };
 
 const tableStyle: CSSProperties = {
@@ -103,43 +169,27 @@ const actionBarStyle: CSSProperties = {
 };
 
 const buttonStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
   border: 'none',
   borderRadius: '10px',
   padding: '0.6rem 1.2rem',
-  backgroundColor: '#1a365d',
+  background: 'linear-gradient(135deg, #1a365d 0%, #2c5282 100%)',
   color: 'white',
-  fontWeight: 500,
+  fontWeight: 600,
   cursor: 'pointer',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 4px 6px -1px rgba(26, 54, 93, 0.3)',
   transition: 'all 0.2s ease',
   fontSize: '0.9rem',
-  '&:hover': {
-    backgroundColor: '#2c5282',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  },
-  '&:active': {
-    transform: 'translateY(0)',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  },
 };
 
 const secondaryButtonStyle: CSSProperties = {
   ...buttonStyle,
-  backgroundColor: 'var(--surface-primary)',
+  background: 'white',
   color: '#1a365d',
-  border: '1px solid #cbd5e0',
-  boxShadow: 'none',
-  '&:hover': {
-    backgroundColor: '#f7fafc',
-    borderColor: '#a0aec0',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-  },
-  '&:active': {
-    transform: 'translateY(0)',
-    boxShadow: 'none',
-  },
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
 };
 
 const emptyStateStyle: CSSProperties = {
@@ -365,7 +415,7 @@ const downloadCsv = (title: string, columns: ColumnDef[], rows: ReportRow[]) => 
   URL.revokeObjectURL(url);
 };
 
-const downloadPdf = (title: string, columns: ColumnDef[], rows: ReportRow[]) => {
+const downloadPdf = async (title: string, columns: ColumnDef[], rows: ReportRow[], preparedBy?: string, churchName?: string) => {
   if (!rows.length) {
     return;
   }
@@ -374,47 +424,146 @@ const downloadPdf = (title: string, columns: ColumnDef[], rows: ReportRow[]) => 
   const doc = new jsPDF({ orientation });
   const marginX = 16;
   const marginY = 20;
+  const footerHeight = 35;
+  const headerHeight = 40;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const availableWidth = pageWidth - marginX * 2;
-  const colWidth = availableWidth / columns.length;
+  const contentWidth = pageWidth - marginX * 2;
+  const colWidth = contentWidth / columns.length;
+  const maxContentY = pageHeight - footerHeight - 5;
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(title, marginX, marginY);
+  // Track pages for footer
+  const pages: number[] = [];
 
-  doc.setFontSize(10);
-  doc.setDrawColor(210, 218, 232);
-  let cursorY = marginY + 8;
+  const addHeader = () => {
+    // Logo
+    try {
+      const logoUrl = '/sda-logo.png';
+      fetch(logoUrl).then(response => {
+        if (response.ok) {
+          response.blob().then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64 = reader.result as string;
+              const imgProps = doc.getImageProperties(base64);
+              const logoWidth = 22;
+              const logoHeight = (imgProps.height * logoWidth) / imgProps.width;
+              doc.addImage(base64, 'PNG', marginX, marginY - 10, logoWidth, logoHeight);
+            };
+            reader.readAsDataURL(blob);
+          });
+        }
+      }).catch(() => {});
+    } catch {
+      // Logo not available
+    }
 
-  const ensureSpace = (heightNeeded: number) => {
-    if (cursorY + heightNeeded > pageHeight - marginY) {
-      doc.addPage();
-      cursorY = marginY;
+    // Date
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated: ${dateStr} at ${timeStr}`, pageWidth - marginX, marginY - 2, { align: 'right' });
+
+    // Title
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(title, marginX, marginY + 12);
+
+    // Church name
+    if (churchName) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.text(churchName, marginX, marginY + 20);
+      doc.setTextColor(0, 0, 0);
     }
   };
 
-  const drawRow = (values: string[], bold = false) => {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal');
-    const cellTop = cursorY;
+  const addFooter = (pageNum: number) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Page ${pageNum}`, pageWidth - marginX - 20, pageHeight - 12, { align: 'right' });
+    doc.text('Seventh-day Adventist Church Management System', marginX, pageHeight - 12);
+    doc.text(`Prepared by: ${preparedBy || 'Church Administrator'}`, marginX, pageHeight - 22);
+  };
+
+  // Draw header on first page
+  addHeader();
+  pages.push(1);
+  let pageNum = 1;
+  let cursorY = marginY + headerHeight;
+
+  // Draw table header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.5);
+
+  const drawTableHeader = () => {
+    const headerY = cursorY;
+    columns.forEach((col, index) => {
+      const x = marginX + index * colWidth;
+      doc.text(col.label, x + 2, headerY + 5);
+    });
+    doc.line(marginX, headerY, pageWidth - marginX, headerY);
+    doc.line(marginX, headerY + 8, pageWidth - marginX, headerY + 8);
+    cursorY = headerY + 10;
+  };
+
+  drawTableHeader();
+
+  // Draw rows
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setLineWidth(0.2);
+
+  rows.forEach((row, rowIndex) => {
+    const values = columns.map((col) => String(formatCell(row[col.key])));
+    
+    // Calculate row height based on text wrapping
     let rowHeight = 6;
+    values.forEach((value, index) => {
+      const lines = doc.splitTextToSize(value, colWidth - 4);
+      rowHeight = Math.max(rowHeight, lines.length * 4 + 3);
+    });
+
+    // Check if we need a new page
+    if (cursorY + rowHeight > maxContentY) {
+      addFooter(pageNum);
+      doc.addPage();
+      pageNum++;
+      pages.push(pageNum);
+      cursorY = marginY + 10;
+      // Redraw table header on new page
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      drawTableHeader();
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setLineWidth(0.2);
+    }
+
+    // Draw the row
+    const rowY = cursorY;
     values.forEach((value, index) => {
       const x = marginX + index * colWidth;
       const lines = doc.splitTextToSize(value, colWidth - 4);
-      rowHeight = Math.max(rowHeight, lines.length * 5 + 2);
-      doc.text(lines, x + 2, cursorY + 4, { baseline: 'top' });
+      doc.text(lines, x + 2, rowY + 4);
     });
-    ensureSpace(rowHeight + 2);
-    doc.line(marginX, cellTop, pageWidth - marginX, cellTop);
-    cursorY += rowHeight;
-    doc.line(marginX, cursorY, pageWidth - marginX, cursorY);
-  };
 
-  drawRow(columns.map((col) => col.label), true);
-  rows.forEach((row) => {
-    const values = columns.map((col) => formatCell(row[col.key]));
-    drawRow(values);
+    // Draw bottom line for the row
+    doc.line(marginX, rowY + rowHeight - 1, pageWidth - marginX, rowY + rowHeight - 1);
+    
+    cursorY += rowHeight;
   });
+
+  // Add final footer
+  addFooter(pageNum);
 
   doc.save(`${slugify(title)}-${new Date().toISOString().slice(0, 10)}.pdf`);
 };
@@ -434,10 +583,12 @@ type ReportCardProps = {
   report: ReportDefinition;
   loading: boolean;
   onDownloadCsv: (report: ReportDefinition) => void;
-  onDownloadPdf: (report: ReportDefinition) => void;
+  onDownloadPdf: (report: ReportDefinition, preparedBy?: string, churchName?: string) => void;
+  preparedBy?: string;
+  churchName?: string;
 };
 
-const ReportCard = ({ report, loading, onDownloadCsv, onDownloadPdf }: ReportCardProps) => {
+const ReportCard = ({ report, loading, onDownloadCsv, onDownloadPdf, preparedBy, churchName }: ReportCardProps) => {
   const { title, description, columns, rows, footnote } = report;
   const previewRows = rows.slice(0, 6);
 
@@ -506,7 +657,7 @@ const ReportCard = ({ report, loading, onDownloadCsv, onDownloadPdf }: ReportCar
             pointerEvents: rows.length ? 'auto' : 'none',
           }}
           type="button"
-          onClick={() => onDownloadPdf(report)}
+          onClick={() => onDownloadPdf(report, preparedBy, churchName)}
           disabled={!rows.length}
         >
           Export PDF
@@ -529,68 +680,71 @@ const ReportsPage = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecordSummary[]>([]);
   const [members, setMembers] = useState<MemberSummary[]>([]);
 
-  useEffect(() => {
+  // Filter states
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const loadData = useCallback(async () => {
     if (!token || !churchId) {
       return;
     }
 
-    let cancelled = false;
     setStatus('loading');
     setError(null);
 
-    Promise.allSettled([
-      fetchChurchDetail(token, churchId),
-      fetchAttendanceReport(token, { churchId }),
-      fetchAttendance(token, { churchId }),
-      fetchChurchMembers(token, { churchId }),
-    ])
-      .then((results) => {
-        if (cancelled) {
-          return;
-        }
+    try {
+      const params: { churchId: string; from?: string; to?: string; status?: string } = { churchId };
+      if (dateFrom) params.from = dateFrom;
+      if (dateTo) params.to = dateTo;
+      if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
 
-        const [churchResult, reportResult, attendanceResult, memberResult] = results;
-        const failures: string[] = [];
+      const [churchResult, reportResult, attendanceResult, memberResult] = await Promise.allSettled([
+        fetchChurchDetail(token, churchId),
+        fetchAttendanceReport(token, { churchId }),
+        fetchAttendance(token, params),
+        fetchChurchMembers(token, { churchId }),
+      ]);
 
-        if (churchResult.status === 'fulfilled') {
-          setChurch(churchResult.value ?? null);
-        } else {
-          failures.push('church profile');
-        }
+      const failures: string[] = [];
 
-        if (reportResult.status === 'fulfilled') {
-          setAttendanceReport(reportResult.value ?? null);
-        } else {
-          failures.push('attendance summary');
-        }
+      if (churchResult.status === 'fulfilled') {
+        setChurch(churchResult.value ?? null);
+      } else {
+        failures.push('church profile');
+      }
 
-        if (attendanceResult.status === 'fulfilled') {
-          setAttendanceRecords(attendanceResult.value ?? []);
-        } else {
-          failures.push('attendance records');
-        }
+      if (reportResult.status === 'fulfilled') {
+        setAttendanceReport(reportResult.value ?? null);
+      } else {
+        failures.push('attendance summary');
+      }
 
-        if (memberResult.status === 'fulfilled') {
-          setMembers(memberResult.value ?? []);
-        } else {
-          failures.push('member roster');
-        }
+      if (attendanceResult.status === 'fulfilled') {
+        setAttendanceRecords(attendanceResult.value ?? []);
+      } else {
+        failures.push('attendance records');
+      }
 
-        setError(failures.length ? `Some reports could not be loaded: ${failures.join(', ')}.` : null);
-        setStatus('loaded');
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load reports.';
-          setError(message);
-          setStatus('error');
-        }
-      });
+      if (memberResult.status === 'fulfilled') {
+        setMembers(memberResult.value ?? []);
+      } else {
+        failures.push('member roster');
+      }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [token, churchId]);
+      setError(failures.length ? `Some reports could not be loaded: ${failures.join(', ')}.` : null);
+      setStatus('loaded');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load reports.';
+      setError(message);
+      setStatus('error');
+    }
+  }, [token, churchId, dateFrom, dateTo, statusFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const summaryCounts = useMemo(() => {
     const total = attendanceReport?.summary.total ?? attendanceRecords.length;
@@ -867,8 +1021,9 @@ const ReportsPage = () => {
   }, []);
 
   const handleDownloadPdf = useCallback((report: ReportDefinition) => {
-    downloadPdf(report.title, report.columns, report.rows);
-  }, []);
+    const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Church Administrator' : 'Church Administrator';
+    downloadPdf(report.title, report.columns, report.rows, userName, church?.name);
+  }, [user, church?.name]);
 
   if (!churchId) {
     return (
@@ -890,19 +1045,89 @@ const ReportsPage = () => {
 
   return (
     <RequireRole allowed="CHURCH_ADMIN">
-      <section style={gridStyle}>
+      <div style={pageWrapperStyle}>
+        {/* Filters Section */}
+        <div style={filtersContainerStyle}>
+          <div style={filterGroupStyle}>
+            <label style={filterLabelStyle}>
+              <IconCalendar size={14} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+              From Date
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              style={filterInputStyle}
+            />
+          </div>
+          
+          <div style={filterGroupStyle}>
+            <label style={filterLabelStyle}>
+              <IconCalendar size={14} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+              To Date
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              style={filterInputStyle}
+            />
+          </div>
+          
+          <div style={filterGroupStyle}>
+            <label style={filterLabelStyle}>
+              <IconFilter size={14} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+              Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'approved' | 'pending')}
+              style={filterSelectStyle}
+            >
+              <option value="all">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          
+          <div style={filterGroupStyle}>
+            <label style={filterLabelStyle}>Search</label>
+            <input
+              type="text"
+              placeholder="Search member, session..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={filterInputStyle}
+            />
+          </div>
+          
+          <button
+            type="button"
+            onClick={loadData}
+            style={refreshButtonStyle}
+            disabled={isLoading}
+          >
+            <IconRefresh size={16} />
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
+        </div>
+
         {error && <div style={errorBannerStyle}>{error}</div>}
 
-        {reports.map((report) => (
-          <ReportCard
-            key={report.key}
-            report={report}
-            loading={isLoading}
-            onDownloadCsv={handleDownloadCsv}
-            onDownloadPdf={handleDownloadPdf}
-          />
-        ))}
-      </section>
+        <section style={gridStyle}>
+          {reports.map((report) => (
+            <ReportCard
+              key={report.key}
+              report={report}
+              loading={isLoading}
+              onDownloadCsv={handleDownloadCsv}
+              onDownloadPdf={handleDownloadPdf}
+              preparedBy={user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Church Administrator' : 'Church Administrator'}
+              churchName={church?.name}
+            />
+          ))}
+        </section>
+      </div>
     </RequireRole>
   );
 };

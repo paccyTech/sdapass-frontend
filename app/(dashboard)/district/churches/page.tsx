@@ -19,52 +19,65 @@ import {
 
 const pageWrapperStyle: CSSProperties = {
   display: 'grid',
-  gap: '1.75rem',
+  gap: '2.5rem',
+  maxWidth: '1400px',
+  margin: '0 auto',
 };
 
 const cardStyle: CSSProperties = {
-  background: 'var(--surface-primary)',
-  borderRadius: 20,
-  padding: '1.75rem',
-  border: '1px solid var(--surface-border)',
-  boxShadow: '0 16px 32px rgba(8, 22, 48, 0.12)',
-  display: 'grid',
-  gap: '1.25rem',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+  borderRadius: '20px',
+  padding: '2rem',
+  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1)',
+  border: '1px solid rgba(226, 232, 240, 0.8)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  position: 'relative',
+  overflow: 'hidden',
 };
 
 const statGridStyle: CSSProperties = {
   display: 'grid',
-  gap: '1.25rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: '1.5rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
 };
 
 const statCardStyle: CSSProperties = {
   ...cardStyle,
-  padding: '1.5rem',
-  gap: '0.75rem',
-  boxShadow: '0 10px 24px rgba(18, 52, 92, 0.12)',
+  padding: '1.75rem',
+  gap: '1rem',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+  border: '1px solid rgba(226, 232, 240, 0.6)',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
 };
 
 const statLabelStyle: CSSProperties = {
   fontSize: '0.8rem',
-  letterSpacing: '0.12em',
+  fontWeight: '600',
+  letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  color: 'var(--muted)',
-  fontWeight: 600,
+  color: '#64748b',
   margin: 0,
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
 };
 
 const statValueStyle: CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: '2.3rem',
+  fontSize: '2.5rem',
+  fontWeight: '700',
   margin: 0,
-  color: 'var(--shell-foreground)',
+  color: '#1e293b',
+  lineHeight: '1.2',
 };
 
 const statContextStyle: CSSProperties = {
   margin: 0,
-  color: 'var(--muted)',
-  fontSize: '0.92rem',
+  color: '#64748b',
+  fontSize: '0.9rem',
+  lineHeight: '1.5',
 };
 
 const sectionHeaderStyle: CSSProperties = {
@@ -73,141 +86,162 @@ const sectionHeaderStyle: CSSProperties = {
   justifyContent: 'space-between',
   gap: '1rem',
   alignItems: 'flex-start',
+  paddingBottom: '1rem',
+  borderBottom: '1px solid rgba(226, 232, 240, 0.6)',
 };
 
 const sectionTitleStyle: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: '1.55rem',
-  color: 'var(--shell-foreground)',
+  fontSize: '1.75rem',
+  fontWeight: '700',
+  color: '#1e293b',
+  lineHeight: '1.3',
 };
 
 const mutedTextStyle: CSSProperties = {
-  margin: '0.35rem 0 0',
-  color: 'var(--muted)',
-  lineHeight: 1.6,
-  maxWidth: '620px',
+  margin: '0.5rem 0 0',
+  color: '#64748b',
+  lineHeight: '1.6',
+  fontSize: '0.95rem',
 };
 
 const formGridStyle: CSSProperties = {
   display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: '1.5rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
 };
 
 const labelStyle: CSSProperties = {
   display: 'grid',
-  gap: '0.35rem',
-  fontWeight: 600,
-  color: 'var(--shell-foreground)',
+  gap: '0.5rem',
+  fontWeight: '600',
+  color: '#374151',
+  fontSize: '0.9rem',
 };
 
 const inputStyle: CSSProperties = {
-  borderRadius: 12,
-  border: '1px solid var(--surface-border)',
-  padding: '0.6rem 0.75rem',
-  background: 'var(--surface-primary)',
-  color: 'var(--shell-foreground)',
+  borderRadius: '12px',
+  border: '1px solid rgba(226, 232, 240, 0.8)',
+  padding: '0.75rem 1rem',
+  background: '#ffffff',
+  color: '#374151',
   fontSize: '0.95rem',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
 };
 
 const primaryButtonStyle: CSSProperties = {
   border: 'none',
-  borderRadius: 14,
-  padding: '0.65rem 1.35rem',
-  background: '#1e3a8a',
-  color: 'white',
-  fontWeight: 600,
+  borderRadius: '12px',
+  padding: '0.75rem 1.5rem',
+  background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+  color: '#ffffff',
+  fontWeight: '600',
+  fontSize: '0.875rem',
   cursor: 'pointer',
-  display: 'inline-flex',
+  display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  boxShadow: '0 15px 24px rgba(30,58,138,0.28)',
+  boxShadow: '0 4px 12px rgba(30, 58, 138, 0.3)',
+  transition: 'all 0.2s ease',
 };
 
 const ghostButtonStyle: CSSProperties = {
-  borderRadius: 12,
-  border: '1px solid var(--surface-border)',
-  padding: '0.55rem 1rem',
-  background: 'transparent',
-  color: 'var(--shell-foreground)',
-  fontWeight: 600,
+  borderRadius: '12px',
+  border: '1px solid rgba(226, 232, 240, 0.8)',
+  padding: '0.75rem 1.25rem',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+  color: '#475569',
+  fontWeight: '600',
+  fontSize: '0.875rem',
   cursor: 'pointer',
-  display: 'inline-flex',
+  display: 'flex',
   alignItems: 'center',
-  gap: '0.4rem',
+  gap: '0.5rem',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.2s ease',
 };
 
 const dangerButtonStyle: CSSProperties = {
   ...ghostButtonStyle,
-  borderColor: 'color-mix(in srgb, var(--danger) 35%, transparent)',
-  color: 'var(--danger)',
+  background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+  borderColor: 'rgba(239, 68, 68, 0.3)',
+  color: '#dc2626',
 };
 
 const tagStyle = (tone: 'accent' | 'danger' | 'muted'): CSSProperties => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '0.4rem',
-  borderRadius: 999,
+  borderRadius: '999px',
   padding: '0.3rem 0.75rem',
   fontSize: '0.75rem',
-  fontWeight: 600,
-  letterSpacing: '0.08em',
+  fontWeight: '600',
+  letterSpacing: '0.05em',
   textTransform: 'uppercase',
   background:
     tone === 'accent'
-      ? 'color-mix(in srgb, var(--accent) 18%, transparent)'
+      ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'
       : tone === 'danger'
-      ? 'color-mix(in srgb, var(--danger) 18%, transparent)'
-      : 'color-mix(in srgb, var(--muted) 12%, transparent)',
-  color: tone === 'accent' ? 'var(--accent)' : tone === 'danger' ? 'var(--danger)' : 'var(--muted)',
+      ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
+      : 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+  color: tone === 'accent' ? '#1e3a8a' : tone === 'danger' ? '#dc2626' : '#64748b',
+  border: `1px solid ${
+    tone === 'accent' ? '#93c5fd' : tone === 'danger' ? '#fecaca' : '#cbd5e1'
+  }`,
 });
 
 const tableStyle: CSSProperties = {
   width: '100%',
   borderCollapse: 'separate',
   borderSpacing: 0,
+  fontSize: '0.875rem',
 };
 
 const tableHeaderStyle: CSSProperties = {
   textAlign: 'left',
-  fontSize: '0.75rem',
-  letterSpacing: '0.12em',
+  fontSize: '0.8rem',
+  fontWeight: '600',
+  letterSpacing: '0.05em',
   textTransform: 'uppercase',
-  color: 'var(--muted)',
-  padding: '0.75rem 1rem',
+  color: '#475569',
+  padding: '0.875rem 1rem',
+  background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+  borderBottom: '2px solid #cbd5e1',
 };
 
 const tableCellStyle: CSSProperties = {
-  padding: '0.85rem 1rem',
-  borderTop: '1px solid var(--surface-border)',
+  padding: '0.875rem 1rem',
+  borderTop: '1px solid rgba(226, 232, 240, 0.8)',
   verticalAlign: 'top',
+  transition: 'background-color 0.15s ease',
 };
 
 const emptyStateStyle: CSSProperties = {
-  border: '1px dashed color-mix(in srgb, var(--muted) 30%, transparent)',
-  borderRadius: 18,
-  padding: '2rem',
+  border: '1px dashed rgba(148, 163, 184, 0.4)',
+  borderRadius: '16px',
+  padding: '3rem',
   textAlign: 'center',
-  color: 'var(--muted)',
-  background: 'var(--surface-soft)',
+  color: '#94a3b8',
+  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
 };
 
 const modalBackdropStyle: CSSProperties = {
   position: 'fixed',
   inset: 0,
-  background: 'rgba(10, 24, 48, 0.55)',
+  background: 'rgba(15, 23, 42, 0.6)',
   display: 'grid',
   placeItems: 'center',
   padding: '2rem',
   zIndex: 90,
+  backdropFilter: 'blur(4px)',
 };
 
 const modalCardStyle: CSSProperties = {
   ...cardStyle,
-  width: 'min(520px, 100%)',
+  width: 'min(560px, 100%)',
   maxHeight: '90vh',
   overflowY: 'auto',
+  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
 };
 
 type ChurchFormState = {
@@ -559,11 +593,15 @@ const ManageChurchesPage = () => {
 
               {churches.length === 0 ? (
                 <div style={emptyStateStyle}>
-                  <IconBuildingChurch size={36} stroke={1.6} />
-                  <p style={{ margin: '0.5rem 0 0' }}>No churches found. Create your first congregation above.</p>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
+                  <p style={{ margin: '1rem 0 0', fontSize: '1rem', fontWeight: '500' }}>No churches found</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>Create your first congregation above.</p>
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
+                <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid rgba(226, 232, 240, 0.6)' }}>
                   <table style={tableStyle}>
                     <thead>
                       <tr>
@@ -576,43 +614,157 @@ const ManageChurchesPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {churches.map((church) => {
+                      {churches.map((church, index) => {
                         const activeAdmins = adminsByChurch.get(church.id) ?? [];
                         return (
-                          <tr key={church.id}>
+                          <tr key={church.id} style={{
+                            backgroundColor: index % 2 === 0 ? 'rgba(248, 250, 252, 0.5)' : 'transparent',
+                            transition: 'background-color 0.15s ease',
+                          }}>
                             <td style={tableCellStyle}>
-                              <div style={{ display: 'grid', gap: '0.35rem' }}>
-                                <strong style={{ color: 'var(--shell-foreground)', fontSize: '1rem' }}>{church.name}</strong>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '10px',
+                                  background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  flexShrink: 0,
+                                }}>
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                  </svg>
+                                </div>
+                                <div>
+                                  <div style={{ 
+                                    color: '#1e293b', 
+                                    fontSize: '1rem', 
+                                    fontWeight: '600',
+                                    lineHeight: '1.3'
+                                  }}>{church.name}</div>
+                                </div>
                               </div>
                             </td>
                             <td style={tableCellStyle}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--muted)' }}>
-                                <IconMapPin size={16} stroke={1.6} />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                  <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
                                 {church.location ?? 'No location set'}
                               </div>
                             </td>
-                            <td style={tableCellStyle}>{church._count?.members ?? 0}</td>
-                            <td style={tableCellStyle}>{church._count?.sessions ?? 0}</td>
                             <td style={tableCellStyle}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.25rem 0.75rem',
+                                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                                color: '#1e3a8a',
+                                borderRadius: '999px',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                border: '1px solid #93c5fd',
+                              }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                  <circle cx="9" cy="7" r="4"></circle>
+                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                {church._count?.members ?? 0}
+                              </div>
+                            </td>
+                            <td style={tableCellStyle}>
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.25rem 0.75rem',
+                                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                                color: '#92400e',
+                                borderRadius: '999px',
+                                fontSize: '0.875rem',
+                                fontWeight: '600',
+                                border: '1px solid #fcd34d',
+                              }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                {church._count?.sessions ?? 0}
+                              </div>
+                            </td>
+                            <td style={tableCellStyle}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 {activeAdmins.length ? (
                                   activeAdmins.map((admin) => (
                                     <span key={admin.id} style={tagStyle('accent')}>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                      </svg>
                                       {admin.firstName} {admin.lastName}
                                     </span>
                                   ))
                                 ) : (
-                                  <span style={tagStyle('danger')}>Needs administrator</span>
+                                  <span style={tagStyle('danger')}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <circle cx="12" cy="12" r="10"></circle>
+                                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                    Needs administrator
+                                  </span>
                                 )}
                               </div>
                             </td>
                             <td style={tableCellStyle}>
                               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                <button type="button" style={ghostButtonStyle} onClick={() => openEditForm(church)}>
-                                  <IconEdit size={16} stroke={1.8} /> Edit
+                                <button 
+                                  type="button" 
+                                  style={ghostButtonStyle} 
+                                  onClick={() => openEditForm(church)}
+                                  onMouseOver={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                                  }}
+                                  onMouseOut={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                                  }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                  </svg>
+                                  Edit
                                 </button>
-                                <button type="button" style={dangerButtonStyle} onClick={() => confirmDelete(church)}>
-                                  <IconTrash size={16} stroke={1.8} /> Delete
+                                <button 
+                                  type="button" 
+                                  style={dangerButtonStyle} 
+                                  onClick={() => confirmDelete(church)}
+                                  onMouseOver={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+                                  }}
+                                  onMouseOut={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                                  }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                  </svg>
+                                  Delete
                                 </button>
                               </div>
                             </td>

@@ -3,6 +3,7 @@ import type { NavSection, SidebarSection } from '@/components/dashboard/Dashboar
 const DISTRICT_NAV_ITEMS = [
   { label: 'Overview', href: '/district/dashboard' },
   { label: 'Manage Churches', href: '/district/churches' },
+  { label: 'Attendance Tracker', href: '/district/attendance' },
   { label: 'Church Administrators', href: '/district/church-admins' },
   { label: 'Settings', href: '/district/settings' },
 ] as const;
@@ -30,6 +31,17 @@ export const DISTRICT_SIDEBAR_SECTIONS: SidebarSection[] = [
         label: 'Review church coverage',
         description: 'Verify every church in your district has an active administrator.',
         href: '/district/church-admins',
+      },
+    ],
+  },
+  {
+    title: 'Attendance Management',
+    description: 'Monitor and approve attendance across all churches.',
+    items: [
+      {
+        label: 'Track attendance',
+        description: 'Review and approve attendance submissions from all churches.',
+        href: '/district/attendance',
       },
     ],
   },

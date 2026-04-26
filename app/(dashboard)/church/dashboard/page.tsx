@@ -89,11 +89,6 @@ const statCardStyle = (accent: string): CSSProperties => ({
   border: '1px solid var(--surface-border)',
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    borderColor: 'var(--primary)',
-  },
 });
 
 const statIconStyle = (accent: string): CSSProperties => ({
@@ -186,21 +181,14 @@ const quickActionsStyle: CSSProperties = {
   gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
 };
 
-const quickActionCard = (accent: string): CSSProperties => ({
+const quickActionStyle = (accent: string): CSSProperties => ({
   ...cardStyle,
-  display: 'grid',
-  gap: '1.1rem',
-  padding: '1.5rem',
-  textDecoration: 'none',
+  padding: '1.2rem',
+  cursor: 'pointer',
   color: 'var(--shell-foreground)',
   transition: 'all 0.25s ease',
   border: '1px solid var(--surface-border)',
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    borderColor: '#1a365d',
-  },
 });
 
 const quickActionHeader = (accent: string): CSSProperties => ({
@@ -210,9 +198,6 @@ const quickActionHeader = (accent: string): CSSProperties => ({
   fontWeight: 600,
   fontSize: '1.1rem',
   color: '#1a365d',
-  '& svg': {
-    color: '#1a365d',
-  },
 });
 
 const memberRowStyle: CSSProperties = {

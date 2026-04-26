@@ -4,6 +4,7 @@ const DISTRICT_NAV_ITEMS = [
   { label: 'Overview', href: '/district/dashboard' },
   { label: 'Manage Churches', href: '/district/churches' },
   { label: 'Attendance Tracker', href: '/district/attendance' },
+  { label: 'Umuganda Events', href: '/district/umuganda-events' },
   { label: 'Church Administrators', href: '/district/church-admins' },
   { label: 'Settings', href: '/district/settings' },
 ] as const;
@@ -42,6 +43,11 @@ export const DISTRICT_SIDEBAR_SECTIONS: SidebarSection[] = [
         label: 'Track attendance',
         description: 'Review and approve attendance submissions from all churches.',
         href: '/district/attendance',
+      },
+      {
+        label: 'Umuganda events',
+        description: 'View and filter umuganda events across all churches in your district.',
+        href: '/district/umuganda-events',
       },
     ],
   },

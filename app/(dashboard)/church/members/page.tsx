@@ -84,19 +84,6 @@ const primaryButton: CSSProperties = {
   color: 'white',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   transition: 'all 0.2s ease',
-  '&:hover': {
-    backgroundColor: '#2c5282',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  },
-  '&:active': {
-    transform: 'translateY(0)',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  },
-  '&:disabled': {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
 };
 
 const secondaryButton: CSSProperties = {

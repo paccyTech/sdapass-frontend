@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { IconCalendarEvent, IconPlus } from '@tabler/icons-react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,15 +14,13 @@ import { useDashboardShellConfig } from '@/components/dashboard/DashboardShellCo
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { createUmugandaEvent, fetchUmugandaEvents, type UmugandaEventSummary } from '@/lib/api';
 
 const formSchema = z.object({
-  date: z.date({
-    required_error: 'Event date is required',
-  }),
   theme: z.string().min(5, {
     message: 'Theme must be at least 5 characters.',
   }),
@@ -113,6 +111,39 @@ const modalPrimaryButtonStyle: CSSProperties = {
   minWidth: '160px',
 };
 
+const isSunday = (date: Date): boolean => {
+  return date.getDay() === 0;
+};
+
+const getDaysInMonth = (date: Date): number => {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+};
+
+const getFirstDayOfMonth = (date: Date): number => {
+  return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+};
+
+const generateCalendarDays = (currentDate: Date): (Date | null)[] => {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(currentDate);
+  const firstDay = getFirstDayOfMonth(currentDate);
+  
+  const days: (Date | null)[] = [];
+  
+  // Add empty cells for days before month starts
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
+  }
+  
+  // Add all days of the month
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(new Date(year, month, i));
+  }
+  
+  return days;
+};
+
 const buildHeroStats = (events: UmugandaEventSummary[]) => {
   const total = events.length;
 
@@ -148,6 +179,10 @@ const UmugandaEventsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -181,9 +216,27 @@ const UmugandaEventsPage = () => {
     void loadEvents();
   }, [loadEvents]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    if (isCalendarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCalendarOpen]);
+
   const closeCreateModal = useCallback(() => {
     setIsCreateModalOpen(false);
     setIsSubmitting(false);
+    setSelectedDate(undefined);
+    setIsCalendarOpen(false);
     form.reset({
       theme: '',
       location: '',
@@ -200,8 +253,24 @@ const UmugandaEventsPage = () => {
           throw new Error('Session expired. Please sign in again.');
         }
 
+        if (!selectedDate) {
+          toast({
+            title: 'Error',
+            description: 'Please select a date for the event.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        console.log('Creating event with:', {
+          date: selectedDate.toISOString(),
+          theme: values.theme,
+          location: values.location,
+          description: values.description,
+        });
+
         await createUmugandaEvent(session.token, {
-          date: values.date.toISOString(),
+          date: selectedDate.toISOString(),
           theme: values.theme,
           location: values.location,
           description: values.description ? values.description : null,
@@ -227,7 +296,7 @@ const UmugandaEventsPage = () => {
         setIsSubmitting(false);
       }
     },
-    [closeCreateModal, loadEvents, session.token],
+    [closeCreateModal, loadEvents, session.token, selectedDate],
   );
 
   const shellConfig = useMemo(
@@ -305,28 +374,184 @@ const UmugandaEventsPage = () => {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem style={{ display: 'flex', flexDirection: 'column' }}>
-                          <FormLabel style={fieldLabelStyle}>Event Date</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
-                              min={format(new Date(), 'yyyy-MM-dd')}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                field.onChange(value ? new Date(`${value}T00:00:00`) : undefined);
-                              }}
-                              style={textInputStyle}
-                            />
-                          </FormControl>
-                          <FormMessage style={fieldMessageStyle} />
-                        </FormItem>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={fieldLabelStyle}>Event Date</label>
+                      <div style={{ position: 'relative' }} ref={calendarRef}>
+                        <button
+                          type="button"
+                          onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                          style={{
+                            ...textInputStyle,
+                            justifyContent: 'left',
+                            fontWeight: 'normal',
+                            textAlign: 'left',
+                            height: 'auto',
+                            padding: '0.5rem',
+                            cursor: 'pointer',
+                            width: '100%',
+                            backgroundColor: 'white',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          {selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
+                        </button>
+                        {isCalendarOpen && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            zIndex: 50,
+                            backgroundColor: 'white',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            marginTop: '4px',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
+                          }}>
+                            {/* Calendar Header */}
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: '16px',
+                            }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newMonth = new Date(calendarMonth);
+                                  newMonth.setMonth(newMonth.getMonth() - 1);
+                                  setCalendarMonth(newMonth);
+                                }}
+                                style={{
+                                  padding: '6px',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  backgroundColor: 'white',
+                                  cursor: 'pointer',
+                                  fontSize: '16px',
+                                }}
+                              >
+                                ‹
+                              </button>
+                              <div style={{
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                color: '#111827',
+                              }}>
+                                {format(calendarMonth, 'MMMM yyyy')}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newMonth = new Date(calendarMonth);
+                                  newMonth.setMonth(newMonth.getMonth() + 1);
+                                  setCalendarMonth(newMonth);
+                                }}
+                                style={{
+                                  padding: '6px',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  backgroundColor: 'white',
+                                  cursor: 'pointer',
+                                  fontSize: '16px',
+                                }}
+                              >
+                                ›
+                              </button>
+                            </div>
+
+                            {/* Days of Week */}
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(7, 1fr)',
+                              gap: '4px',
+                              marginBottom: '8px',
+                            }}>
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                                <div key={day} style={{
+                                  textAlign: 'center',
+                                  fontSize: '12px',
+                                  fontWeight: '500',
+                                  color: '#6b7280',
+                                  padding: '4px',
+                                }}>
+                                  {day}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Calendar Days */}
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(7, 1fr)',
+                              gap: '4px',
+                            }}>
+                              {generateCalendarDays(calendarMonth).map((date, index) => {
+                                if (!date) {
+                                  return <div key={`empty-${index}`} style={{ padding: '8px' }} />;
+                                }
+                                
+                                const isSundayDate = isSunday(date);
+                                const isSelected = selectedDate && 
+                                  selectedDate.getDate() === date.getDate() &&
+                                  selectedDate.getMonth() === date.getMonth() &&
+                                  selectedDate.getFullYear() === date.getFullYear();
+                                
+                                return (
+                                  <button
+                                    key={date.toISOString()}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSundayDate) {
+                                        setSelectedDate(date);
+                                        setIsCalendarOpen(false);
+                                      }
+                                    }}
+                                    disabled={!isSundayDate}
+                                    style={{
+                                      padding: '8px',
+                                      border: '1px solid #d1d5db',
+                                      borderRadius: '6px',
+                                      backgroundColor: isSelected ? '#2563eb' : 'white',
+                                      color: isSelected ? 'white' : (isSundayDate ? '#111827' : '#d1d5db'),
+                                      cursor: isSundayDate ? 'pointer' : 'not-allowed',
+                                      fontSize: '14px',
+                                      fontWeight: isSelected ? '600' : 'normal',
+                                      opacity: isSundayDate ? 1 : 0.5,
+                                      transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (isSundayDate && !isSelected) {
+                                        e.currentTarget.style.backgroundColor = '#f3f4f6';
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (isSundayDate && !isSelected) {
+                                        e.currentTarget.style.backgroundColor = 'white';
+                                      }
+                                    }}
+                                  >
+                                    {date.getDate()}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                        Only Sundays are available for Umuganda events
+                      </div>
+                      {!selectedDate && (
+                        <div style={{ fontSize: '0.875rem', color: 'red', marginTop: '0.25rem' }}>
+                          Event date is required
+                        </div>
                       )}
-                    />
+                    </div>
 
                     <FormField
                       control={form.control}

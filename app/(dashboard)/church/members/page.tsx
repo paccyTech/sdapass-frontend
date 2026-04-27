@@ -92,18 +92,6 @@ const secondaryButton: CSSProperties = {
   color: '#1a365d',
   border: '1px solid #cbd5e0',
   transition: 'all 0.2s ease',
-  '&:hover': {
-    backgroundColor: '#f7fafc',
-    borderColor: '#a0aec0',
-    transform: 'translateY(-1px)',
-  },
-  '&:active': {
-    transform: 'translateY(0)',
-  },
-  '&:disabled': {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
 };
 
 const iconButton: CSSProperties = {
@@ -754,21 +742,12 @@ export default function ChurchMembersPage() {
                   background: '#1a365d', 
                   color: 'white', 
                   padding: '0.55rem 1.15rem', 
-                  fontWeight: 600, 
-                  fontSize: '0.95rem', 
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
                   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  cursor: addForm.isSubmitting ? 'not-allowed' : 'pointer', 
+                  cursor: addForm.isSubmitting ? 'not-allowed' : 'pointer',
                   opacity: addForm.isSubmitting ? 0.65 : 1,
                   transition: 'all 0.2s ease',
-                  ':hover': {
-                    backgroundColor: '#2c5282',
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                  },
-                  ':active': {
-                    transform: 'translateY(0)',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                  }
                 }}>
                   {addForm.isSubmitting ? 'Creating…' : 'Create member'}
                 </button>

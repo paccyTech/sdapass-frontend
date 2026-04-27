@@ -34,6 +34,7 @@ export default function ChurchSettingsPage() {
           role="CHURCH_ADMIN"
           headline="Church Settings"
           subheadline="Manage your profile information and secure your account."
+          stats={[]}
         />
       ),
     }),

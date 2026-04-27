@@ -201,9 +201,10 @@ const DistrictUmugandaEventsPage = () => {
     const loadData = async () => {
       try {
         setLoading(true);
+        const token = session.token!;
         const [eventsData, churchesData] = await Promise.all([
-          fetchUmugandaEvents(session.token),
-          fetchChurches(session.token),
+          fetchUmugandaEvents(token),
+          fetchChurches(token),
         ]);
         setEvents(eventsData);
         setChurches(churchesData);

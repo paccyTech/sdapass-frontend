@@ -34,6 +34,7 @@ export default function DistrictSettingsPage() {
           role="DISTRICT_ADMIN"
           headline="District Settings"
           subheadline="Manage your profile information and secure your account."
+          stats={[]}
         />
       ),
     }),

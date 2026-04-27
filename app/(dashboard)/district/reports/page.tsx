@@ -125,8 +125,8 @@ const tableHeaderCell: CSSProperties = {
   textTransform: 'uppercase',
   color: '#475569',
   padding: '0.875rem 1rem',
-  background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-  borderBottom: '2px solid #cbd5e1',
+  background: '#ffffff',
+  borderBottom: '2px solid #e2e8f0',
 };
 
 const tableCell: CSSProperties = {
@@ -285,7 +285,7 @@ const slugify = (text: string): string => {
 };
 
 const downloadCsv = (title: string, columns: ColumnDef[], rows: ReportRow[]) => {
-  if (!rows.length) return;
+  if (!rows?.length) return;
 
   const headers = columns.map(col => col.label).join(',');
   const csvRows = rows.map(row =>
@@ -309,7 +309,7 @@ const downloadCsv = (title: string, columns: ColumnDef[], rows: ReportRow[]) => 
 };
 
 const downloadPdf = async (title: string, columns: ColumnDef[], rows: ReportRow[], preparedBy?: string) => {
-  if (!rows.length) return;
+  if (!rows?.length) return;
 
   const orientation = columns.length > 4 ? 'landscape' : 'portrait';
   const doc = new jsPDF({ orientation });
@@ -813,8 +813,9 @@ const DistrictReportsPage = () => {
     <RequireRole allowed="DISTRICT_ADMIN">
       <div style={{ display: 'grid', gap: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
         <RoleHero
-          title="District Reports"
-          subtitle="Comprehensive reports and analytics for your district"
+          role="DISTRICT_ADMIN"
+          headline="District Reports"
+          subheadline="Comprehensive reports and analytics for your district"
           stats={heroStats}
         />
 
@@ -826,8 +827,10 @@ const DistrictReportsPage = () => {
               <ReportCard
                 key={report.key}
                 report={report}
-                loading={status === 'loading'}
-                onDownloadCsv={downloadCsv}
+                loading={false}
+                onDownloadCsv={(report) => {
+                  downloadCsv(report.title, report.columns, report.rows);
+                }}
                 onDownloadPdf={(report) => {
                   const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'District Administrator' : 'District Administrator';
                   downloadPdf(report.title, report.columns, report.rows, userName);

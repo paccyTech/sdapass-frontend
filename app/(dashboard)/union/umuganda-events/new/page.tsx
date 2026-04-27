@@ -20,9 +20,7 @@ import { useAuthSession } from '@/hooks/useAuthSession';
 import { createUmugandaEvent } from '@/lib/api';
 
 const formSchema = z.object({
-  date: z.date({
-    required_error: 'Event date is required',
-  }),
+  date: z.date(),
   theme: z.string().min(5, {
     message: 'Theme must be at least 5 characters.',
   }),
@@ -52,6 +50,7 @@ const NewUmugandaEventPage = () => {
         role="UNION_ADMIN"
         headline="Schedule a New Umuganda Event"
         subheadline="Fill in the details below to create a new community service event for your union."
+        stats={[]}
       />
     ),
   };

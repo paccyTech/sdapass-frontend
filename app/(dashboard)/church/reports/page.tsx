@@ -216,21 +216,6 @@ const errorBannerStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-start',
   gap: '0.5rem',
-  '&:before': {
-    content: '"!"',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '1.2rem',
-    height: '1.2rem',
-    borderRadius: '50%',
-    background: '#c53030',
-    color: 'white',
-    fontSize: '0.75rem',
-    fontWeight: 'bold',
-    flexShrink: 0,
-    marginTop: '0.1rem',
-  },
 };
 
 const emptyStateCardStyle: CSSProperties = {
@@ -695,10 +680,10 @@ const ReportsPage = () => {
     setError(null);
 
     try {
-      const params: { churchId: string; from?: string; to?: string; status?: string } = { churchId };
+      const params: { churchId: string; from?: string; to?: string; status?: 'PENDING' | 'APPROVED' } = { churchId };
       if (dateFrom) params.from = dateFrom;
       if (dateTo) params.to = dateTo;
-      if (statusFilter !== 'all') params.status = statusFilter.toUpperCase();
+      if (statusFilter !== 'all') params.status = statusFilter.toUpperCase() as 'PENDING' | 'APPROVED';
 
       const [churchResult, reportResult, attendanceResult, memberResult] = await Promise.allSettled([
         fetchChurchDetail(token, churchId),

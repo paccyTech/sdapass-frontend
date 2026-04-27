@@ -1,7 +1,7 @@
 'use client';
 
 import type { CSSProperties, FormEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { confirmPasswordReset } from '@/lib/api';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
-export default function PasswordResetConfirmPage() {
+function PasswordResetForm() {
   const searchParams = useSearchParams();
   const tokenFromUrl = useMemo(() => searchParams.get('token') ?? '', [searchParams]);
 
@@ -166,6 +166,14 @@ export default function PasswordResetConfirmPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PasswordResetConfirmPage() {
+  return (
+    <Suspense fallback={<div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+      <PasswordResetForm />
+    </Suspense>
   );
 }
 

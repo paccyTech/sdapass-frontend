@@ -1,20 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
-import { IconBuildingChurch, IconEdit, IconMapPin, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconBuildingChurch, IconMapPin } from '@tabler/icons-react';
 
 import RequireRole from '@/components/RequireRole';
 import { useDashboardShellConfig } from '@/components/dashboard/DashboardShellContext';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import {
-  createChurch,
-  deleteChurch,
   fetchChurchAdmins,
   fetchChurches,
   type ChurchAdminSummary,
   type ChurchSummary,
-  updateChurch,
 } from '@/lib/api';
 
 const pageWrapperStyle: CSSProperties = {
@@ -105,29 +102,6 @@ const mutedTextStyle: CSSProperties = {
   fontSize: '0.95rem',
 };
 
-const formGridStyle: CSSProperties = {
-  display: 'grid',
-  gap: '1.5rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-};
-
-const labelStyle: CSSProperties = {
-  display: 'grid',
-  gap: '0.5rem',
-  fontWeight: '600',
-  color: '#374151',
-  fontSize: '0.9rem',
-};
-
-const inputStyle: CSSProperties = {
-  borderRadius: '12px',
-  border: '1px solid rgba(226, 232, 240, 0.8)',
-  padding: '0.75rem 1rem',
-  background: '#ffffff',
-  color: '#374151',
-  fontSize: '0.95rem',
-  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-};
 
 const primaryButtonStyle: CSSProperties = {
   border: 'none',
@@ -143,29 +117,6 @@ const primaryButtonStyle: CSSProperties = {
   gap: '0.5rem',
   boxShadow: '0 4px 12px rgba(30, 58, 138, 0.3)',
   transition: 'all 0.2s ease',
-};
-
-const ghostButtonStyle: CSSProperties = {
-  borderRadius: '12px',
-  border: '1px solid rgba(226, 232, 240, 0.8)',
-  padding: '0.75rem 1.25rem',
-  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-  color: '#475569',
-  fontWeight: '600',
-  fontSize: '0.875rem',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-  transition: 'all 0.2s ease',
-};
-
-const dangerButtonStyle: CSSProperties = {
-  ...ghostButtonStyle,
-  background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-  borderColor: 'rgba(239, 68, 68, 0.3)',
-  color: '#dc2626',
 };
 
 const tagStyle = (tone: 'accent' | 'danger' | 'muted'): CSSProperties => ({
@@ -225,56 +176,6 @@ const emptyStateStyle: CSSProperties = {
   background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
 };
 
-const modalBackdropStyle: CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(15, 23, 42, 0.6)',
-  display: 'grid',
-  placeItems: 'center',
-  padding: '2rem',
-  zIndex: 90,
-  backdropFilter: 'blur(4px)',
-};
-
-const modalCardStyle: CSSProperties = {
-  ...cardStyle,
-  width: 'min(560px, 100%)',
-  maxHeight: '90vh',
-  overflowY: 'auto',
-  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-};
-
-type ChurchFormState = {
-  mode: 'create' | 'edit';
-  church: ChurchSummary | null;
-  name: string;
-  location: string;
-  isSubmitting: boolean;
-  error: string | null;
-  success: string | null;
-};
-
-type DeleteState = {
-  church: ChurchSummary | null;
-  isSubmitting: boolean;
-  error: string | null;
-};
-
-const initialFormState: ChurchFormState = {
-  mode: 'create',
-  church: null,
-  name: '',
-  location: '',
-  isSubmitting: false,
-  error: null,
-  success: null,
-};
-
-const initialDeleteState: DeleteState = {
-  church: null,
-  isSubmitting: false,
-  error: null,
-};
 
 const ManageChurchesPage = () => {
   const { token, user } = useAuthSession();
@@ -284,8 +185,6 @@ const ManageChurchesPage = () => {
   const [admins, setAdmins] = useState<ChurchAdminSummary[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [formState, setFormState] = useState<ChurchFormState>(initialFormState);
-  const [deleteState, setDeleteState] = useState<DeleteState>(initialDeleteState);
 
   const shellConfig = useMemo(
     () => ({
@@ -357,7 +256,7 @@ const ManageChurchesPage = () => {
       {
         label: 'Churches in district',
         value: total.toString(),
-        context: total ? `${withAdmin} covered with active admins` : 'Add your first congregation',
+        context: total ? `${withAdmin} covered with active admins` : 'No congregations yet',
       },
       {
         label: 'Need administrator',
@@ -371,125 +270,6 @@ const ManageChurchesPage = () => {
       },
     ];
   }, [churches, adminsByChurch]);
-
-  const formDisabled = formState.isSubmitting || !token || !districtId;
-
-  const resetForm = useCallback(() => {
-    setFormState(initialFormState);
-  }, []);
-
-  const openCreateForm = useCallback(() => {
-    setFormState((prev) => ({
-      ...initialFormState,
-      mode: 'create',
-      success: null,
-      error: null,
-    }));
-  }, []);
-
-  const openEditForm = useCallback((church: ChurchSummary) => {
-    setFormState({
-      mode: 'edit',
-      church,
-      name: church.name,
-      location: church.location ?? '',
-      isSubmitting: false,
-      error: null,
-      success: null,
-    });
-  }, []);
-
-  const handleFormChange = useCallback(
-    (field: 'name' | 'location') => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setFormState((prev) => ({ ...prev, [field]: value, error: null, success: null }));
-    },
-    [],
-  );
-
-  const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-
-      if (!token || !districtId) {
-        setFormState((prev) => ({ ...prev, error: 'Authentication required to manage churches.' }));
-        return;
-      }
-
-      const name = formState.name.trim();
-      const location = formState.location.trim();
-
-      if (!name) {
-        setFormState((prev) => ({ ...prev, error: 'Church name is required.' }));
-        return;
-      }
-
-      setFormState((prev) => ({ ...prev, isSubmitting: true, error: null, success: null }));
-
-      try {
-        if (formState.mode === 'create') {
-          const church = await createChurch(token, {
-            districtId,
-            name,
-            location: location || undefined,
-          });
-
-          setChurches((prev) => {
-            const exists = prev.some((item) => item.id === church.id);
-            if (exists) {
-              return prev.map((item) => (item.id === church.id ? church : item));
-            }
-            return [church, ...prev].sort((a, b) => a.name.localeCompare(b.name));
-          });
-
-          setFormState({
-            ...initialFormState,
-            success: `Church “${church.name}” created successfully.`,
-          });
-        } else if (formState.mode === 'edit' && formState.church) {
-          const response = await updateChurch(token, formState.church.id, {
-            name,
-            location: location || undefined,
-          });
-
-          setChurches((prev) => prev.map((item) => (item.id === response.church.id ? response.church : item)));
-          setFormState({
-            ...initialFormState,
-            success: `Updated ${response.church.name}.`,
-          });
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to save church';
-        setFormState((prev) => ({ ...prev, isSubmitting: false, error: message, success: null }));
-      }
-    },
-    [token, districtId, formState],
-  );
-
-  const confirmDelete = useCallback((church: ChurchSummary) => {
-    setDeleteState({ church, isSubmitting: false, error: null });
-  }, []);
-
-  const cancelDelete = useCallback(() => {
-    setDeleteState(initialDeleteState);
-  }, []);
-
-  const handleDelete = useCallback(async () => {
-    if (!token || !deleteState.church) {
-      return;
-    }
-
-    setDeleteState((prev) => ({ ...prev, isSubmitting: true, error: null }));
-
-    try {
-      await deleteChurch(token, deleteState.church.id);
-      setChurches((prev) => prev.filter((church) => church.id !== deleteState.church?.id));
-      setDeleteState(initialDeleteState);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete church';
-      setDeleteState((prev) => ({ ...prev, isSubmitting: false, error: message }));
-    }
-  }, [token, deleteState]);
 
   const renderStatus = () => {
     if (status === 'loading' || status === 'idle') {
@@ -522,65 +302,6 @@ const ManageChurchesPage = () => {
 
         {status === 'loaded' && (
           <>
-            <div>
-              <header style={sectionHeaderStyle}>
-                <div>
-                  <h2 style={sectionTitleStyle}>Create a new church</h2>
-                  <p style={mutedTextStyle}>
-                    District administrators can register congregations and keep their location details current.
-                  </p>
-                </div>
-                <button type="button" style={ghostButtonStyle} onClick={openCreateForm}>
-                  <IconPlus size={18} stroke={1.8} />
-                  Reset form
-                </button>
-              </header>
-
-              <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
-                <div style={formGridStyle}>
-                  <label style={labelStyle}>
-                    Church name
-                    <input
-                      type="text"
-                      value={formState.name}
-                      onChange={handleFormChange('name')}
-                      style={inputStyle}
-                      placeholder="e.g. Kigali Central SDA"
-                    />
-                  </label>
-                  <label style={labelStyle}>
-                    Location / sector
-                    <input
-                      type="text"
-                      value={formState.location}
-                      onChange={handleFormChange('location')}
-                      style={inputStyle}
-                      placeholder="Optional descriptive address"
-                    />
-                  </label>
-                </div>
-
-                {formState.error ? (
-                  <p style={{ ...mutedTextStyle, color: 'var(--danger)' }}>{formState.error}</p>
-                ) : null}
-                {formState.success ? (
-                  <p style={{ ...mutedTextStyle, color: 'var(--accent)' }}>{formState.success}</p>
-                ) : null}
-
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <button type="submit" style={primaryButtonStyle} disabled={formDisabled}>
-                    <IconBuildingChurch size={18} stroke={1.8} />
-                    {formState.mode === 'create' ? 'Create church' : 'Save changes'}
-                  </button>
-                  {formState.mode === 'edit' ? (
-                    <button type="button" style={ghostButtonStyle} onClick={resetForm} disabled={formDisabled}>
-                      Cancel edit
-                    </button>
-                  ) : null}
-                </div>
-              </form>
-            </div>
-
             <div>
               <header style={sectionHeaderStyle}>
                 <div>
@@ -727,46 +448,7 @@ const ManageChurchesPage = () => {
                               </div>
                             </td>
                             <td style={tableCellStyle}>
-                              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                <button 
-                                  type="button" 
-                                  style={ghostButtonStyle} 
-                                  onClick={() => openEditForm(church)}
-                                  onMouseOver={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                                  }}
-                                  onMouseOut={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                                  }}
-                                >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                  </svg>
-                                  Edit
-                                </button>
-                                <button 
-                                  type="button" 
-                                  style={dangerButtonStyle} 
-                                  onClick={() => confirmDelete(church)}
-                                  onMouseOver={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-                                  }}
-                                  onMouseOut={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                                  }}
-                                >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                  </svg>
-                                  Delete
-                                </button>
-                              </div>
+                              <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>View only</span>
                             </td>
                           </tr>
                         );
@@ -780,89 +462,6 @@ const ManageChurchesPage = () => {
         )}
       </div>
 
-      {formState.mode === 'edit' && formState.church && (
-        <div style={modalBackdropStyle}>
-          <div style={modalCardStyle}>
-            <header style={sectionHeaderStyle}>
-              <div>
-                <h2 style={sectionTitleStyle}>Edit {formState.church.name}</h2>
-                <p style={mutedTextStyle}>Update the church name or location. Sessions and members stay intact.</p>
-              </div>
-              <button type="button" style={ghostButtonStyle} onClick={resetForm}>
-                Close
-              </button>
-            </header>
-
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
-              <label style={labelStyle}>
-                Church name
-                <input
-                  type="text"
-                  value={formState.name}
-                  onChange={handleFormChange('name')}
-                  style={inputStyle}
-                  autoFocus
-                />
-              </label>
-              <label style={labelStyle}>
-                Location / sector
-                <input
-                  type="text"
-                  value={formState.location}
-                  onChange={handleFormChange('location')}
-                  style={inputStyle}
-                />
-              </label>
-
-              {formState.error ? (
-                <p style={{ ...mutedTextStyle, color: 'var(--danger)' }}>{formState.error}</p>
-              ) : null}
-
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button type="submit" style={primaryButtonStyle} disabled={formDisabled}>
-                  <IconEdit size={18} stroke={1.8} /> Save changes
-                </button>
-                <button type="button" style={ghostButtonStyle} onClick={resetForm} disabled={formDisabled}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {deleteState.church && (
-        <div style={modalBackdropStyle}>
-          <div style={modalCardStyle}>
-            <header style={sectionHeaderStyle}>
-              <div>
-                <h2 style={sectionTitleStyle}>Delete {deleteState.church.name}?</h2>
-                <p style={{ ...mutedTextStyle, color: 'var(--danger)' }}>
-                  This action removes the church. Members remain in the system but lose their church assignment.
-                </p>
-              </div>
-            </header>
-
-            {deleteState.error ? (
-              <p style={{ ...mutedTextStyle, color: 'var(--danger)' }}>{deleteState.error}</p>
-            ) : (
-              <p style={mutedTextStyle}>
-                You can recreate the church later if needed. Consider reassigning administrators before deleting.
-              </p>
-            )}
-
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button type="button" style={dangerButtonStyle} onClick={handleDelete} disabled={deleteState.isSubmitting}>
-                <IconTrash size={18} stroke={1.8} />
-                {deleteState.isSubmitting ? 'Deleting…' : 'Delete church'}
-              </button>
-              <button type="button" style={ghostButtonStyle} onClick={cancelDelete} disabled={deleteState.isSubmitting}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </RequireRole>
   );
 };

@@ -52,7 +52,6 @@ const ROLE_NAVIGATION: Record<RoleKey, RoleNavigationDefinition> = {
       { label: 'Manage Churches', description: 'Add and edit church details', href: '/district/churches', icon: <IconMap2 size={18} stroke={1.6} color="#ff8f3d" /> },
       { label: 'Attendance Tracker', description: 'Track attendance records', href: '/district/attendance', icon: <IconChartHistogram size={18} stroke={1.6} color="#ff8f3d" /> },
       { label: 'District Reports', description: 'View district reports and analytics', href: '/district/reports', icon: <IconReportAnalytics size={18} stroke={1.6} color="#ff8f3d" /> },
-      { label: 'Pass Issuance', description: 'Issue and manage passes', href: '/district/dashboard#passes', icon: <IconIdBadge size={18} stroke={1.6} color="#ff8f3d" /> },
       { label: 'Settings', description: 'Manage your account settings', href: '/district/settings', icon: <IconSettings size={18} stroke={1.6} color="#ff8f3d" /> },
     ],
     sidebarSections: [],

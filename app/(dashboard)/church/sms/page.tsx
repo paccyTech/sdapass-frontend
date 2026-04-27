@@ -104,18 +104,18 @@ const toolbarButtonStyle: CSSProperties = {
   fontSize: '0.9rem',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  '&:hover': {
-    background: '#f7fafc',
-    borderColor: '#2c5282',
-  },
-  '&:active': {
-    background: '#ebf8ff',
-    transform: 'translateY(1px)',
-  },
-  '&:disabled': {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
+};
+
+const secondaryButtonStyle: CSSProperties = {
+  padding: '0.75rem 1.25rem',
+  borderRadius: '10px',
+  border: '1px solid #1a365d',
+  background: 'white',
+  color: '#1a365d',
+  fontWeight: 500,
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
 };
 
 const gridStyle: CSSProperties = {
@@ -133,11 +133,6 @@ const statCard = (accent: string): CSSProperties => ({
   border: '1px solid #e2e8f0',
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   transition: 'all 0.2s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    borderColor: '#1a365d',
-  },
 });
 
 const statIcon = (accent: string): CSSProperties => ({
@@ -217,12 +212,6 @@ const eventsCell: CSSProperties = {
   fontSize: '0.9rem',
   borderBottom: '1px solid #edf2f7',
   verticalAlign: 'middle',
-  '&:first-of-type': {
-    paddingLeft: '1rem',
-  },
-  '&:last-of-type': {
-    paddingRight: '1rem',
-  },
 };
 
 const badgeStyle = (tone: 'success' | 'warning' | 'danger' | 'pending'): CSSProperties => {

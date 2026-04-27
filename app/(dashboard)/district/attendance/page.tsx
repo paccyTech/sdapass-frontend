@@ -283,8 +283,9 @@ const DistrictAttendancePage = () => {
     <RequireRole allowed="DISTRICT_ADMIN">
       <div style={pageWrapperStyle}>
         <RoleHero
-          title="District Attendance Tracker"
-          subtitle="Monitor and manage attendance records across all churches in your district"
+          role="DISTRICT_ADMIN"
+          headline="District Attendance Tracker"
+          subheadline="Monitor and manage attendance records across all churches in your district"
           stats={stats}
         />
 

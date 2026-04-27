@@ -103,8 +103,8 @@ const PieChart = ({
 
   const segments = total
     ? data
-        .filter((item) => item.value > 0)
-        .map((item) => ({ ...item, percent: item.value / total }))
+        .filter((item) => (item.value ?? 0) > 0)
+        .map((item) => ({ ...item, percent: (item.value ?? 0) / total }))
     : [];
 
   const polarToCartesian = (centerX: number, centerY: number, r: number, angleInDegrees: number) => {

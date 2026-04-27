@@ -34,6 +34,7 @@ export default function UnionSettingsPage() {
           role="UNION_ADMIN"
           headline="System Settings"
           subheadline="Manage your profile information and secure your account."
+          stats={[]}
         />
       ),
     }),

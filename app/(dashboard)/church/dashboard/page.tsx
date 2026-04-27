@@ -408,11 +408,8 @@ export default function ChurchAdminDashboard() {
   }, [token, user?.churchId]);
 
   const totalMembers = useMemo(() => {
-    if (members.length) {
-      return members.length;
-    }
-    return church?._count?.members ?? 0;
-  }, [members, church?._count?.members]);
+    return members.length;
+  }, [members]);
 
   const passesIssued = useMemo(
     () => members.filter((member) => Boolean(member.memberPass?.token)).length,
